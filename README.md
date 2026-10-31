@@ -56,7 +56,7 @@ Current limitations and active work:
 - clock-driven audio and the turbo-to-real-time handoff are hardened; broader subjective title-by-title audio comparison remains ongoing
 - broader protected/custom TZX compatibility remains ongoing
 - Milestone 22 USB joystick support is complete, including two independently mapped host controllers, selectable Kempston/Cursor/Sinclair interfaces, and simultaneous Interface II input
-- Milestone 23 SZX loading is complete for exact 48K and original 128K CPU, RAM, paging, ULA, and AY state; snapshots requiring unsupported models or peripherals are rejected
+- Milestone 23 SZX loading is complete for supported original 48K/128K CPU execution, RAM, paging, ULA, and AY state; snapshots requiring unsupported models or peripherals are rejected
 
 ### Implementation Notes
 
@@ -358,6 +358,7 @@ Current snapshot status:
   - accepts compressed or uncompressed RAM pages, arbitrary chunk order, and unknown optional metadata
   - validates the complete snapshot before changing the machine
   - rejects unsupported machine models, alternate timing, Issue 2 behavior, external 48K AY state, and known unsupported peripheral blocks rather than approximating them
+  - does not restore the SZX `WZ/MEMPTR` field because the CPU core does not currently model that undocumented latch
 
 Snapshots can be loaded with `F9` (`.sna`) and `F10` (`.z80` or `.szx`) in the UI.
 
@@ -383,6 +384,8 @@ deliberately kept out of the harness.
 The [ULA timing validation runbook](test-assets/ula/README.md) records how the
 48K/128K Timing Test and floating-bus diagnostics are run without redistributing
 their GPL-licensed media.
+
+checks without redistributing the snapshot files.
 
 > Intended for debugging, not performance measurement.
 
