@@ -384,6 +384,11 @@ mono_crash.*
 
 # VS Code
 .vscode/
+!.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
 
 # OS generated files
 .DS_Store
