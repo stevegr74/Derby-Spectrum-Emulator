@@ -104,26 +104,45 @@ namespace Spectrum128kEmulator.Pokes
         public IReadOnlyList<PokeGameMatch> FindMatches(PokeMediaIdentity? media, SpectrumMachineModel model)
         {
             string mediaBaseName = media == null ? string.Empty : Path.GetFileNameWithoutExtension(media.FileName);
-            return Games
+            var candidates = Games
                 .Where(game => game.Supports(model))
-                .Select(game => new PokeGameMatch(game, Match(game, media, mediaBaseName)))
+                .Select(game => new
+                {
+                    Game = game,
+                    Exact = media != null && game.Sha256.Contains(media.Sha256),
+                    AliasLength = AliasMatchLength(game, mediaBaseName)
+                })
+                .ToArray();
+            if (candidates.Length == 0)
+                return [];
+
+            bool hasExactMatch = candidates.Any(candidate => candidate.Exact);
+            int longestAlias = candidates.Max(candidate => candidate.AliasLength);
+
+            return candidates
+                .Select(candidate => new PokeGameMatch(
+                    candidate.Game,
+                    candidate.Exact
+                        ? PokeMatchKind.ExactChecksum
+                        : !hasExactMatch && candidate.AliasLength > 0 && candidate.AliasLength == longestAlias
+                            ? PokeMatchKind.Alias
+                            : PokeMatchKind.None))
                 .OrderByDescending(match => match.Kind)
                 .ThenBy(match => match.Game.Title, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
 
-        private static PokeMatchKind Match(PokeGameDefinition game, PokeMediaIdentity? media, string mediaBaseName)
+        private static int AliasMatchLength(PokeGameDefinition game, string mediaBaseName)
         {
-            if (media != null && game.Sha256.Contains(media.Sha256))
-                return PokeMatchKind.ExactChecksum;
-            if (!string.IsNullOrWhiteSpace(mediaBaseName) &&
-                (string.Equals(game.Title, mediaBaseName, StringComparison.OrdinalIgnoreCase) ||
-                 game.Aliases.Any(alias => mediaBaseName.Contains(alias, StringComparison.OrdinalIgnoreCase))))
-            {
-                return PokeMatchKind.Alias;
-            }
+            if (string.IsNullOrWhiteSpace(mediaBaseName))
+                return 0;
 
-            return PokeMatchKind.None;
+            return game.Aliases
+                .Append(game.Title)
+                .Where(alias => mediaBaseName.StartsWith(alias, StringComparison.OrdinalIgnoreCase))
+                .Select(alias => alias.Length)
+                .DefaultIfEmpty()
+                .Max();
         }
 
         private static HashSet<SpectrumMachineModel> ParseModels(List<string>? values, string gameId)
