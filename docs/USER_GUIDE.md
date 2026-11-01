@@ -34,9 +34,12 @@ The emulator models Spectrum 48K/Spectrum+ hardware and original 128K/grey +2 ha
 ## Requirements
 
 - Windows with the .NET 10 desktop runtime, or the .NET 10 SDK when running from source.
-- The two Spectrum 128K ROM files in the `ROMs` directory:
+- The bundled production ROM files in the `ROMs` directory:
+  - `48.rom`
   - `128-0.rom`
   - `128-1.rom`
+  - `plus2-0.rom`
+  - `plus2-1.rom`
 
 From source, start the emulator with:
 
@@ -46,20 +49,22 @@ dotnet run
 
 The emulator starts as a Spectrum 128K in `2x Enhanced` display mode and shows the 128K ROM menu.
 
-## ROM Sets
+## Machine Profiles
 
-Right-click the display and open **ROM Set** to choose:
+Right-click the display and open **F3 - Machine** to choose:
 
-- The bundled Sinclair 128K ROM pair.
-- The bundled 48K BASIC ROM, used with 48K/Spectrum+ hardware.
-- A custom 16KB 48K or Spectrum+ ROM.
-- A custom ordered 128K or original grey +2 pair: select ROM 0 first, then ROM 1.
+- **ZX Spectrum 128K:** original 128K hardware and ROM pair.
+- **ZX Spectrum 48K:** original 48K hardware and 1982 ROM.
+- **ZX Spectrum +2 (Grey):** original 128K-family hardware and grey +2 ROM pair.
+- **Custom Machine / ROM:** a custom 16KB 48K/Spectrum+ ROM or ordered custom 128K/+2 pair.
 
-Changing ROM set resets the machine and clears the loaded media. Files are
-validated as exact 16KB images before reset. A custom ROM can boot normally,
+`F3` switches between the selected 48K profile and the last selected
+128K-family profile, so selecting +2 and switching temporarily to 48K returns
+to +2 on the next press. Changing profile resets the machine and clears the
+loaded media. Files are validated as exact 16KB images before reset. A custom ROM can boot normally,
 but ROM-address-dependent tape acceleration is disabled when its internal
 layout is not recognized; loading then stays with real ROM execution and tape
-pulses. +2A and +3 ROM sets are deliberately rejected because those models
+pulses. +2A and +3 profiles are deliberately unavailable because those models
 need additional paging hardware, and +3 disk operation also needs a disk
 controller and drive model.
 
@@ -86,7 +91,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | --- | --- |
 | `F1` | Open or close Help; emulation pauses while Help is open |
 | `F2` | Show or hide the status overlay |
-| `F3` | Reset and switch between 128K and 48K machine modes |
+| `F3` | Reset and switch between the selected 48K and 128K-family machine profiles |
 | `F4` | Cycle 1x Native, 2x Enhanced, and 3x Enhanced display sizes |
 | `F5` | Stop or resume the mounted tape |
 | `F6` | Open or close the paused debugger and disassembler |

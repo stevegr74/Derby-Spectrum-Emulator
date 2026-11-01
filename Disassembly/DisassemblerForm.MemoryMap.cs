@@ -8,7 +8,7 @@ namespace Derby
         {
             mappingPanel.Name = "MemoryMapPanel";
             mappingPanel.Location = new Point(642, 8);
-            mappingPanel.Size = new Size(318, 56);
+            mappingPanel.Size = new Size(318, 60);
             mappingPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             mappingPanel.BackColor = toolbar.BackColor;
             mappingPanel.Resize += (_, _) => UpdateMappingPanelMode();
@@ -46,9 +46,9 @@ namespace Derby
 
             screenBankLabel.Name = "MemoryMapScreenBank";
             screenBankLabel.Location = new Point(0, 42);
-            screenBankLabel.Size = new Size(mappingPanel.Width, 14);
+            screenBankLabel.Size = new Size(mappingPanel.Width, 18);
             screenBankLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            screenBankLabel.Font = new Font("Consolas", 7.2f, FontStyle.Bold);
+            screenBankLabel.Font = EmulatorUiStyle.MonoFont(8.5f, FontStyle.Bold);
             screenBankLabel.ForeColor = Color.FromArgb(28, 108, 94);
             screenBankLabel.TextAlign = ContentAlignment.MiddleLeft;
 
@@ -74,7 +74,7 @@ namespace Derby
             if (toolbar.ClientSize.Width <= left + rightMargin)
                 return;
 
-            mappingPanel.SetBounds(left, 8, toolbar.ClientSize.Width - left - rightMargin, 56);
+            mappingPanel.SetBounds(left, 8, toolbar.ClientSize.Width - left - rightMargin, 60);
         }
 
         private void UpdateMappingPanel(string viewRange)

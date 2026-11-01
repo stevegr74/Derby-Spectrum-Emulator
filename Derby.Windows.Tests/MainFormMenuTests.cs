@@ -28,8 +28,7 @@ namespace Derby.Tests
                             "F1 - Help",
                             "---",
                             "F2 - Status Overlay",
-                            "F3 - Reset / Switch Model",
-                            "ROM Set",
+                            "F3 - Machine",
                             "F4 - Display Size",
                             "---",
                             "F5 - Stop / Resume Tape",
@@ -50,13 +49,16 @@ namespace Derby.Tests
                         ],
                         labels);
 
-                    ToolStripMenuItem romSet = menu.Items
+                    ToolStripMenuItem machineMenu = menu.Items
                         .OfType<ToolStripMenuItem>()
-                        .Single(item => item.Text == "ROM Set");
-                    Assert.Contains(romSet.DropDownItems.OfType<ToolStripMenuItem>(),
-                        item => item.Text?.StartsWith("Active: Sinclair ZX Spectrum 128K") == true);
-                    Assert.Contains(romSet.DropDownItems.OfType<ToolStripMenuItem>(),
-                        item => item.Text?.Contains("+2A / +3") == true && !item.Enabled);
+                        .Single(item => item.Text == "F3 - Machine");
+                    Assert.Equal(
+                        ["ZX Spectrum 128K", "ZX Spectrum 48K", "ZX Spectrum +2 (Grey)", "---", "Custom Machine / ROM"],
+                        machineMenu.DropDownItems.Cast<ToolStripItem>()
+                            .Select(item => item is ToolStripSeparator ? "---" : item.Text ?? string.Empty));
+                    Assert.True(machineMenu.DropDownItems.OfType<ToolStripMenuItem>()
+                        .Single(item => item.Text == "ZX Spectrum 128K").Checked);
+                    Assert.DoesNotContain(menu.Items.OfType<ToolStripMenuItem>(), item => item.Text == "ROM Set");
                 }
                 catch (Exception exception)
                 {
@@ -66,6 +68,47 @@ namespace Derby.Tests
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
             Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The MainForm menu test timed out.");
+            if (failure != null)
+                throw new Xunit.Sdk.XunitException(failure.ToString());
+        }
+
+        [Fact]
+        public void F3MachineSwitch_RestoresLastSelectedRomProfileForEachHardwareFamily()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            string rom0 = Path.Combine(folder, "custom-0.rom");
+            string rom1 = Path.Combine(folder, "custom-1.rom");
+            File.WriteAllBytes(rom0, Enumerable.Repeat((byte)0xF3, 16384).ToArray());
+            File.WriteAllBytes(rom1, Enumerable.Repeat((byte)0xC3, 16384).ToArray());
+            Exception? failure = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    using var form = new MainForm();
+                    SpectrumRomSet custom128 = SpectrumRomSet.Create128K("Custom 128K", rom0, rom1);
+                    typeof(MainForm).GetMethod("ApplyRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .Invoke(form, [custom128]);
+                    typeof(MainForm).GetMethod("ResetToMachineModel", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .Invoke(form, [SpectrumMachineModel.Spectrum48K]);
+                    typeof(MainForm).GetMethod("ResetToMachineModel", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .Invoke(form, [SpectrumMachineModel.Spectrum128K]);
+
+                    SpectrumRomSet selected = (SpectrumRomSet)typeof(MainForm)
+                        .GetField("selectedRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .GetValue(form)!;
+                    Assert.Same(custom128, selected);
+                }
+                catch (Exception exception)
+                {
+                    failure = exception;
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The machine-profile switching test timed out.");
+            Directory.Delete(folder, true);
             if (failure != null)
                 throw new Xunit.Sdk.XunitException(failure.ToString());
         }

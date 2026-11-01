@@ -7,6 +7,9 @@ namespace Derby
     {
         private const string BundledRom0Sha256 = "3BA308F23B9471D13D9BA30C23030059A9CE5D4B317B85B86274B132651D1425";
         private const string BundledRom1Sha256 = "8D93C3342321E9D1E51D60AFCD7D15F6A7AFD978C231B43435A7C0757C60B9A3";
+        private const string Original48RomSha256 = "D55DAA439B673B0E3F5897F99AC37ECB45F974D1862B4DADB85DEC34AF99CB42";
+        private const string Plus2Rom0Sha256 = "51DC881D1D3E8242972390224E7CFD8650987D9A620E086ACA9DFDF6988FCBF1";
+        private const string Plus2Rom1Sha256 = "AE6D95F1E6D16C3D1C947B77E6087952F3204B7930C6CADAE3769289A1F5A1B9";
 
         private SpectrumRomProfile(string name, bool supportsAddressBasedTapeServices)
         {
@@ -68,13 +71,17 @@ namespace Derby
             string rom0Hash = Convert.ToHexString(SHA256.HashData(rom0));
             string rom1Hash = Convert.ToHexString(SHA256.HashData(rom1));
             if (model == SpectrumMachineModel.Spectrum48K &&
-                rom0Hash == BundledRom1Sha256 && rom1Hash == BundledRom1Sha256)
+                rom0Hash == rom1Hash &&
+                (rom0Hash == Original48RomSha256 || rom0Hash == BundledRom1Sha256))
             {
                 return new SpectrumRomProfile("Sinclair ZX Spectrum 48K", supportsAddressBasedTapeServices: true);
             }
 
             if (rom0Hash == BundledRom0Sha256 && rom1Hash == BundledRom1Sha256)
                 return new SpectrumRomProfile("Sinclair ZX Spectrum 128K", supportsAddressBasedTapeServices: true);
+
+            if (rom0Hash == Plus2Rom0Sha256 && rom1Hash == Plus2Rom1Sha256)
+                return new SpectrumRomProfile("Sinclair ZX Spectrum +2 Grey", supportsAddressBasedTapeServices: false);
 
             string description = model == SpectrumMachineModel.Spectrum48K
                 ? "Unknown 48K ROM"
