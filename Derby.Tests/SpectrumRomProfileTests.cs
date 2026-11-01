@@ -40,6 +40,18 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void BundledPlus2RomSet_Uses128kHardwareWithoutUnsafeAddressTraps()
+        {
+            string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
+            var machine = new Spectrum128Machine(SpectrumRomSet.BundledPlus2(romFolder));
+
+            Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
+            Assert.Equal("Sinclair ZX Spectrum +2 Grey", machine.RomProfile.Name);
+            Assert.False(machine.SupportsRomTapeAcceleration);
+            Assert.NotEqual(machine.GetRomBankCopy(0), machine.GetRomBankCopy(1));
+        }
+
+        [Fact]
         public void CustomRomSet_RejectsImagesThatAreNotExactly16k()
         {
             string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

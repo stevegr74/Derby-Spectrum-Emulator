@@ -4,52 +4,61 @@ namespace Derby
     {
         private ToolStripMenuItem bundled128RomMenuItem = null!;
         private ToolStripMenuItem bundled48RomMenuItem = null!;
-        private ToolStripMenuItem activeRomMenuItem = null!;
+        private ToolStripMenuItem bundledPlus2RomMenuItem = null!;
+        private ToolStripMenuItem customRomMenuItem = null!;
 
-        private void InitializeRomSetMenu()
+        private void InitializeMachineMenu()
         {
-            activeRomMenuItem = new ToolStripMenuItem { Enabled = false };
             bundled128RomMenuItem = new ToolStripMenuItem(
-                "Sinclair 128K (bundled)",
+                "ZX Spectrum 128K",
                 null,
-                (_, _) => ApplyRomSet(SpectrumRomSet.Bundled128K(romFolder)));
+                (_, _) => ApplyRomSet(bundled128RomSet));
             bundled48RomMenuItem = new ToolStripMenuItem(
-                "Sinclair 48K / Spectrum+ (bundled)",
+                "ZX Spectrum 48K",
                 null,
-                (_, _) => ApplyRomSet(SpectrumRomSet.Bundled48K(romFolder)));
+                (_, _) => ApplyRomSet(bundled48RomSet));
+            bundledPlus2RomMenuItem = new ToolStripMenuItem(
+                "ZX Spectrum +2 (Grey)",
+                null,
+                (_, _) => ApplyRomSet(bundledPlus2RomSet));
 
-            romSetMenuItem.DropDownItems.Add(activeRomMenuItem);
-            romSetMenuItem.DropDownItems.Add(new ToolStripSeparator());
-            romSetMenuItem.DropDownItems.Add(bundled128RomMenuItem);
-            romSetMenuItem.DropDownItems.Add(bundled48RomMenuItem);
-            romSetMenuItem.DropDownItems.Add(new ToolStripSeparator());
-            romSetMenuItem.DropDownItems.Add(
-                "Load custom 48K / Spectrum+ ROM...",
+            customRomMenuItem = new ToolStripMenuItem("Custom Machine / ROM");
+            customRomMenuItem.DropDownItems.Add(
+                "Load 48K / Spectrum+ ROM...",
                 null,
                 (_, _) => SelectCustom48kRom());
-            romSetMenuItem.DropDownItems.Add(
-                "Load custom 128K / +2 ROM pair...",
+            customRomMenuItem.DropDownItems.Add(
+                "Load 128K / +2 ROM pair...",
                 null,
                 (_, _) => SelectCustom128kRomPair());
-            romSetMenuItem.DropDownItems.Add(new ToolStripSeparator());
-            romSetMenuItem.DropDownItems.Add(new ToolStripMenuItem(
-                "+2A / +3 ROM sets are not yet supported")
-            {
-                Enabled = false
-            });
-            romSetMenuItem.DropDownOpening += (_, _) => UpdateRomSetMenu();
-            UpdateRomSetMenu();
+
+            machineMenuItem.DropDownItems.Add(bundled128RomMenuItem);
+            machineMenuItem.DropDownItems.Add(bundled48RomMenuItem);
+            machineMenuItem.DropDownItems.Add(bundledPlus2RomMenuItem);
+            machineMenuItem.DropDownItems.Add(new ToolStripSeparator());
+            machineMenuItem.DropDownItems.Add(customRomMenuItem);
+            machineMenuItem.DropDownOpening += (_, _) => UpdateMachineMenu();
+            UpdateMachineMenu();
         }
 
-        private void UpdateRomSetMenu()
+        private void UpdateMachineMenu()
         {
-            if (activeRomMenuItem == null)
+            if (bundled128RomMenuItem == null)
                 return;
 
-            activeRomMenuItem.Text = $"Active: {selectedRomSet.Name}";
-            bundled128RomMenuItem.Checked = selectedRomSet.Name == SpectrumRomSet.Bundled128K(romFolder).Name;
-            bundled48RomMenuItem.Checked = selectedRomSet.Name == SpectrumRomSet.Bundled48K(romFolder).Name;
+            bundled128RomMenuItem.Checked = SameRomSet(selectedRomSet, bundled128RomSet);
+            bundled48RomMenuItem.Checked = SameRomSet(selectedRomSet, bundled48RomSet);
+            bundledPlus2RomMenuItem.Checked = SameRomSet(selectedRomSet, bundledPlus2RomSet);
+            customRomMenuItem.Checked =
+                !bundled128RomMenuItem.Checked &&
+                !bundled48RomMenuItem.Checked &&
+                !bundledPlus2RomMenuItem.Checked;
         }
+
+        private static bool SameRomSet(SpectrumRomSet left, SpectrumRomSet right) =>
+            left.Model == right.Model &&
+            string.Equals(Path.GetFullPath(left.Rom0Path), Path.GetFullPath(right.Rom0Path), StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(Path.GetFullPath(left.Rom1Path), Path.GetFullPath(right.Rom1Path), StringComparison.OrdinalIgnoreCase);
 
         private void SelectCustom48kRom()
         {
@@ -97,7 +106,7 @@ namespace Derby
                 MessageBox.Show(
                     this,
                     ex.Message,
-                    "Unable to load ROM set",
+                    "Unable to load machine profile",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
             }
@@ -108,6 +117,10 @@ namespace Derby
             ExecuteWithEmulationPaused(() =>
             {
                 selectedRomSet = romSet;
+                if (romSet.Model == SpectrumMachineModel.Spectrum48K)
+                    selected48RomSet = romSet;
+                else
+                    selected128RomSet = romSet;
                 selectedMachineModel = romSet.Model;
                 loadedMediaDisplayName = null;
                 loadedMediaIdentity = null;
@@ -123,7 +136,6 @@ namespace Derby
             });
 
             UpdateMachineModelMenuItems();
-            UpdateRomSetMenu();
             SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
             PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
             screenBox.Focus();

@@ -44,6 +44,11 @@ namespace Derby.Tests
                     Assert.Equal(Color.FromArgb(214, 237, 229), memoryBlocks[1].BackColor);
                     Assert.Equal(Color.FromArgb(95, 225, 195), memoryBlocks[2].BackColor);
                     Assert.Equal("DISPLAY RAM 5", screenBank.Text);
+                    Assert.True(screenBank.Font.Size >= 8.5f);
+                    Assert.True(screenBank.Height >= 18);
+                    Assert.True(
+                        TextRenderer.MeasureText(screenBank.Text, screenBank.Font).Width <= screenBank.ClientSize.Width,
+                        "The active display-bank label should fit without clipping.");
                     Assert.False(compactMap.Visible);
 
                     foreach (string controlName in new[] { "CpuValueAF2", "CpuCurrentInstruction", "CpuValueHALT", "CpuValueStack3" })

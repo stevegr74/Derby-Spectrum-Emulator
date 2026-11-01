@@ -61,9 +61,7 @@ namespace Derby
         private readonly ToolStripMenuItem nativeDisplayMenuItem = new ToolStripMenuItem("1x Native");
         private readonly ToolStripMenuItem enhanced2xDisplayMenuItem = new ToolStripMenuItem("2x Enhanced");
         private readonly ToolStripMenuItem enhanced3xDisplayMenuItem = new ToolStripMenuItem("3x Enhanced");
-        private readonly ToolStripMenuItem reset128kMenuItem = new ToolStripMenuItem("Reset to 128K");
-        private readonly ToolStripMenuItem reset48kMenuItem = new ToolStripMenuItem("Reset to 48K");
-        private readonly ToolStripMenuItem romSetMenuItem = new ToolStripMenuItem("ROM Set");
+        private readonly ToolStripMenuItem machineMenuItem = new ToolStripMenuItem("F3 - Machine");
         private readonly ToolStripMenuItem statusOverlayMenuItem = new ToolStripMenuItem("F2 - Status Overlay");
         private readonly ToolStripMenuItem tapeTransportMenuItem = new ToolStripMenuItem("F5 - Stop / Resume Tape");
         private readonly ToolStripMenuItem disassemblerMenuItem = new ToolStripMenuItem("F6 - Debugger / Disassembler");
@@ -74,6 +72,11 @@ namespace Derby
         private readonly ToolStripMenuItem pokeManagerMenuItem = new ToolStripMenuItem("Poke Manager...");
 
         private readonly string romFolder;
+        private SpectrumRomSet bundled128RomSet = null!;
+        private SpectrumRomSet bundled48RomSet = null!;
+        private SpectrumRomSet bundledPlus2RomSet = null!;
+        private SpectrumRomSet selected128RomSet = null!;
+        private SpectrumRomSet selected48RomSet = null!;
         private SpectrumRomSet selectedRomSet = null!;
         private Spectrum128Machine machine;
         private readonly object machineLock = new();
@@ -145,7 +148,12 @@ namespace Derby
             Controls.Add(screenBox);
 
             romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-            selectedRomSet = SpectrumRomSet.Bundled128K(romFolder);
+            bundled128RomSet = SpectrumRomSet.Bundled128K(romFolder);
+            bundled48RomSet = SpectrumRomSet.Bundled48K(romFolder);
+            bundledPlus2RomSet = SpectrumRomSet.BundledPlus2(romFolder);
+            selected128RomSet = bundled128RomSet;
+            selected48RomSet = bundled48RomSet;
+            selectedRomSet = selected128RomSet;
             machine = CreateConfiguredMachine();
             joystickSettings = joystickSettingsStore.Load();
             joystickInputController = new HostJoystickInputController(joystickSource);
@@ -189,17 +197,8 @@ namespace Derby
             statusOverlayMenuItem.Click += (_, _) => ToggleStatusOverlay();
             displayContextMenu.Items.Add(statusOverlayMenuItem);
 
-            var machineModelMenuItem = new ToolStripMenuItem("F3 - Reset / Switch Model");
-            reset128kMenuItem.Click += (_, _) => ResetToMachineModel(SpectrumMachineModel.Spectrum128K);
-            reset48kMenuItem.Click += (_, _) => ResetToMachineModel(SpectrumMachineModel.Spectrum48K);
-            machineModelMenuItem.DropDownItems.AddRange(new ToolStripItem[]
-            {
-                reset128kMenuItem,
-                reset48kMenuItem
-            });
-            displayContextMenu.Items.Add(machineModelMenuItem);
-            InitializeRomSetMenu();
-            displayContextMenu.Items.Add(romSetMenuItem);
+            InitializeMachineMenu();
+            displayContextMenu.Items.Add(machineMenuItem);
 
             var displaySizeMenuItem = new ToolStripMenuItem("F4 - Display Size");
             nativeDisplayMenuItem.Click += (_, _) => SelectDisplayMode(SpectrumDisplayMode.Native);
@@ -280,8 +279,7 @@ namespace Derby
 
         private void UpdateMachineModelMenuItems()
         {
-            reset128kMenuItem.Checked = selectedMachineModel == SpectrumMachineModel.Spectrum128K;
-            reset48kMenuItem.Checked = selectedMachineModel == SpectrumMachineModel.Spectrum48K;
+            UpdateMachineMenu();
         }
 
         private static string FormatMachineModel(SpectrumMachineModel model)
@@ -664,11 +662,9 @@ namespace Derby
         {
             ExecuteWithEmulationPaused(() =>
             {
-                if (model == SpectrumMachineModel.Spectrum128K &&
-                    selectedRomSet.Model == SpectrumMachineModel.Spectrum48K)
-                {
-                    selectedRomSet = SpectrumRomSet.Bundled128K(romFolder);
-                }
+                selectedRomSet = model == SpectrumMachineModel.Spectrum48K
+                    ? selected48RomSet
+                    : selected128RomSet;
                 selectedMachineModel = model;
                 loadedMediaDisplayName = null;
                 loadedMediaIdentity = null;
@@ -684,7 +680,6 @@ namespace Derby
             });
 
             UpdateMachineModelMenuItems();
-            UpdateRomSetMenu();
             SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
             PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
             screenBox.Focus();

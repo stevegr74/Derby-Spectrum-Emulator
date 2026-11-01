@@ -61,7 +61,7 @@ Current limitations and active work:
 - broader protected/custom TZX compatibility remains ongoing
 - Milestone 22 USB joystick support is complete, including two independently mapped host controllers, selectable Kempston/Cursor/Sinclair interfaces, and simultaneous Interface II input
 - Milestone 23 SZX loading is complete for supported original 48K/128K CPU execution, RAM, paging, ULA, and AY state; snapshots requiring unsupported models or peripherals are rejected
-- Milestone 26 ROM-set selection supports bundled and custom 48K/Spectrum+ and original 128K/grey +2 ROM layouts; +2A/+3 paging and +3 disk hardware remain planned
+- Milestone 26 machine profiles include verified original 48K, original 128K, and grey +2 ROMs plus validated custom layouts; +2A/+3 paging and +3 disk hardware remain planned
 
 ### Implementation Notes
 
@@ -113,9 +113,9 @@ Kempston/Cursor/Sinclair interfaces, simultaneous Interface II input, and a
 platform-neutral core boundary. Milestone 23 SZX snapshot loading is complete
 for supported 48K and original 128K machine state. A model-selectable 48K/128K
 on-screen keyboard follows in Milestone 24. Generic Kempston and AMX mouse support follows in
-Milestone 25. Milestone 26 has established validated ROM-set selection for the
-existing 48K and original 128K hardware models; +2A/+3 machine support remains
-future hardware work rather than a ROM-only change. Tape compatibility
+Milestone 25. Milestone 26 now provides unified machine profiles for the
+original 48K, original 128K, and grey +2, with validated custom ROM layouts;
++2A/+3 machine support remains future hardware work rather than a ROM-only change. Tape compatibility
 and broader title-specific audio fidelity validation continue in parallel, with
 the verified media matrix plus ZEXDOC/ZEXALL used as regression gates.
 
@@ -179,7 +179,7 @@ Derby/
 |-- Derby.Windows.Tests/    Windows presentation and host tests
 |-- Derby.ManualHarness/    net8.0 Core-only diagnostic and capture tool
 |-- Derby.Z80Compliance/    net8.0 ZEXDOC/ZEXALL compliance runner
-|-- ROMs/                                  required 128K ROM images
+|-- ROMs/                                  verified 48K, 128K, and grey +2 ROM images and provenance
 |-- test-assets/                           checked-in test programs and fixtures
 |   |-- ula/                               external ULA diagnostic runbook (media not redistributed)
 |   `-- z80/                               ZEXDOC/ZEXALL compliance programs
@@ -212,16 +212,25 @@ ROMs/
 
 Expected ROMs:
 
+- `48.rom`
 - `128-0.rom`
 - `128-1.rom`
+- `plus2-0.rom`
+- `plus2-1.rom`
 
-The right-click `ROM Set` submenu selects the bundled 128K set, the bundled
-48K/Spectrum+ ROM, a custom 16KB 48K/Spectrum+ ROM, or an ordered custom
-128K/grey +2 ROM pair. Custom images are validated before the machine resets.
-ROM 0 is the 128K editor/menu ROM and ROM 1 is the 48K BASIC ROM. Unknown ROM
-layouts boot without address-based tape acceleration. +2A/+3 ROMs are not
-offered as a cosmetic ROM swap: those machines require four ROMs, the `1FFD`
-paging register and all-RAM modes, with +3 disk support requiring an FDC model.
+The right-click `F3 - Machine` submenu presents hardware and firmware together:
+the original 48K, original 128K, and grey +2 are complete selectable machine
+profiles. `F3` switches between the selected 48K profile and the last selected
+128K-family profile. Custom 16KB 48K/Spectrum+ images and ordered custom
+128K/grey +2 pairs remain available under `Custom Machine / ROM`. Custom images
+are validated before reset. Unknown layouts boot without address-based tape
+acceleration. +2A/+3 are not cosmetic ROM swaps: they require four ROMs, the
+`1FFD` paging register and all-RAM modes, with +3 disk support also requiring an
+FDC model.
+
+The bundled ROM images retain their Sinclair/Amstrad copyright. Amstrad have
+kindly given permission for redistribution for emulator use but retain that
+copyright; see `ROMs/README.md`.
 
 The emulator starts in fixed-size `2x Enhanced` mode. `F4` cycles 1x native
 (`320x240`), Scale2x (`640x480`), and Scale3x (`960x720`). Right-clicking the
@@ -232,7 +241,7 @@ that do not consume a function key.
 | --- | --- |
 | `F1` | Open the control reference; emulation pauses while it is open |
 | `F2` | Toggle compact mint top-right FPS, model, tape, and display diagnostics |
-| `F3` | Reset and switch between explicit 128K and 48K modes |
+| `F3` | Reset and switch between the selected 48K and 128K-family machine profiles |
 | `F4` | Cycle fixed display size |
 | `F5` | Stop or resume the mounted tape without ejecting it |
 | `F6` | Open the debugger and disassembler, paused on an immutable machine capture |
@@ -457,7 +466,7 @@ compatibility; completed milestones remain regression baselines.
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
 | 24 | Planned | Pop-up on-screen keyboard with selectable authentic 48K and 128K layouts |
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
-| 26 | In progress | Selectable validated ROM sets for 48K/Spectrum+, original 128K/grey +2, followed by genuine +2A/+3 paging and disk hardware |
+| 26 | In progress | Unified machine profiles for original 48K, 128K, and grey +2, followed by genuine +2A/+3 paging and disk hardware |
 
 ### Milestone 7 - Audio And Turbo Handoff Complete
 - Generates 48K beeper and 128K AY tone, noise, and envelope output from timestamped machine events through one mixed sample pipeline
@@ -580,9 +589,10 @@ compatibility; completed milestones remain regression baselines.
 - Preserve emulated mouse counters and peripheral state in Quick State and supported SZX snapshots while excluding transient host capture state
 - Add port-decoding, counter-wrap, scaling, button, capture/release, focus-loss, interrupt-ordering, save/restore, and peripheral-conflict tests plus acceptance checks with The Artist II
 
-### Milestone 26 - ROM Sets And Later Spectrum Models In Progress
+### Milestone 26 - Machine Profiles And Later Spectrum Models In Progress
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
-- Added bundled 48K/Spectrum+ and 128K choices plus validated custom 16KB 48K ROM and ordered two-ROM 128K/grey +2 selection
+- Unified hardware and firmware selection under `F3 - Machine`, with predictable switching between the remembered 48K and 128K-family profiles
+- Added verified original 48K, original 128K, and grey +2 production ROM profiles plus validated custom 16KB 48K ROM and ordered two-ROM 128K/grey +2 selection
 - Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
 - Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
 - Defers +2A/+3 claims until four-ROM selection, `1FFD` special paging, all-RAM maps and revised port decoding are implemented; +3 disk support additionally requires a uPD765-compatible FDC and drive/media model

@@ -24,7 +24,13 @@ namespace Derby
         public static SpectrumRomSet Bundled48K(string romFolder) =>
             Create48K(
                 "Sinclair ZX Spectrum 48K (bundled)",
-                Path.Combine(romFolder, "128-1.rom"));
+                Path.Combine(romFolder, "48.rom"));
+
+        public static SpectrumRomSet BundledPlus2(string romFolder) =>
+            Create128K(
+                "Sinclair ZX Spectrum +2 Grey (bundled)",
+                Path.Combine(romFolder, "plus2-0.rom"),
+                Path.Combine(romFolder, "plus2-1.rom"));
 
         public static SpectrumRomSet Create48K(string name, string romPath)
         {
