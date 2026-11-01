@@ -1071,7 +1071,7 @@ namespace Spectrum128kEmulator
             byte value;
             if ((port & 0x0001) == 0)
                 value = ReadKeyboardEarPort(port, cpu.TStates);
-            else if (IsJoystickInterfaceActive(SpectrumJoystickInterface.Kempston) && IsKempstonJoystickPort(port))
+            else if (IsKempstonJoystickPort(port))
                 value = (byte)GetJoystickState(SpectrumJoystickInterface.Kempston);
             else if (IsAyRegisterReadPort(port))
                 value = ay.ReadRegister(ay.CurrentRegister);
@@ -1107,7 +1107,7 @@ namespace Spectrum128kEmulator
             }
 
             byte value;
-            if (IsJoystickInterfaceActive(SpectrumJoystickInterface.Kempston) && IsKempstonJoystickPort(port))
+            if (IsKempstonJoystickPort(port))
             {
                 value = (byte)GetJoystickState(SpectrumJoystickInterface.Kempston);
             }
