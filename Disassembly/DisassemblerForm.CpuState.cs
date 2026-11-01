@@ -83,7 +83,7 @@ namespace Spectrum128kEmulator
             currentInstructionLabel.Name = "CpuCurrentInstruction";
             currentInstructionLabel.Dock = DockStyle.Fill;
             currentInstructionLabel.Margin = Padding.Empty;
-            currentInstructionLabel.Font = EmulatorUiStyle.MonoFont(7.5f, FontStyle.Bold);
+            currentInstructionLabel.Font = EmulatorUiStyle.MonoFont(8.5f, FontStyle.Bold);
             currentInstructionLabel.ForeColor = EmulatorUiStyle.Accent;
             currentInstructionLabel.TextAlign = ContentAlignment.MiddleLeft;
             currentInstructionLabel.AutoEllipsis = true;
@@ -108,7 +108,7 @@ namespace Spectrum128kEmulator
                 flag.Name = $"CpuFlag{flagNames[index]}";
                 flag.Dock = DockStyle.Fill;
                 flag.Margin = new Padding(1, 0, 1, 1);
-                flag.Font = EmulatorUiStyle.MonoFont(7.2f, FontStyle.Bold);
+                flag.Font = EmulatorUiStyle.MonoFont(8f, FontStyle.Bold);
                 flag.Text = flagNames[index].ToString();
                 flag.TextAlign = ContentAlignment.MiddleCenter;
                 flags.Controls.Add(flag, index, 0);
@@ -186,7 +186,7 @@ namespace Spectrum128kEmulator
             label.Tag = caption;
             label.Dock = DockStyle.Fill;
             label.Margin = Padding.Empty;
-            label.Font = EmulatorUiStyle.MonoFont(7.5f);
+            label.Font = EmulatorUiStyle.MonoFont(8.5f);
             label.ForeColor = Ink;
             label.TextAlign = ContentAlignment.MiddleLeft;
             label.AutoEllipsis = true;

@@ -62,6 +62,9 @@ namespace Spectrum128kEmulator.Tests
                     Assert.True(CpuLabel("CpuValueHALT").Top > CpuLabel("CpuValueI").Top);
                     Assert.True(CpuLabel("CpuValueStack3").Top > CpuLabel("CpuValueStack1").Top);
                     Assert.IsType<LinkLabel>(CpuLabel("CpuValueBC"));
+                    Assert.True(CpuLabel("CpuValueAF").Font.Size >= 8.5f);
+                    Assert.True(CpuLabel("CpuCurrentInstruction").Font.Size >= 8.5f);
+                    Assert.True(CpuLabel("CpuFlagS").Font.Size >= 8f);
 
                     ListView listing = Descendants(form).OfType<ListView>().Single();
                     ListBox references = Descendants(form).OfType<ListBox>()
