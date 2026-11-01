@@ -87,6 +87,56 @@ namespace Spectrum128kEmulator.Tests
         }
 
         [Fact]
+        public void Library_PrefersLongestLeadingAliasAndIgnoresPublisherText()
+        {
+            PokeLibrary library = PokeLibrary.Parse(
+                $$"""
+                {
+                  "version": 1,
+                  "games": [
+                    {
+                      "id": "paperboy",
+                      "title": "Paperboy",
+                      "aliases": ["Paperboy"],
+                      "models": ["48K"],
+                      "sha256": [],
+                      "pokes": [{ "id": "p1", "name": "P1", "writes": [{ "space": "mapped", "address": "0x8000", "value": "1" }] }]
+                    },
+                    {
+                      "id": "paperboy-2",
+                      "title": "Paperboy 2",
+                      "aliases": ["Paperboy 2"],
+                      "models": ["48K"],
+                      "sha256": [],
+                      "pokes": [{ "id": "p2", "name": "P2", "writes": [{ "space": "mapped", "address": "0x8000", "value": "2" }] }]
+                    },
+                    {
+                      "id": "elite",
+                      "title": "Elite",
+                      "aliases": ["Elite"],
+                      "models": ["48K"],
+                      "sha256": [],
+                      "pokes": [{ "id": "p3", "name": "P3", "writes": [{ "space": "mapped", "address": "0x8000", "value": "3" }] }]
+                    }
+                  ]
+                }
+                """);
+
+            PokeGameMatch sequel = Assert.Single(
+                library.FindMatches(
+                    new PokeMediaIdentity("Paperboy 2 (Mindscape).tzx", new string('B', 64)),
+                    SpectrumMachineModel.Spectrum48K),
+                match => match.Kind == PokeMatchKind.Alias);
+            Assert.Equal("paperboy-2", sequel.Game.Id);
+
+            Assert.DoesNotContain(
+                library.FindMatches(
+                    new PokeMediaIdentity("Paperboy (Elite, OR).tzx", new string('B', 64)),
+                    SpectrumMachineModel.Spectrum48K),
+                match => match.Game.Id == "elite" && match.Kind == PokeMatchKind.Alias);
+        }
+
+        [Fact]
         public void Application_AppliesMappedAndPhysicalWritesAndRestoresOriginals()
         {
             string romFolder = CreateTempRoms();
@@ -115,6 +165,15 @@ namespace Spectrum128kEmulator.Tests
             {
                 Directory.Delete(romFolder, true);
             }
+        }
+
+        [Fact]
+        public void ShippedLibrary_ParsesSuccessfully()
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, "Pokes", "pokes.json");
+            PokeLibrary library = PokeLibrary.Load(path);
+
+            Assert.NotEmpty(library.Games);
         }
 
         [Fact]

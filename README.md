@@ -100,10 +100,10 @@ hexadecimal memory inspection, and a compact paging/CPU-state workspace.
 Milestone 20 is complete, with explicit
 tape-state ownership, structured load and transport diagnostics, stronger
 transition tests, and behavior-preserving decomposition. Milestone 21's
-bank-aware Poke Manager is complete and accepted. Its catalogue contains
-39 exact-image definitions and 143 named pokes, including the user-verified
-infinite-lives poke for the Ocean 128K RoboCop snapshot. Milestone 22 is
-complete, with two independently configured USB controllers, selectable
+bank-aware Poke Manager is complete and accepted. Its growing catalogue combines
+exact-image matches with conservative filename suggestions, including the
+user-verified infinite-lives poke for the Ocean 128K RoboCop snapshot.
+Milestone 22 is complete, with two independently configured USB controllers, selectable
 Kempston/Cursor/Sinclair interfaces, simultaneous Interface II input, and a
 platform-neutral core boundary. Milestone 23 SZX snapshot loading is complete
 for supported 48K and original 128K machine state. A model-selectable 48K/128K
@@ -245,10 +245,10 @@ The right-click menu also opens the Poke Manager. Emulation remains paused while
 it is open. Its Library tab reads the user-maintainable `Pokes/pokes.json` file;
 exact SHA-256 matches are authoritative, while filename aliases are visibly
 labelled as suggestions only. Unmatched media stays on `Choose a game...` rather
-than selecting an unrelated title. The catalogue contains 39 exact-image game
-definitions and 143 named pokes; RoboCop is gameplay-verified, while the other
-source-backed entries have checksum and target-layout validation pending
-progressive gameplay confirmation. The One-off tab supports mapped RAM or an
+than selecting an unrelated title. The growing catalogue combines exact-image
+matches with conservative filename suggestions. RoboCop is gameplay-verified,
+while the other source-backed entries await progressive release and gameplay
+confirmation. The One-off tab supports mapped RAM or an
 explicit physical RAM bank, previews current and replacement bytes, and can
 restore the most recent session poke when the game has not changed those bytes.
 
@@ -525,7 +525,7 @@ compatibility; completed milestones remain regression baselines.
 - Applies a selected set atomically while the emulation loop is paused and keeps a session-local restoration stack; restoration is refused if the program has since changed an applied byte
 - Keeps the first version to deliberate one-time writes; frozen values, conditional trainers, and cheat discovery remain deferred until their continuous-mutation semantics are designed and tested
 - Added schema, duplicate-entry, checksum/alias matching, bank-selection, model-safety, application, restoration, empty-library, layout, and frontend workflow tests
-- Expanded the catalogue to 39 exact-image game definitions and 143 named pokes, rejecting candidates whose local media did not match the expected memory layout
+- Expanded the catalogue with exact-image matches and conservative filename suggestions; variable-value, unknown-purpose, untested, and unresolved edition-specific candidates remain excluded
 - Kept the user-verified RoboCop infinite-lives entry distinct from source-backed entries awaiting progressive gameplay confirmation
 - Completed visual QA at the active desktop DPI, exact-match acceptance, and full regression coverage; expanding the version-verified catalogue remains ongoing data work rather than a blocker for the feature
 

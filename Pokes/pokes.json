@@ -198,7 +198,7 @@
       ]
     },
     {
-      "id": "renegade-128k", "title": "Renegade (128K)", "aliases": ["Renegade_1987_Imagine_a_128K", "Renegade"], "models": ["128K"],
+      "id": "renegade-128k", "title": "Renegade (128K)", "aliases": ["Renegade_1987_Imagine_a_128K"], "models": ["128K"],
       "sha256": [
         "546B7F36CD79E0014FA78731FAB9DC63681F90A24B639341639EADBCEFC662DD",
         "FE8B677FC07096CAB1DB6CF6BF302FF5732B0F14E6E3899097812BE0788349DD"
@@ -418,6 +418,211 @@
       "pokes": [
         { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "25029", "value": "182" }] },
         { "id": "infinite-energy", "name": "Infinite energy", "description": "Prevents energy depletion.", "writes": [{ "space": "mapped", "address": "25004", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "back-to-skool", "title": "Back to Skool", "aliases": ["Back To Skool", "Back to Skool"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lines", "name": "Infinite lines", "description": "Prevents lines from accumulating.", "writes": [{ "space": "mapped", "address": "29655", "value": "62" }] },
+        { "id": "hayley-clears-lines", "name": "Hayley clears lines", "description": "Makes Hayley reset the line count to zero.", "writes": [{ "space": "mapped", "address": "24417", "value": "0" }] },
+        { "id": "infinite-kisses", "name": "Infinite kisses", "description": "Prevents kisses from running out.", "writes": [{ "space": "mapped", "address": "24401", "value": "0" }] },
+        { "id": "silent-lines", "name": "No noise for lines", "description": "Suppresses the sound made when lines are given.", "writes": [{ "space": "mapped", "address": "29838", "value": "62" }] }
+      ]
+    },
+    {
+      "id": "barbarian-ii", "title": "Barbarian II", "aliases": ["Barbarian II", "Barbarian II (Palace)"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-energy", "name": "Infinite energy", "description": "Prevents energy depletion.", "writes": [{ "space": "mapped", "address": "40159", "value": "0" }] },
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "38508", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "batman-3d", "title": "Batman (3D)", "aliases": ["Batman - Release 1", "Batman (3D)"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "36798", "value": "0" }] },
+        { "id": "fast-batman", "name": "Fast Batman", "description": "Increases Batman's movement speed.", "writes": [{ "space": "mapped", "address": "26174", "value": "201" }] },
+        { "id": "fast-empty-rooms", "name": "Fast Batman in empty rooms", "description": "Increases movement speed when a room is empty.", "writes": [{ "space": "mapped", "address": "26052", "value": "58" }] },
+        { "id": "immunity", "name": "Immunity", "description": "Prevents damage.", "writes": [{ "space": "mapped", "address": "39908", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "bear-a-grudge", "title": "Bear a Grudge", "aliases": ["BEARGRUD", "Bear A Grudge"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [{ "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "30073", "value": "33" }] }]
+    },
+    {
+      "id": "cabal-48k", "title": "Cabal (48K)", "aliases": ["Cabal - 48k", "Cabal - 48K"], "models": ["48K"], "sha256": [],
+      "pokes": [
+        { "id": "immunity", "name": "Immunity", "description": "Prevents damage.", "writes": [{ "space": "mapped", "address": "34822", "value": "24" }] },
+        { "id": "smart-bomb", "name": "Smart bomb", "description": "Enables the smart-bomb effect.", "writes": [{ "space": "mapped", "address": "39202", "value": "201" }] },
+        { "id": "no-enemies", "name": "No enemies", "description": "Disables both enemy-generation paths.", "writes": [{ "space": "mapped", "address": "39217", "value": "201" }, { "space": "mapped", "address": "39245", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "goonies", "title": "The Goonies", "aliases": ["The Goonies", "Goonies"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [{ "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "33409", "value": "0" }] }]
+    },
+    {
+      "id": "head-over-heels", "title": "Head Over Heels", "aliases": ["Head Over Heels"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "42198", "value": "24" }] },
+        { "id": "springy-jumps", "name": "Springy jumps", "description": "Enables springy jumps for both characters.", "writes": [{ "space": "mapped", "address": "35333", "value": "0" }, { "space": "mapped", "address": "35334", "value": "0" }] },
+        { "id": "mega-jumps", "name": "Mega jumps", "description": "Enables unusually high jumps.", "writes": [{ "space": "mapped", "address": "43132", "value": "0" }] },
+        { "id": "infinite-ammo-specials", "name": "Infinite ammo and specials", "description": "Prevents ammunition and special items from running out.", "writes": [{ "space": "mapped", "address": "35315", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "hydrofool", "title": "Hydrofool", "aliases": ["Hydrofool"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-energy", "name": "Infinite energy", "description": "Patches all five energy-depletion paths.", "writes": [{ "space": "mapped", "address": "25883", "value": "0" }, { "space": "mapped", "address": "25887", "value": "0" }, { "space": "mapped", "address": "25891", "value": "0" }, { "space": "mapped", "address": "25900", "value": "0" }, { "space": "mapped", "address": "25906", "value": "0" }] },
+        { "id": "infinite-oil", "name": "Infinite oil", "description": "Prevents oil depletion.", "writes": [{ "space": "mapped", "address": "25863", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "impossamole", "title": "Impossamole", "aliases": ["Impossamole"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [{ "id": "infinite-energy", "name": "Infinite energy", "description": "Prevents energy depletion.", "writes": [{ "space": "mapped", "address": "53432", "value": "0" }] }]
+    },
+    {
+      "id": "impossible-mission", "title": "Impossible Mission", "aliases": ["Impossible Mission"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-bonus", "name": "Infinite bonus", "description": "Prevents the bonus from decreasing.", "writes": [{ "space": "mapped", "address": "45256", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "description": "Prevents the mission timer from decreasing.", "writes": [{ "space": "mapped", "address": "45271", "value": "0" }] },
+        { "id": "agency-message-fix", "name": "Agency message bug fix", "description": "Applies the published agency-message correction.", "writes": [{ "space": "mapped", "address": "44441", "value": "167" }] },
+        { "id": "infinite-inits", "name": "Infinite inits", "description": "Allows unlimited terminal initialisations.", "writes": [{ "space": "mapped", "address": "30198", "value": "0" }] },
+        { "id": "infinite-snoozes", "name": "Infinite snoozes", "description": "Allows unlimited snoozes.", "writes": [{ "space": "mapped", "address": "30217", "value": "0" }] },
+        { "id": "instant-search", "name": "Search instantly", "description": "Completes room searches immediately.", "writes": [{ "space": "mapped", "address": "41452", "value": "175" }] },
+        { "id": "freeze-anytime", "name": "Freeze robots anytime", "description": "Allows the Freeze Robots menu option at any time.", "writes": [{ "space": "mapped", "address": "30216", "value": "0" }] },
+        { "id": "robots-stay-frozen", "name": "Robots stay frozen", "description": "Prevents frozen robots from restarting.", "writes": [{ "space": "mapped", "address": "36862", "value": "0" }] },
+        { "id": "reset-lifts-anytime", "name": "Reset lifts anytime", "description": "Allows the Reset Lifts menu option at any time.", "writes": [{ "space": "mapped", "address": "30197", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "impossible-mission-ii", "title": "Impossible Mission II", "aliases": ["Impossible Mission II", "Impossible Mission 2"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-time", "name": "Infinite time", "description": "Patches both mission-timer paths.", "writes": [{ "space": "mapped", "address": "42813", "value": "1" }, { "space": "mapped", "address": "42823", "value": "201" }] },
+        { "id": "infinite-items", "name": "Infinite items", "description": "Prevents carried items from running out.", "writes": [{ "space": "mapped", "address": "43994", "value": "182" }] },
+        { "id": "harmless-robots", "name": "Harmless robots", "description": "Disables both principal robot-damage paths.", "writes": [{ "space": "mapped", "address": "57361", "value": "0" }, { "space": "mapped", "address": "59368", "value": "201" }] },
+        { "id": "no-time-penalties", "name": "No time penalties", "description": "Prevents time penalties.", "writes": [{ "space": "mapped", "address": "36853", "value": "58" }] }
+      ]
+    },
+    {
+      "id": "indiana-jones-last-crusade", "title": "Indiana Jones and the Last Crusade", "aliases": ["Indiana Jones and the Last Crusade", "Indiana Jones and the Last Cruisade"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "fast-punches", "name": "Fast punches", "description": "Speeds up punching.", "writes": [{ "space": "mapped", "address": "38129", "value": "0" }] },
+        { "id": "infinite-whips", "name": "Infinite whips", "description": "Prevents whips from running out.", "writes": [{ "space": "mapped", "address": "39181", "value": "0" }] },
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "43076", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "kokotoni-wilf", "title": "Kokotoni Wilf", "aliases": ["Kokotoni Wilf", "kokotoni_wilf"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "43742", "value": "0" }] },
+        { "id": "immunity", "name": "Immunity", "description": "Patches all three principal damage paths.", "writes": [{ "space": "mapped", "address": "28929", "value": "8" }, { "space": "mapped", "address": "28934", "value": "8" }, { "space": "mapped", "address": "28939", "value": "8" }] }
+      ]
+    },
+    {
+      "id": "new-zealand-story", "title": "The New Zealand Story", "aliases": ["The New Zealand Story", "New Zealand Story"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "51516", "value": "182" }] },
+        { "id": "immunity", "name": "Immunity", "description": "Prevents damage.", "writes": [{ "space": "mapped", "address": "50000", "value": "0" }] },
+        { "id": "no-enemies", "name": "No enemies", "description": "Disables enemy generation.", "writes": [{ "space": "mapped", "address": "51732", "value": "201" }] },
+        { "id": "infinite-arrows", "name": "Infinite arrows", "description": "Prevents arrows from running out.", "writes": [{ "space": "mapped", "address": "51771", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "paperboy-2", "title": "Paperboy 2", "aliases": ["Paperboy 2", "Paperboy II"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "41053", "value": "0" }] },
+        { "id": "infinite-papers", "name": "Infinite papers", "description": "Prevents newspapers from running out.", "writes": [{ "space": "mapped", "address": "41264", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "rick-dangerous-kixx", "title": "Rick Dangerous (Kixx)", "aliases": ["Rick Dangerous (Kixx)"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss in the Kixx budget re-release.", "writes": [{ "space": "mapped", "address": "58381", "value": "0" }] },
+        { "id": "infinite-ammo", "name": "Infinite ammunition", "description": "Prevents ammunition from running out in the Kixx budget re-release.", "writes": [{ "space": "mapped", "address": "64095", "value": "0" }] },
+        { "id": "infinite-bombs", "name": "Infinite bombs", "description": "Prevents bombs from running out in the Kixx budget re-release.", "writes": [{ "space": "mapped", "address": "64185", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "robocop-ii", "title": "RoboCop II", "aliases": ["Robocop 2", "RoboCop II"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [{ "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "38765", "value": "0" }] }]
+    },
+    {
+      "id": "scuba-dive", "title": "Scuba Dive", "aliases": ["Scuba Dive"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "55845", "value": "0" }] },
+        { "id": "fast-clams", "name": "Fast clams", "description": "Makes clams open and close rapidly.", "writes": [{ "space": "mapped", "address": "45696", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "target-renegade", "title": "Target: Renegade", "aliases": ["Target Renegade", "Target: Renegade"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-time", "name": "Infinite time", "description": "Prevents the level timer from decreasing.", "writes": [{ "space": "mapped", "address": "63936", "value": "0" }] },
+        { "id": "turbo-speed", "name": "Turbo speed", "description": "Increases player movement speed.", "writes": [{ "space": "mapped", "address": "62769", "value": "0" }] },
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss for both players.", "writes": [{ "space": "mapped", "address": "59911", "value": "182" }] }
+      ]
+    },
+    {
+      "id": "virus", "title": "Virus", "aliases": ["Virus"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-ammo", "name": "Infinite ammunition", "description": "Prevents ammunition from running out.", "writes": [{ "space": "mapped", "address": "56447", "value": "99" }] },
+        { "id": "infinite-lives-v1", "name": "Infinite lives (variant 1)", "description": "Prevents life loss in one published release variant.", "writes": [{ "space": "mapped", "address": "44945", "value": "0" }] },
+        { "id": "infinite-lives-v2", "name": "Infinite lives (variant 2)", "description": "Prevents life loss in the alternate published release variant.", "writes": [{ "space": "mapped", "address": "44912", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "vixen", "title": "Vixen", "aliases": ["Vixen"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-time", "name": "Infinite time", "description": "Prevents the level timer from decreasing.", "writes": [{ "space": "mapped", "address": "57541", "value": "0" }] },
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "51789", "value": "183" }] }
+      ]
+    },
+    {
+      "id": "where-time-stood-still", "title": "Where Time Stood Still", "aliases": ["Where Time Stood Still"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [{ "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "54945", "value": "0" }] }]
+    },
+    {
+      "id": "arkanoid", "title": "Arkanoid", "aliases": ["Arkanoid (Hit Squad)", "Arkanoid (Imagine)"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [{ "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "33702", "value": "0" }] }]
+    },
+    {
+      "id": "cobra", "title": "Cobra", "aliases": ["Cobra (Hit Squad)", "Cobra (Ocean, OR)"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Patches both life-loss paths.", "writes": [{ "space": "mapped", "address": "36515", "value": "183" }, { "space": "mapped", "address": "34925", "value": "183" }] },
+        { "id": "immunity", "name": "Immunity", "description": "Prevents damage.", "writes": [{ "space": "mapped", "address": "37915", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "harrier-attack", "title": "Harrier Attack", "aliases": ["Harrier Attack"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [{ "id": "no-flak", "name": "No flak", "description": "Disables anti-aircraft fire.", "writes": [{ "space": "mapped", "address": "27048", "value": "201" }] }]
+    },
+    {
+      "id": "indiana-jones-temple-of-doom", "title": "Indiana Jones and the Temple of Doom", "aliases": ["Indiana Jones and the Temple Of Doom"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "33948", "value": "0" }] },
+        { "id": "no-kids-required", "name": "No children need saving", "description": "Removes the requirement to rescue the captive children.", "writes": [{ "space": "mapped", "address": "28890", "value": "24" }] }
+      ]
+    },
+    {
+      "id": "kung-fu-master", "title": "Kung-Fu Master", "aliases": ["Kung-Fu Master"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "27982", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "description": "Prevents the level timer from decreasing.", "writes": [{ "space": "mapped", "address": "37400", "value": "0" }] },
+        { "id": "infinite-energy", "name": "Infinite energy", "description": "Prevents energy depletion.", "writes": [{ "space": "mapped", "address": "43912", "value": "58" }] }
+      ]
+    },
+    {
+      "id": "skool-daze", "title": "Skool Daze", "aliases": ["Skool Daze"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lines", "name": "Infinite lines", "description": "Prevents lines from accumulating.", "writes": [{ "space": "mapped", "address": "63935", "value": "255" }, { "space": "mapped", "address": "63937", "value": "0" }] },
+        { "id": "immunity", "name": "Immunity", "description": "Makes the teachers ignore the player.", "writes": [{ "space": "mapped", "address": "30464", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "turbo-esprit", "title": "Turbo Esprit", "aliases": ["Turbo Esprit"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "29893", "value": "0" }] },
+        { "id": "no-crashes", "name": "No crashes", "description": "Patches both collision-loss bytes.", "writes": [{ "space": "mapped", "address": "60514", "value": "24" }, { "space": "mapped", "address": "60515", "value": "6" }] }
       ]
     }
   ]
