@@ -38,6 +38,18 @@ namespace Spectrum128kEmulator.Tests
             machine.ClearJoystick();
             Assert.Equal(SpectrumJoystickState.None, machine.GetJoystickState(SpectrumJoystickInterface.Kempston));
             Assert.False(machine.IsJoystickInterfaceActive(SpectrumJoystickInterface.Kempston));
+            Assert.Equal(0x00, machine.DebugReadPort(0x001F));
+        }
+
+        [Fact]
+        public void KempstonPort_IsPresentAndNeutralWithoutAHostController()
+        {
+            using var roms = TestRomFolder.Create();
+            var machine = new Spectrum128Machine(roms.Path);
+
+            Assert.False(machine.IsJoystickInterfaceActive(SpectrumJoystickInterface.Kempston));
+            Assert.Equal(0x00, machine.DebugReadPort(0x001F));
+            Assert.Equal(0x00, machine.DebugReadPort(0xAB1F));
         }
 
         [Fact]
@@ -156,13 +168,13 @@ namespace Spectrum128kEmulator.Tests
         [InlineData(SpectrumJoystickInterface.Cursor)]
         [InlineData(SpectrumJoystickInterface.SinclairKeys6To0)]
         [InlineData(SpectrumJoystickInterface.SinclairKeys1To5)]
-        public void NonKempstonInterfaces_DoNotClaimKempstonPort(SpectrumJoystickInterface joystickInterface)
+        public void NonKempstonInterfaces_LeaveKempstonPortNeutral(SpectrumJoystickInterface joystickInterface)
         {
             using var roms = TestRomFolder.Create();
             var machine = new Spectrum128Machine(roms.Path);
             machine.SetJoystickState(joystickInterface, SpectrumJoystickState.All);
 
-            Assert.NotEqual(0x1F, machine.DebugReadPort(0x001F));
+            Assert.Equal(0x00, machine.DebugReadPort(0x001F));
         }
 
         [Fact]

@@ -85,7 +85,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Cauldron / Cauldron II | `.sna`, `.z80` | Both snapshots reach their control menus and remain stable |
 | 🟢 | CD Player | `cdplayer.sna` | Snapshot loads and runs responsively with good audio after the Milestone 16 timing changes |
 | 🟢 | Chase HQ | `chasehq.z80` | Snapshot reaches the options prompt and remains stable |
-| 🟢 | Cliff Hanger | `.sna` | Snapshot reaches the control-selection menu and remains stable |
+| 🟢 | Cliff Hanger | `.sna` | Snapshot reaches the control-selection menu and waits for deliberate input; an unassigned Kempston interface remains neutral |
 | 🟢 | Contact Sam Cruise | `.sna` | Snapshot reaches active gameplay and remains stable |
 | 🟢 | Cybernoid: The Fighting Machine | `.sna`, `Cybernoid_The_Fighting_Machine_1988_Hewson_Consultants_a_128K.z80` | Both snapshots reach the title/control screen; the 128K Z80 remains responsive with good AY audio after the Milestone 16 timing changes |
 | 🟢 | Donkey Kong | `DONKKONG.Z80` | Snapshot reaches the control menu and remains stable |
