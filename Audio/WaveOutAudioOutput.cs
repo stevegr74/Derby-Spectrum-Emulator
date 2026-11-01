@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Spectrum128kEmulator.Audio
+namespace Derby.Audio
 {
     public sealed class WaveOutAudioOutput : IAudioOutput
     {

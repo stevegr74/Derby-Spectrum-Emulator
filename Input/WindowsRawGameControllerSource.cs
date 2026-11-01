@@ -1,6 +1,6 @@
 using Windows.Gaming.Input;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed class WindowsRawGameControllerSource : IHostJoystickSource
     {

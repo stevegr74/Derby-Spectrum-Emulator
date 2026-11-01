@@ -1,6 +1,6 @@
-using Spectrum128kEmulator.Pokes;
+using Derby.Pokes;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed class PokeManagerForm : Form
     {

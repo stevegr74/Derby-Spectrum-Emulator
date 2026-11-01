@@ -1,7 +1,7 @@
-using Spectrum128kEmulator.Z80;
-using Spectrum128kEmulator.Debugging;
+using Derby.Z80;
+using Derby.Debugging;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed partial class DisassemblerForm : Form
     {
@@ -131,7 +131,7 @@ namespace Spectrum128kEmulator
             backButton = CreateButton("< Back", 18, 29, 68);
             forwardButton = CreateButton("Forward >", 94, 29, 82);
 
-            Text = "Z80 Disassembler - Paused Capture";
+            Text = "DERBY Debugger - Paused Capture";
             MinimumSize = new Size(980, 620);
             ClientSize = new Size(
                 Math.Clamp(settings.Width, MinimumSize.Width, 1800),
@@ -173,7 +173,7 @@ namespace Spectrum128kEmulator
             header.Controls.Add(new Label
             {
                 AutoSize = true,
-                Text = "Z80 DEBUGGER AND DISASSEMBLER",
+                Text = "DERBY Z80 DEBUGGER",
                 Font = EmulatorUiStyle.UiFont(13F, FontStyle.Bold),
                 ForeColor = Ink,
                 Location = new Point(18, 8)

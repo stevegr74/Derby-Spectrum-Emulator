@@ -1,0 +1,51 @@
+using System;
+using System.Text;
+
+namespace Derby.Z80
+{
+    public partial class Z80Cpu
+    {
+        // =========================================================
+        // Trace diagnostics
+        // =========================================================
+
+        private void RecordTrace(ushort pcBefore, byte op)
+        {
+            if (!instructionTraceCaptureEnabled)
+                return;
+
+            byte next0 = ReadMemory((ushort)(pcBefore + 1));
+            byte next1 = ReadMemory((ushort)(pcBefore + 2));
+            ushort stackTop = (ushort)(ReadMemory(Regs.SP) | (ReadMemory((ushort)(Regs.SP + 1)) << 8));
+
+            string line =
+                $"T={TStates,10} PC={pcBefore:X4} OP={op:X2} N={next0:X2} {next1:X2} " +
+                $"SP={Regs.SP:X4} [SP]={stackTop:X4} " +
+                $"AF={Regs.AF:X4} BC={Regs.BC:X4} DE={Regs.DE:X4} HL={Regs.HL:X4} IX={Regs.IX:X4} IY={Regs.IY:X4} " +
+                $"I={Regs.I:X2} R={Regs.R:X2} IM={InterruptMode} IFF1={(IFF1 ? 1 : 0)} IFF2={(IFF2 ? 1 : 0)} " +
+                $"HALT={(IsHalted ? 1 : 0)} INTP={(InterruptPending ? 1 : 0)}";
+
+            recentTrace.Enqueue(line);
+            while (recentTrace.Count > RecentTraceCapacity)
+                recentTrace.Dequeue();
+        }
+
+        private string FormatOpcodeWindow(ushort start, int length)
+        {
+            if (length <= 0)
+                return string.Empty;
+
+            var bytes = new StringBuilder(length * 3);
+            for (int i = 0; i < length; i++)
+            {
+                if (i > 0)
+                    bytes.Append(' ');
+
+                ushort addr = (ushort)(start + i);
+                bytes.Append(ReadMemory(addr).ToString("X2"));
+            }
+
+            return bytes.ToString();
+        }
+    }
+}

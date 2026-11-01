@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed class DisassemblerBreakpointSetting
     {
@@ -46,24 +46,29 @@ namespace Spectrum128kEmulator
     public sealed class DisassemblerWindowSettingsStore
     {
         private readonly string path;
+        private readonly string? legacyPath;
 
-        public DisassemblerWindowSettingsStore(string? path = null)
+        public DisassemblerWindowSettingsStore(string? path = null, string? legacyPath = null)
         {
-            this.path = path ?? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Spectrum128kEmulator",
-                "disassembler-settings.json");
+            string localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            this.path = path ?? Path.Combine(localData, "Derby", "disassembler-settings.json");
+            this.legacyPath = legacyPath ?? (path == null
+                ? Path.Combine(localData, "Spectrum128kEmulator", "disassembler-settings.json")
+                : null);
         }
 
         public DisassemblerWindowSettings Load()
         {
             try
             {
-                if (!File.Exists(path))
+                string? sourcePath = File.Exists(path)
+                    ? path
+                    : legacyPath != null && File.Exists(legacyPath) ? legacyPath : null;
+                if (sourcePath == null)
                     return CreateDefaults();
 
                 DisassemblerWindowSettings settings =
-                    JsonSerializer.Deserialize<DisassemblerWindowSettings>(File.ReadAllText(path))
+                    JsonSerializer.Deserialize<DisassemblerWindowSettings>(File.ReadAllText(sourcePath))
                     ?? CreateDefaults();
                 settings.ColumnWidths ??= [108, 52, 125, 120, 240, 90];
                 if (settings.LayoutVersion < DisassemblerWindowSettings.CurrentLayoutVersion)
@@ -76,6 +81,8 @@ namespace Spectrum128kEmulator
                 settings.Breakpoints ??= [];
                 settings.Symbols ??= [];
                 settings.Classifications ??= [];
+                if (sourcePath == legacyPath)
+                    Save(settings);
                 return settings;
             }
             catch

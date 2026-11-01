@@ -1,4 +1,4 @@
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed partial class DisassemblerForm
     {
@@ -125,7 +125,7 @@ namespace Spectrum128kEmulator
 
         private void InspectSelectedInstructionAddress()
         {
-            if (SelectedInstruction() is not Spectrum128kEmulator.Z80.Z80Instruction instruction)
+            if (SelectedInstruction() is not Derby.Z80.Z80Instruction instruction)
                 return;
 
             InspectMemory(

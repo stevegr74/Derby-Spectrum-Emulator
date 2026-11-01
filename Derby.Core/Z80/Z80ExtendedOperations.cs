@@ -1,0 +1,458 @@
+using System;
+
+namespace Derby.Z80
+{
+    public partial class Z80Cpu
+    {
+        private void InitializeEDTable()
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                int op = i;
+                edOpcodeTable[i] = () =>
+                {
+                    Trace?.Invoke($"UNIMPL ED 0x{op:X2} at PC=0x{(ushort)(Regs.PC - 2):X4}");
+                    TStates += 8;
+                };
+            }
+
+            // =========================
+            // IN r,(C)
+            // =========================
+            edOpcodeTable[0x40] = () => { byte v = ReadPortC(); Regs.B = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x48] = () => { byte v = ReadPortC(); Regs.C = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x50] = () => { byte v = ReadPortC(); Regs.D = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x58] = () => { byte v = ReadPortC(); Regs.E = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x60] = () => { byte v = ReadPortC(); Regs.H = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x68] = () => { byte v = ReadPortC(); Regs.L = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x70] = () => { byte v = ReadPortC(); SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x78] = () => { byte v = ReadPortC(); Regs.A = v; SetInFlags(v); TStates += 12; };
+
+            // =========================
+            // OUT (C),r
+            // =========================
+            edOpcodeTable[0x41] = () => WritePortC(Regs.B);
+            edOpcodeTable[0x49] = () => WritePortC(Regs.C);
+            edOpcodeTable[0x51] = () => WritePortC(Regs.D);
+            edOpcodeTable[0x59] = () => WritePortC(Regs.E);
+            edOpcodeTable[0x61] = () => WritePortC(Regs.H);
+            edOpcodeTable[0x69] = () => WritePortC(Regs.L);
+            edOpcodeTable[0x71] = () => WritePortC(0);
+            edOpcodeTable[0x79] = () => WritePortC(Regs.A);
+
+            // =========================
+            // Transfer A <-> I/R
+            // =========================
+            edOpcodeTable[0x47] = () => { Regs.I = Regs.A; TStates += 9; };
+            edOpcodeTable[0x4F] = () => { Regs.R = Regs.A; TStates += 9; };
+
+            edOpcodeTable[0x57] = () => // LD A,I
+            {
+                Regs.A = Regs.I;
+                SetFlag(Flag.S, (Regs.A & 0x80) != 0);
+                SetFlag(Flag.Z, Regs.A == 0);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.P, IFF2);
+                SetFlag(Flag.N, false);
+                CopyUndocumentedFlagsFrom(Regs.A);
+                TStates += 9;
+            };
+
+            edOpcodeTable[0x5F] = () => // LD A,R
+            {
+                Regs.A = Regs.R;
+                SetFlag(Flag.S, (Regs.A & 0x80) != 0);
+                SetFlag(Flag.Z, Regs.A == 0);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.P, IFF2);
+                SetFlag(Flag.N, false);
+                CopyUndocumentedFlagsFrom(Regs.A);
+                TStates += 9;
+            };
+
+            // =========================
+            // SBC/ADC HL,rr
+            // =========================
+            edOpcodeTable[0x42] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.BC, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x52] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.DE, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x62] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.HL, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x72] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.SP, (Regs.F & 0x01) != 0); TStates += 15; };
+
+            edOpcodeTable[0x4A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.BC, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x5A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.DE, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x6A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.HL, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x7A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.SP, (Regs.F & 0x01) != 0); TStates += 15; };
+
+            // =========================
+            // 16-bit loads via memory
+            // =========================
+            edOpcodeTable[0x43] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.C); WriteDataMemory((ushort)(a + 1), Regs.B); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x53] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.E); WriteDataMemory((ushort)(a + 1), Regs.D); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x63] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.L); WriteDataMemory((ushort)(a + 1), Regs.H); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x73] = () =>
+            {
+                ushort a = FetchWord();
+                byte low = (byte)(Regs.SP & 0xFF);
+                byte high = (byte)(Regs.SP >> 8);
+                WriteDataMemory(a, low);
+                WriteDataMemory((ushort)(a + 1), high);
+                Memptr = (ushort)(a + 1);
+                TStates += 20;
+            };
+
+            edOpcodeTable[0x4B] = () => { ushort a = FetchWord(); Regs.BC = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x5B] = () => { ushort a = FetchWord(); Regs.DE = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x6B] = () => { ushort a = FetchWord(); Regs.HL = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x7B] = () =>
+            {
+                ushort a = FetchWord();
+                byte low = ReadDataMemory(a);
+                byte high = ReadDataMemory((ushort)(a + 1));
+                ushort value = (ushort)(low | (high << 8));
+                Regs.SP = value;
+                Memptr = (ushort)(a + 1);
+                TStates += 20;
+            };
+
+            // =========================
+            // NEG (ED prefix)
+            // =========================
+            // All of these opcodes are undocumented aliases of NEG.
+            // Z80 defines 8 encodings (ED 44,4C,54,5C,64,6C,74,7C)
+            // that all perform: A = 0 - A with full flag behaviour.
+            // Must map ALL of them for ZEXDOC/ZEXALL compliance.
+            edOpcodeTable[0x44] = () => { NegA(); TStates += 8; };
+            edOpcodeTable[0x4C] = () => { NegA(); TStates += 8; };
+            edOpcodeTable[0x54] = () => { NegA(); TStates += 8; };
+            edOpcodeTable[0x5C] = () => { NegA(); TStates += 8; };
+            edOpcodeTable[0x64] = () => { NegA(); TStates += 8; };
+            edOpcodeTable[0x6C] = () => { NegA(); TStates += 8; };
+            edOpcodeTable[0x74] = () => { NegA(); TStates += 8; };
+            edOpcodeTable[0x7C] = () => { NegA(); TStates += 8; };
+
+            // =========================
+            // Return / interrupt mode
+            // =========================
+            edOpcodeTable[0x45] = ReturnFromInterrupt; // RETN
+            edOpcodeTable[0x4D] = ReturnFromInterrupt; // RETI
+            edOpcodeTable[0x55] = ReturnFromInterrupt; // RETN aliases
+            edOpcodeTable[0x5D] = ReturnFromInterrupt;
+            edOpcodeTable[0x65] = ReturnFromInterrupt;
+            edOpcodeTable[0x6D] = ReturnFromInterrupt;
+            edOpcodeTable[0x75] = ReturnFromInterrupt;
+            edOpcodeTable[0x7D] = ReturnFromInterrupt;
+
+            edOpcodeTable[0x46] = () => { interruptMode = 0; TStates += 8; };
+            edOpcodeTable[0x4E] = () => { interruptMode = 0; TStates += 8; };
+            edOpcodeTable[0x56] = () => { interruptMode = 1; TStates += 8; };
+            edOpcodeTable[0x5E] = () => { interruptMode = 2; TStates += 8; };
+            edOpcodeTable[0x66] = () => { interruptMode = 0; TStates += 8; };
+            edOpcodeTable[0x6E] = () => { interruptMode = 0; TStates += 8; };
+            edOpcodeTable[0x76] = () => { interruptMode = 1; TStates += 8; };
+            edOpcodeTable[0x7E] = () => { interruptMode = 2; TStates += 8; };
+
+            // =========================
+            // Decimal rotate through memory
+            // =========================
+            edOpcodeTable[0x67] = () => // RRD
+            {
+                byte mem = ReadDataMemory(Regs.HL);
+                byte aLow = (byte)(Regs.A & 0x0F);
+                byte newMem = (byte)((aLow << 4) | (mem >> 4));
+                byte newA = (byte)((Regs.A & 0xF0) | (mem & 0x0F));
+
+                WriteDataMemory(Regs.HL, newMem, 4);
+                Regs.A = newA;
+
+                SetFlag(Flag.S, (Regs.A & 0x80) != 0);
+                SetFlag(Flag.Z, Regs.A == 0);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.P, Parity(Regs.A));
+                SetFlag(Flag.N, false);
+                CopyUndocumentedFlagsFrom(Regs.A);
+                Memptr = (ushort)(Regs.HL + 1);
+
+                TStates += 18;
+            };
+
+            edOpcodeTable[0x6F] = () => // RLD
+            {
+                byte mem = ReadDataMemory(Regs.HL);
+                byte aLow = (byte)(Regs.A & 0x0F);
+                byte newMem = (byte)((mem << 4) | aLow);
+                byte newA = (byte)((Regs.A & 0xF0) | (mem >> 4));
+
+                WriteDataMemory(Regs.HL, newMem, 4);
+                Regs.A = newA;
+
+                SetFlag(Flag.S, (Regs.A & 0x80) != 0);
+                SetFlag(Flag.Z, Regs.A == 0);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.P, Parity(Regs.A));
+                SetFlag(Flag.N, false);
+                CopyUndocumentedFlagsFrom(Regs.A);
+                Memptr = (ushort)(Regs.HL + 1);
+
+                TStates += 18;
+            };
+
+            // =========================
+            // Block transfer
+            // =========================
+            edOpcodeTable[0xA0] = () => // LDI
+            {
+                byte value = ReadDataMemory(Regs.HL);
+                WriteDataMemory(Regs.DE, value);
+                Regs.HL++;
+                Regs.DE++;
+                Regs.BC--;
+                byte sum = (byte)(Regs.A + value);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.N, false);
+                SetFlag(Flag.P, Regs.BC != 0);
+                SetFlag(Flag.F3, (sum & 0x08) != 0);
+                SetFlag(Flag.F5, (sum & 0x02) != 0);
+
+                TStates += 16;
+            };
+
+            edOpcodeTable[0xB0] = () => // LDIR
+            {
+                byte value = ReadDataMemory(Regs.HL);
+                WriteDataMemory(Regs.DE, value);
+                Regs.HL++;
+                Regs.DE++;
+                Regs.BC--;
+                byte sum = (byte)(Regs.A + value);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.N, false);
+                SetFlag(Flag.P, Regs.BC != 0);
+                SetFlag(Flag.F3, (sum & 0x08) != 0);
+                SetFlag(Flag.F5, (sum & 0x02) != 0);
+
+                if (Regs.BC != 0)
+                {
+                    Regs.PC = (ushort)(Regs.PC - 2);
+                    Memptr = (ushort)(Regs.PC + 1);
+                    TStates += 21;
+                }
+                else
+                {
+                    TStates += 16;
+                }
+            };
+
+            edOpcodeTable[0xA8] = () => // LDD
+            {
+                byte value = ReadDataMemory(Regs.HL);
+                WriteDataMemory(Regs.DE, value);
+                Regs.HL--;
+                Regs.DE--;
+                Regs.BC--;
+                byte sum = (byte)(Regs.A + value);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.N, false);
+                SetFlag(Flag.P, Regs.BC != 0);
+                SetFlag(Flag.F3, (sum & 0x08) != 0);
+                SetFlag(Flag.F5, (sum & 0x02) != 0);
+
+                TStates += 16;
+            };
+
+            edOpcodeTable[0xB8] = () => // LDDR
+            {
+                byte value = ReadDataMemory(Regs.HL);
+                WriteDataMemory(Regs.DE, value);
+                Regs.HL--;
+                Regs.DE--;
+                Regs.BC--;
+                byte sum = (byte)(Regs.A + value);
+                SetFlag(Flag.H, false);
+                SetFlag(Flag.N, false);
+                SetFlag(Flag.P, Regs.BC != 0);
+                SetFlag(Flag.F3, (sum & 0x08) != 0);
+                SetFlag(Flag.F5, (sum & 0x02) != 0);
+
+                if (Regs.BC != 0)
+                {
+                    Regs.PC = (ushort)(Regs.PC - 2);
+                    Memptr = (ushort)(Regs.PC + 1);
+                    TStates += 21;
+                }
+                else
+                {
+                    TStates += 16;
+                }
+            };
+
+            // =========================
+            // Block compare
+            // =========================
+            edOpcodeTable[0xA1] = () => BlockCompare(true, false);  // CPI
+            edOpcodeTable[0xB1] = () => BlockCompare(true, true);   // CPIR
+            edOpcodeTable[0xA9] = () => BlockCompare(false, false); // CPD
+            edOpcodeTable[0xB9] = () => BlockCompare(false, true);  // CPDR
+
+            // =========================
+            // Block I/O
+            // =========================
+            edOpcodeTable[0xA2] = () => BlockIn(true, false);   // INI
+            edOpcodeTable[0xB2] = () => BlockIn(true, true);    // INIR
+            edOpcodeTable[0xAA] = () => BlockIn(false, false);  // IND
+            edOpcodeTable[0xBA] = () => BlockIn(false, true);   // INDR
+
+            edOpcodeTable[0xA3] = () => BlockOut(true, false);  // OUTI
+            edOpcodeTable[0xB3] = () => BlockOut(true, true);   // OTIR
+            edOpcodeTable[0xAB] = () => BlockOut(false, false); // OUTD
+            edOpcodeTable[0xBB] = () => BlockOut(false, true);  // OTDR
+        }
+
+        private void ReturnFromInterrupt()
+        {
+            IFF1 = IFF2;
+            TStates += 8;
+            Regs.PC = Pop();
+            Memptr = Regs.PC;
+        }
+
+        private void BlockIn(bool increment, bool repeat)
+        {
+            // INI/IND use two opcode M1 cycles followed by the four-T-state
+            // I/O read. The ULA samples on the third I/O T-state.
+            ushort port = Regs.BC;
+            byte value = ReadPortTimed?.Invoke(port, 12) ?? ReadPort(port);
+            Memptr = increment ? (ushort)(port + 1) : (ushort)(port - 1);
+            WriteMemoryAtInstructionOffset(Regs.HL, value, 12);
+
+            Regs.HL = increment ? (ushort)(Regs.HL + 1) : (ushort)(Regs.HL - 1);
+            Regs.B = (byte)(Regs.B - 1);
+            ApplyBlockIoFlags(value, increment ? Regs.C + 1 : Regs.C - 1);
+
+            if (repeat && Regs.B != 0)
+            {
+                Regs.PC = (ushort)(Regs.PC - 2);
+                Memptr = (ushort)(Regs.PC + 1);
+                TStates += 21;
+            }
+            else
+            {
+                TStates += 16;
+            }
+        }
+
+        private void BlockOut(bool increment, bool repeat)
+        {
+            byte value = ReadDataMemory(Regs.HL);
+
+            Regs.HL = increment ? (ushort)(Regs.HL + 1) : (ushort)(Regs.HL - 1);
+            Regs.B = (byte)(Regs.B - 1);
+            Memptr = increment ? (ushort)(Regs.BC + 1) : (ushort)(Regs.BC - 1);
+            ApplyBlockIoFlags(value, Regs.L);
+
+            bool repeats = repeat && Regs.B != 0;
+            if (repeats)
+            {
+                Regs.PC = (ushort)(Regs.PC - 2);
+                Memptr = (ushort)(Regs.PC + 1);
+            }
+
+            // The port cycle completes at T16. Repeating forms spend their
+            // additional five T-states after the write has reached the bus.
+            WritePortTimed(Regs.BC, value, 16);
+            if (repeats)
+                TStates += 5;
+        }
+
+        private void ApplyBlockIoFlags(byte value, int adjustment)
+        {
+            // Z80 block-I/O flags are derived from the decremented B register
+            // and the carry from the data plus direction-dependent adjustment.
+            int sum = value + (adjustment & 0xFF);
+            byte parityOperand = (byte)((sum & 0x07) ^ Regs.B);
+
+            WriteFlags(0);
+            SetFlag(Flag.S, (Regs.B & 0x80) != 0);
+            SetFlag(Flag.Z, Regs.B == 0);
+            CopyUndocumentedFlagsFrom(Regs.B);
+            SetFlag(Flag.H, sum > 0xFF);
+            SetFlag(Flag.P, Parity(parityOperand));
+            SetFlag(Flag.N, (value & 0x80) != 0);
+            SetFlag(Flag.C, sum > 0xFF);
+        }
+
+        private byte CompareAInternal(byte value)
+        {
+            byte a = Regs.A;
+            int result = a - value;
+            byte r = (byte)result;
+
+            SetFlag(Flag.S, (r & 0x80) != 0);
+            SetFlag(Flag.Z, r == 0);
+            SetFlag(Flag.H, ((a ^ value ^ r) & 0x10) != 0);
+            SetFlag(Flag.P, OverflowSub(a, value, r));
+            SetFlag(Flag.N, true);
+            SetFlag(Flag.C, result < 0);
+
+            CopyUndocumentedFlagsFrom(r);
+            return r;
+        }        
+
+        private void BlockCompare(bool increment, bool repeat)
+        {
+            bool oldCarry = (Regs.F & (1 << (int)Flag.C)) != 0;
+
+            byte value = ReadDataMemory(Regs.HL);
+            byte r = CompareAInternal(value);
+
+            bool halfBorrow = (Regs.F & (1 << (int)Flag.H)) != 0;
+
+            Regs.HL = increment ? (ushort)(Regs.HL + 1) : (ushort)(Regs.HL - 1);
+            Regs.BC--;
+
+            SetFlag(Flag.P, Regs.BC != 0);
+
+            byte n = (byte)(r - (halfBorrow ? 1 : 0));
+            SetFlag(Flag.F3, (n & 0x08) != 0);
+            SetFlag(Flag.F5, (n & 0x02) != 0);
+
+            SetFlag(Flag.C, oldCarry);
+
+            if (repeat && Regs.BC != 0 && r != 0)
+            {
+                Regs.PC = (ushort)(Regs.PC - 2);
+                Memptr = (ushort)(Regs.PC + 1);
+                TStates += 21;
+            }
+            else
+            {
+                Memptr = increment ? (ushort)(Memptr + 1) : (ushort)(Memptr - 1);
+                TStates += 16;
+            }
+        }
+
+        private byte ReadPortC()
+        {
+            ushort port = Regs.BC;
+            byte value = ReadPortTimed?.Invoke(port, 11) ?? ReadPort(port);
+            Memptr = (ushort)(port + 1);
+            return value;
+        }
+
+        private void WritePortC(byte value)
+        {
+            ushort port = Regs.BC;
+            WritePortTimed(port, value, 12);
+            Memptr = (ushort)(port + 1);
+        }
+
+        private void SetInFlags(byte value)
+        {
+            SetFlag(Flag.S, (value & 0x80) != 0);
+            SetFlag(Flag.Z, value == 0);
+            SetFlag(Flag.H, false);
+            SetFlag(Flag.P, Parity(value));
+            SetFlag(Flag.N, false);
+            CopyUndocumentedFlagsFrom(value);
+        }
+    }
+}

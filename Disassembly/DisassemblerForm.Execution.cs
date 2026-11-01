@@ -1,7 +1,7 @@
-using Spectrum128kEmulator.Debugging;
-using Spectrum128kEmulator.Z80;
+using Derby.Debugging;
+using Derby.Z80;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public enum DebuggerExecutionCommand
     {

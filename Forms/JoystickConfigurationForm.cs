@@ -1,6 +1,6 @@
-using Spectrum128kEmulator.Input;
+using Derby.Input;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed class JoystickConfigurationForm : Form
     {

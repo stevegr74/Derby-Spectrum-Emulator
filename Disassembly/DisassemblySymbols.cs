@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public readonly record struct DisassemblySymbolKey(
         DisassemblyAddressSpace AddressSpace,
@@ -169,7 +169,7 @@ namespace Spectrum128kEmulator
         {
             ArgumentNullException.ThrowIfNull(symbols);
             var builder = new StringBuilder();
-            builder.AppendLine("; Spectrum 128K Emulator debugger symbols");
+            builder.AppendLine("; DERBY debugger symbols");
             builder.AppendLine("; Format: MAP|ROMn|RAMn:HHHH LabelName");
             foreach (DisassemblySymbol symbol in symbols
                 .OrderBy(value => value.AddressSpace.Kind)

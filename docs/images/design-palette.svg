@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="980" height="300" viewBox="0 0 980 300" role="img" aria-labelledby="title desc">
-  <title id="title">Spectrum 128K Emulator interface colour palette</title>
+  <title id="title">DERBY interface colour palette</title>
   <desc id="desc">Eleven labelled colour swatches used by the Windows frontend.</desc>
   <rect width="980" height="300" fill="#F6F6F2"/>
   <g font-family="Segoe UI, sans-serif" font-size="16" fill="#1E2D31">

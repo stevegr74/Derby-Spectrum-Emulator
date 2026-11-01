@@ -1,6 +1,6 @@
-using Spectrum128kEmulator.Z80;
+using Derby.Z80;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed partial class DisassemblerForm
     {
@@ -114,17 +114,24 @@ namespace Spectrum128kEmulator
                 flags.Controls.Add(flag, index, 0);
             }
 
-            TableLayoutPanel state = CreateGrid(5, 2);
-            state.Controls.Add(CreateCpuValueLabel("I", "I"), 0, 0);
-            state.Controls.Add(CreateCpuValueLabel("R", "R"), 1, 0);
-            state.Controls.Add(CreateCpuValueLabel("IM", "IM"), 2, 0);
-            state.Controls.Add(CreateCpuValueLabel("IFF", "IFF"), 3, 0);
-            state.Controls.Add(CreateCpuValueLabel("HALT", "HALT"), 0, 1);
-            state.Controls.Add(CreateCpuValueLabel("INT", "INT"), 1, 1);
-            state.Controls.Add(CreateCpuValueLabel("WZ", "WZ", clickable: true), 2, 1);
-            Label tStates = CreateCpuValueLabel("T", "T");
-            state.Controls.Add(tStates, 3, 1);
-            state.SetColumnSpan(tStates, 2);
+            TableLayoutPanel state = CreateGrid(1, 2);
+            TableLayoutPanel stateTop = CreateGrid(4, 1);
+            stateTop.Controls.Add(CreateCpuValueLabel("I", "I", fontSize: 8f), 0, 0);
+            stateTop.Controls.Add(CreateCpuValueLabel("R", "R", fontSize: 8f), 1, 0);
+            stateTop.Controls.Add(CreateCpuValueLabel("IM", "IM", fontSize: 8f), 2, 0);
+            stateTop.Controls.Add(CreateCpuValueLabel("IFF", "IFF", fontSize: 8f), 3, 0);
+
+            TableLayoutPanel stateBottom = CreateGrid(4, 1);
+            stateBottom.ColumnStyles.Clear();
+            foreach (float width in new[] { 22f, 18f, 25f, 35f })
+                stateBottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, width));
+            stateBottom.Controls.Add(CreateCpuValueLabel("HALT", "HALT", fontSize: 8f), 0, 0);
+            stateBottom.Controls.Add(CreateCpuValueLabel("INT", "INT", fontSize: 8f), 1, 0);
+            stateBottom.Controls.Add(CreateCpuValueLabel("WZ", "WZ", clickable: true, fontSize: 8f), 2, 0);
+            Label tStates = CreateCpuValueLabel("T", "T", fontSize: 8f);
+            stateBottom.Controls.Add(tStates, 3, 0);
+            state.Controls.Add(stateTop, 0, 0);
+            state.Controls.Add(stateBottom, 0, 1);
 
             panel.Controls.Add(flags, 0, 0);
             panel.Controls.Add(state, 0, 1);
@@ -163,7 +170,11 @@ namespace Spectrum128kEmulator
             return grid;
         }
 
-        private Label CreateCpuValueLabel(string key, string caption, bool clickable = false)
+        private Label CreateCpuValueLabel(
+            string key,
+            string caption,
+            bool clickable = false,
+            float fontSize = 8.5f)
         {
             Label label;
             if (clickable)
@@ -186,7 +197,7 @@ namespace Spectrum128kEmulator
             label.Tag = caption;
             label.Dock = DockStyle.Fill;
             label.Margin = Padding.Empty;
-            label.Font = EmulatorUiStyle.MonoFont(8.5f);
+            label.Font = EmulatorUiStyle.MonoFont(fontSize);
             label.ForeColor = Ink;
             label.TextAlign = ContentAlignment.MiddleLeft;
             label.AutoEllipsis = true;

@@ -1,27 +1,36 @@
 using System.Text.Json;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed class JoystickSettingsStore
     {
         private readonly string path;
+        private readonly string? legacyPath;
 
-        public JoystickSettingsStore(string? path = null)
+        public JoystickSettingsStore(string? path = null, string? legacyPath = null)
         {
-            this.path = path ?? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Spectrum128kEmulator",
-                "joystick-settings.json");
+            string localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            this.path = path ?? Path.Combine(localData, "Derby", "joystick-settings.json");
+            this.legacyPath = legacyPath ?? (path == null
+                ? Path.Combine(localData, "Spectrum128kEmulator", "joystick-settings.json")
+                : null);
         }
 
         public HostJoystickSettings Load()
         {
             try
             {
-                if (!File.Exists(path))
+                string? sourcePath = File.Exists(path)
+                    ? path
+                    : legacyPath != null && File.Exists(legacyPath) ? legacyPath : null;
+                if (sourcePath == null)
                     return new HostJoystickSettings();
-                return JsonSerializer.Deserialize<HostJoystickSettings>(File.ReadAllText(path)) ??
+                HostJoystickSettings settings =
+                    JsonSerializer.Deserialize<HostJoystickSettings>(File.ReadAllText(sourcePath)) ??
                     new HostJoystickSettings();
+                if (sourcePath == legacyPath)
+                    Save(settings);
+                return settings;
             }
             catch
             {

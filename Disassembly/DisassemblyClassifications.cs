@@ -1,4 +1,4 @@
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public enum DisassemblyClassification
     {

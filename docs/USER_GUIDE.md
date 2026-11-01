@@ -1,11 +1,11 @@
-# Spectrum 128K Emulator
+# DERBY User Guide
 
 ## User Guide
 
 **Windows edition**  
 **Covers:** 48K and 128K operation, snapshots, tape images, Quick State, controllers, pokes, and debugging
 
-![Spectrum 128K Emulator at the 128K ROM menu](images/emulator-128k-basic.png)
+![DERBY at the 128K ROM menu](images/emulator-128k-basic.png)
 
 This manual describes the emulator as it operates today. It begins with normal loading and play, then introduces the controller, Poke Manager, and debugger tools. Development status and architecture remain in [`README.md`](../README.md); tested software and reached checkpoints are recorded in [`VERIFIED_GAMES.md`](VERIFIED_GAMES.md).
 

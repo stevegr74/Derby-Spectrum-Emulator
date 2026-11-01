@@ -4,14 +4,14 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Spectrum128kEmulator.Audio;
-using Spectrum128kEmulator.Debugging;
-using Spectrum128kEmulator.Pokes;
-using Spectrum128kEmulator.Tap;
-using Spectrum128kEmulator.Tape;
-using Spectrum128kEmulator.Z80;
+using Derby.Audio;
+using Derby.Debugging;
+using Derby.Pokes;
+using Derby.Tap;
+using Derby.Tape;
+using Derby.Z80;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public partial class MainForm : Form
     {
@@ -30,7 +30,7 @@ namespace Spectrum128kEmulator
         private const double TapeTransportFullOverlaySeconds = 3.0;
         private const double TapeTransportStoppedIconSeconds = 5.0;
         private const double QuickStateOverlaySeconds = 2.5;
-        private const string ApplicationTitle = "Spectrum 128K Emulator";
+        private const string ApplicationTitle = "DERBY";
         private const int MaximumMediaTitleLength = 48;
 
         private int framesRenderedThisSecond;

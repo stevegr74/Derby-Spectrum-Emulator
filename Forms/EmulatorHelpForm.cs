@@ -1,4 +1,4 @@
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed class EmulatorHelpForm : Form
     {
@@ -71,7 +71,7 @@ namespace Spectrum128kEmulator
 
         public EmulatorHelpForm()
         {
-            Text = "Spectrum 128K Emulator Help";
+            Text = "DERBY Help";
             ClientSize = new Size(930, 600);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;

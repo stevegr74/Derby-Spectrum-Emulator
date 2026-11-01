@@ -1,6 +1,6 @@
-using Spectrum128kEmulator.Tap;
+using Derby.Tap;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public readonly record struct SpectrumStatusOverlayData(
         int FramesPerSecond,

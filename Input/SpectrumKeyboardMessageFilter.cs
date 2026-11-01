@@ -1,6 +1,6 @@
 using System.Windows.Forms;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public sealed class SpectrumKeyboardMessageFilter : IMessageFilter
     {

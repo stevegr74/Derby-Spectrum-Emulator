@@ -1,7 +1,7 @@
 using System.Text;
-using Spectrum128kEmulator.Z80;
+using Derby.Z80;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public static class DisassemblyListingFormatter
     {
