@@ -39,6 +39,7 @@ namespace Spectrum128kEmulator.Tests
                 Assert.True(machine.Cpu.IFF1);
                 Assert.False(machine.Cpu.IFF2);
                 Assert.Equal(2, machine.Cpu.InterruptMode);
+                Assert.Equal((ushort)0xCAFE, machine.Cpu.Memptr);
                 Assert.True(machine.Cpu.IsHalted);
                 Assert.Equal(123UL, machine.Cpu.TStates);
                 Assert.Equal(3, machine.BorderColor);

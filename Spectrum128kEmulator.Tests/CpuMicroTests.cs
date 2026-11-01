@@ -324,7 +324,7 @@ namespace Spectrum128kEmulator.Tests
         }
 
         [Fact]
-        public void BitHlm_CopiesUndocumentedFlagsFromAddressHighByte()
+        public void BitHlm_CopiesUndocumentedFlagsFromMemptrHighByte()
         {
             var memory = new byte[65536];
             var cpu = new Z80Cpu
@@ -333,15 +333,16 @@ namespace Spectrum128kEmulator.Tests
                 WriteMemory = (addr, value) => memory[addr] = value
             };
 
-            // LD HL,2810h ; BIT 0,(HL)
-            memory[0x0000] = 0x21;
-            memory[0x0001] = 0x10;
-            memory[0x0002] = 0x28;
+            // LD A,(27FFh) leaves WZ=2800h; BIT 0,(HL) takes F3/F5 from WZH.
+            memory[0x0000] = 0x3A;
+            memory[0x0001] = 0xFF;
+            memory[0x0002] = 0x27;
             memory[0x0003] = 0xCB;
             memory[0x0004] = 0x46;
             memory[0x2810] = 0x01;
 
             cpu.Reset();
+            cpu.Regs.HL = 0x2810;
             cpu.Step();
             cpu.Step();
 

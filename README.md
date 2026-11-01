@@ -80,6 +80,7 @@ Current limitations and active work:
 - Windows key messages are captured before control/menu preprocessing, then applied by the emulation loop through a scan-aware matrix bridge; shared Spectrum chords retain independent host-key ownership and use emulated T-states rather than UI scheduler ticks.
 - USB controllers are discovered only by the Windows adapter; up to two immutable readings become independent five-bit platform-neutral joystick states that the core exposes through Kempston or keyboard-matrix interfaces, with RZX input retaining precedence and live host state excluded from Quick State.
 - The undocumented Z80 Q latch is tracked by flag-writing semantics, including prefix and interrupt boundaries, with focused regressions alongside ZEXDOC/ZEXALL.
+- The undocumented Z80 WZ/MEMPTR latch follows control-flow, indexed-address, I/O, block-instruction, interrupt, and `BIT (HL)` flag behavior; Quick State and SZX restore it and the debugger exposes it as `WZ`.
 - Maskable interrupt acceptance resets both Z80 interrupt flip-flops; `LD A,I`/`LD A,R`, `RETN`/`RETI`, and delayed `EI` behavior have focused regressions across both execution schedulers.
 - Z80 IM 0 executes the interrupting device's data-bus opcode, including normal-memory operand fetches and acknowledge-cycle timing; the Spectrum defaults that bus to `0xFF` (`RST 38H`), while IM 1 retains its fixed `0x0038` vector.
 - Model-specific ULA profiles now drive contention, floating-bus fetches, frame timing, and raster mapping; original 128K/+2 floating-bus reads follow the selected bank 5 or bank 7 screen, and `IN (0xFFFD)` reads the selected AY register.
@@ -358,7 +359,7 @@ Current snapshot status:
   - accepts compressed or uncompressed RAM pages, arbitrary chunk order, and unknown optional metadata
   - validates the complete snapshot before changing the machine
   - rejects unsupported machine models, alternate timing, Issue 2 behavior, external 48K AY state, and known unsupported peripheral blocks rather than approximating them
-  - does not restore the SZX `WZ/MEMPTR` field because the CPU core does not currently model that undocumented latch
+  - restores the SZX `WZ/MEMPTR` field alongside the documented CPU and execution state
 
 Snapshots can be loaded with `F9` (`.sna`) and `F10` (`.z80` or `.szx`) in the UI.
 
@@ -541,7 +542,7 @@ compatibility; completed milestones remain regression baselines.
 
 ### Milestone 23 - SZX Snapshot Support Complete
 - Added a dedicated SZX 1.x chunk parser with strict bounds checking, complete pre-apply validation, and clear malformed-file diagnostics
-- Restores supported 48K and original 128K CPU registers and execution state, RAM, paging, frame phase, ULA state, and AY state through existing machine boundaries
+- Restores supported 48K and original 128K CPU registers and execution state, including the undocumented WZ/MEMPTR latch, RAM, paging, frame phase, ULA state, and AY state through existing machine boundaries
 - Accepts compressed and uncompressed RAM pages, arbitrary chunk order, and safely optional unknown metadata while rejecting unsupported machines, timing variants, and known peripheral state
 - Integrated `.szx` with the shared F10 picker, media-title handling, reset lifecycle, audio/input cleanup, manual harness, and existing machine ownership rules
 

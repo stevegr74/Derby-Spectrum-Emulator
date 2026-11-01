@@ -9,6 +9,7 @@ namespace Spectrum128kEmulator.Z80
         public Z80Registers Regs { get; } = new Z80Registers();
         public ulong TStates { get; private set; } = 0;
         public ulong InstructionFetchCount { get; private set; } = 0;
+        public ushort Memptr { get; private set; }
 
         public Func<ushort, byte> ReadMemory { get; set; } = _ => 0xFF;
         public Func<ushort, int, byte>? ReadMemoryTimed { get; set; }
@@ -142,6 +143,7 @@ namespace Spectrum128kEmulator.Z80
             eiDelay = 0;
             interruptMode = 0;
             qFlags = 0;
+            Memptr = 0;
             suppressInterruptsForNextInstruction = false;
             flagsWrittenThisInstruction = false;
 
@@ -183,6 +185,7 @@ namespace Spectrum128kEmulator.Z80
             eiDelay = 0;
             interruptMode = 0;
             qFlags = 0;
+            Memptr = 0;
             suppressInterruptsForNextInstruction = false;
             flagsWrittenThisInstruction = false;
             LastInterruptProgressTStates = TStates;
@@ -283,6 +286,7 @@ namespace Spectrum128kEmulator.Z80
                     TStates += 7;
                     Push(Regs.PC);
                     Regs.PC = 0x0038;
+                    Memptr = Regs.PC;
                     RecordInterruptEvent($"INT_VECTOR target={Regs.PC:X4}");
                     break;
 
@@ -295,6 +299,7 @@ namespace Spectrum128kEmulator.Z80
                     byte high = ReadMemory((ushort)(vector + 1));
                     TStates += 3;
                     Regs.PC = (ushort)(low | (high << 8));
+                    Memptr = Regs.PC;
                     RecordInterruptEvent($"INT_VECTOR target={Regs.PC:X4}");
                     break;
             }
@@ -438,13 +443,15 @@ namespace Spectrum128kEmulator.Z80
             bool halted,
             bool interruptPending,
             bool suppressInterrupts,
-            bool flagsSet)
+            bool flagsSet,
+            ushort memptr = 0)
         {
             this.halted = halted;
             InterruptPending = interruptPending;
             suppressInterruptsForNextInstruction = suppressInterrupts;
             eiDelay = 0;
             qFlags = flagsSet ? Regs.F : (byte)0;
+            Memptr = memptr;
             flagsWrittenThisInstruction = false;
             InstructionFetchCount = 0;
             LastInterruptProgressTStates = TStates;
@@ -461,6 +468,7 @@ namespace Spectrum128kEmulator.Z80
             InstructionFetchCount = 0;
 
             qFlags = 0;
+            Memptr = 0;
             suppressInterruptsForNextInstruction = false;
             flagsWrittenThisInstruction = false;
             LastInterruptProgressTStates = TStates;

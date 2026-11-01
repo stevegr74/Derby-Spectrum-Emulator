@@ -19,26 +19,26 @@ namespace Spectrum128kEmulator.Z80
             // =========================
             // IN r,(C)
             // =========================
-            edOpcodeTable[0x40] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); Regs.B = v; SetInFlags(v); TStates += 12; };
-            edOpcodeTable[0x48] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); Regs.C = v; SetInFlags(v); TStates += 12; };
-            edOpcodeTable[0x50] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); Regs.D = v; SetInFlags(v); TStates += 12; };
-            edOpcodeTable[0x58] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); Regs.E = v; SetInFlags(v); TStates += 12; };
-            edOpcodeTable[0x60] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); Regs.H = v; SetInFlags(v); TStates += 12; };
-            edOpcodeTable[0x68] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); Regs.L = v; SetInFlags(v); TStates += 12; };
-            edOpcodeTable[0x70] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); SetInFlags(v); TStates += 12; };
-            edOpcodeTable[0x78] = () => { byte v = ReadPortTimed?.Invoke(Regs.BC, 11) ?? ReadPort(Regs.BC); Regs.A = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x40] = () => { byte v = ReadPortC(); Regs.B = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x48] = () => { byte v = ReadPortC(); Regs.C = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x50] = () => { byte v = ReadPortC(); Regs.D = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x58] = () => { byte v = ReadPortC(); Regs.E = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x60] = () => { byte v = ReadPortC(); Regs.H = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x68] = () => { byte v = ReadPortC(); Regs.L = v; SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x70] = () => { byte v = ReadPortC(); SetInFlags(v); TStates += 12; };
+            edOpcodeTable[0x78] = () => { byte v = ReadPortC(); Regs.A = v; SetInFlags(v); TStates += 12; };
 
             // =========================
             // OUT (C),r
             // =========================
-            edOpcodeTable[0x41] = () => { WritePortTimed(Regs.BC, Regs.B, 12); };
-            edOpcodeTable[0x49] = () => { WritePortTimed(Regs.BC, Regs.C, 12); };
-            edOpcodeTable[0x51] = () => { WritePortTimed(Regs.BC, Regs.D, 12); };
-            edOpcodeTable[0x59] = () => { WritePortTimed(Regs.BC, Regs.E, 12); };
-            edOpcodeTable[0x61] = () => { WritePortTimed(Regs.BC, Regs.H, 12); };
-            edOpcodeTable[0x69] = () => { WritePortTimed(Regs.BC, Regs.L, 12); };
-            edOpcodeTable[0x71] = () => { WritePortTimed(Regs.BC, 0, 12); };
-            edOpcodeTable[0x79] = () => { WritePortTimed(Regs.BC, Regs.A, 12); };
+            edOpcodeTable[0x41] = () => WritePortC(Regs.B);
+            edOpcodeTable[0x49] = () => WritePortC(Regs.C);
+            edOpcodeTable[0x51] = () => WritePortC(Regs.D);
+            edOpcodeTable[0x59] = () => WritePortC(Regs.E);
+            edOpcodeTable[0x61] = () => WritePortC(Regs.H);
+            edOpcodeTable[0x69] = () => WritePortC(Regs.L);
+            edOpcodeTable[0x71] = () => WritePortC(0);
+            edOpcodeTable[0x79] = () => WritePortC(Regs.A);
 
             // =========================
             // Transfer A <-> I/R
@@ -73,22 +73,22 @@ namespace Spectrum128kEmulator.Z80
             // =========================
             // SBC/ADC HL,rr
             // =========================
-            edOpcodeTable[0x42] = () => { Regs.HL = Sub16(Regs.HL, Regs.BC, (Regs.F & 0x01) != 0); TStates += 15; };
-            edOpcodeTable[0x52] = () => { Regs.HL = Sub16(Regs.HL, Regs.DE, (Regs.F & 0x01) != 0); TStates += 15; };
-            edOpcodeTable[0x62] = () => { Regs.HL = Sub16(Regs.HL, Regs.HL, (Regs.F & 0x01) != 0); TStates += 15; };
-            edOpcodeTable[0x72] = () => { Regs.HL = Sub16(Regs.HL, Regs.SP, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x42] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.BC, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x52] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.DE, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x62] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.HL, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x72] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Sub16(Regs.HL, Regs.SP, (Regs.F & 0x01) != 0); TStates += 15; };
 
-            edOpcodeTable[0x4A] = () => { Regs.HL = Add16WithCarry(Regs.HL, Regs.BC, (Regs.F & 0x01) != 0); TStates += 15; };
-            edOpcodeTable[0x5A] = () => { Regs.HL = Add16WithCarry(Regs.HL, Regs.DE, (Regs.F & 0x01) != 0); TStates += 15; };
-            edOpcodeTable[0x6A] = () => { Regs.HL = Add16WithCarry(Regs.HL, Regs.HL, (Regs.F & 0x01) != 0); TStates += 15; };
-            edOpcodeTable[0x7A] = () => { Regs.HL = Add16WithCarry(Regs.HL, Regs.SP, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x4A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.BC, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x5A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.DE, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x6A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.HL, (Regs.F & 0x01) != 0); TStates += 15; };
+            edOpcodeTable[0x7A] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16WithCarry(Regs.HL, Regs.SP, (Regs.F & 0x01) != 0); TStates += 15; };
 
             // =========================
             // 16-bit loads via memory
             // =========================
-            edOpcodeTable[0x43] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.C); WriteDataMemory((ushort)(a + 1), Regs.B); TStates += 20; };
-            edOpcodeTable[0x53] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.E); WriteDataMemory((ushort)(a + 1), Regs.D); TStates += 20; };
-            edOpcodeTable[0x63] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.L); WriteDataMemory((ushort)(a + 1), Regs.H); TStates += 20; };
+            edOpcodeTable[0x43] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.C); WriteDataMemory((ushort)(a + 1), Regs.B); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x53] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.E); WriteDataMemory((ushort)(a + 1), Regs.D); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x63] = () => { ushort a = FetchWord(); WriteDataMemory(a, Regs.L); WriteDataMemory((ushort)(a + 1), Regs.H); Memptr = (ushort)(a + 1); TStates += 20; };
             edOpcodeTable[0x73] = () =>
             {
                 ushort a = FetchWord();
@@ -96,12 +96,13 @@ namespace Spectrum128kEmulator.Z80
                 byte high = (byte)(Regs.SP >> 8);
                 WriteDataMemory(a, low);
                 WriteDataMemory((ushort)(a + 1), high);
+                Memptr = (ushort)(a + 1);
                 TStates += 20;
             };
 
-            edOpcodeTable[0x4B] = () => { ushort a = FetchWord(); Regs.BC = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); TStates += 20; };
-            edOpcodeTable[0x5B] = () => { ushort a = FetchWord(); Regs.DE = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); TStates += 20; };
-            edOpcodeTable[0x6B] = () => { ushort a = FetchWord(); Regs.HL = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); TStates += 20; };
+            edOpcodeTable[0x4B] = () => { ushort a = FetchWord(); Regs.BC = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x5B] = () => { ushort a = FetchWord(); Regs.DE = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); Memptr = (ushort)(a + 1); TStates += 20; };
+            edOpcodeTable[0x6B] = () => { ushort a = FetchWord(); Regs.HL = (ushort)(ReadDataMemory(a) | (ReadDataMemory((ushort)(a + 1)) << 8)); Memptr = (ushort)(a + 1); TStates += 20; };
             edOpcodeTable[0x7B] = () =>
             {
                 ushort a = FetchWord();
@@ -109,6 +110,7 @@ namespace Spectrum128kEmulator.Z80
                 byte high = ReadDataMemory((ushort)(a + 1));
                 ushort value = (ushort)(low | (high << 8));
                 Regs.SP = value;
+                Memptr = (ushort)(a + 1);
                 TStates += 20;
             };
 
@@ -131,8 +133,14 @@ namespace Spectrum128kEmulator.Z80
             // =========================
             // Return / interrupt mode
             // =========================
-            edOpcodeTable[0x45] = () => { IFF1 = IFF2; TStates += 8; Regs.PC = Pop(); }; // RETN
-            edOpcodeTable[0x4D] = () => { IFF1 = IFF2; TStates += 8; Regs.PC = Pop(); }; // RETI
+            edOpcodeTable[0x45] = ReturnFromInterrupt; // RETN
+            edOpcodeTable[0x4D] = ReturnFromInterrupt; // RETI
+            edOpcodeTable[0x55] = ReturnFromInterrupt; // RETN aliases
+            edOpcodeTable[0x5D] = ReturnFromInterrupt;
+            edOpcodeTable[0x65] = ReturnFromInterrupt;
+            edOpcodeTable[0x6D] = ReturnFromInterrupt;
+            edOpcodeTable[0x75] = ReturnFromInterrupt;
+            edOpcodeTable[0x7D] = ReturnFromInterrupt;
 
             edOpcodeTable[0x46] = () => { interruptMode = 0; TStates += 8; };
             edOpcodeTable[0x4E] = () => { interruptMode = 0; TStates += 8; };
@@ -162,6 +170,7 @@ namespace Spectrum128kEmulator.Z80
                 SetFlag(Flag.P, Parity(Regs.A));
                 SetFlag(Flag.N, false);
                 CopyUndocumentedFlagsFrom(Regs.A);
+                Memptr = (ushort)(Regs.HL + 1);
 
                 TStates += 18;
             };
@@ -182,6 +191,7 @@ namespace Spectrum128kEmulator.Z80
                 SetFlag(Flag.P, Parity(Regs.A));
                 SetFlag(Flag.N, false);
                 CopyUndocumentedFlagsFrom(Regs.A);
+                Memptr = (ushort)(Regs.HL + 1);
 
                 TStates += 18;
             };
@@ -223,6 +233,7 @@ namespace Spectrum128kEmulator.Z80
                 if (Regs.BC != 0)
                 {
                     Regs.PC = (ushort)(Regs.PC - 2);
+                    Memptr = (ushort)(Regs.PC + 1);
                     TStates += 21;
                 }
                 else
@@ -265,6 +276,7 @@ namespace Spectrum128kEmulator.Z80
                 if (Regs.BC != 0)
                 {
                     Regs.PC = (ushort)(Regs.PC - 2);
+                    Memptr = (ushort)(Regs.PC + 1);
                     TStates += 21;
                 }
                 else
@@ -295,11 +307,21 @@ namespace Spectrum128kEmulator.Z80
             edOpcodeTable[0xBB] = () => BlockOut(false, true);  // OTDR
         }
 
+        private void ReturnFromInterrupt()
+        {
+            IFF1 = IFF2;
+            TStates += 8;
+            Regs.PC = Pop();
+            Memptr = Regs.PC;
+        }
+
         private void BlockIn(bool increment, bool repeat)
         {
             // INI/IND use two opcode M1 cycles followed by the four-T-state
             // I/O read. The ULA samples on the third I/O T-state.
-            byte value = ReadPortTimed?.Invoke(Regs.BC, 12) ?? ReadPort(Regs.BC);
+            ushort port = Regs.BC;
+            byte value = ReadPortTimed?.Invoke(port, 12) ?? ReadPort(port);
+            Memptr = increment ? (ushort)(port + 1) : (ushort)(port - 1);
             WriteMemoryAtInstructionOffset(Regs.HL, value, 12);
 
             Regs.HL = increment ? (ushort)(Regs.HL + 1) : (ushort)(Regs.HL - 1);
@@ -309,6 +331,7 @@ namespace Spectrum128kEmulator.Z80
             if (repeat && Regs.B != 0)
             {
                 Regs.PC = (ushort)(Regs.PC - 2);
+                Memptr = (ushort)(Regs.PC + 1);
                 TStates += 21;
             }
             else
@@ -323,12 +346,14 @@ namespace Spectrum128kEmulator.Z80
 
             Regs.HL = increment ? (ushort)(Regs.HL + 1) : (ushort)(Regs.HL - 1);
             Regs.B = (byte)(Regs.B - 1);
+            Memptr = increment ? (ushort)(Regs.BC + 1) : (ushort)(Regs.BC - 1);
             ApplyBlockIoFlags(value, Regs.L);
 
             bool repeats = repeat && Regs.B != 0;
             if (repeats)
             {
                 Regs.PC = (ushort)(Regs.PC - 2);
+                Memptr = (ushort)(Regs.PC + 1);
             }
 
             // The port cycle completes at T16. Repeating forms spend their
@@ -395,12 +420,29 @@ namespace Spectrum128kEmulator.Z80
             if (repeat && Regs.BC != 0 && r != 0)
             {
                 Regs.PC = (ushort)(Regs.PC - 2);
+                Memptr = (ushort)(Regs.PC + 1);
                 TStates += 21;
             }
             else
             {
+                Memptr = increment ? (ushort)(Memptr + 1) : (ushort)(Memptr - 1);
                 TStates += 16;
             }
+        }
+
+        private byte ReadPortC()
+        {
+            ushort port = Regs.BC;
+            byte value = ReadPortTimed?.Invoke(port, 11) ?? ReadPort(port);
+            Memptr = (ushort)(port + 1);
+            return value;
+        }
+
+        private void WritePortC(byte value)
+        {
+            ushort port = Regs.BC;
+            WritePortTimed(port, value, 12);
+            Memptr = (ushort)(port + 1);
         }
 
         private void SetInFlags(byte value)

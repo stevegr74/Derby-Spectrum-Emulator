@@ -49,8 +49,9 @@ namespace Spectrum128kEmulator.Z80
 
                     if (r == 6)
                     {
-                        SetFlag(Flag.F3, (Regs.H & 0x08) != 0);
-                        SetFlag(Flag.F5, (Regs.H & 0x20) != 0);
+                        byte memptrHigh = (byte)(Memptr >> 8);
+                        SetFlag(Flag.F3, (memptrHigh & 0x08) != 0);
+                        SetFlag(Flag.F5, (memptrHigh & 0x20) != 0);
                     }
                     else
                     {
@@ -97,6 +98,7 @@ namespace Spectrum128kEmulator.Z80
         private void ExecuteIndexedCB(ushort indexReg, sbyte disp, byte cbOp)
         {
             ushort addr = (ushort)(indexReg + disp);
+            Memptr = addr;
             byte value = ReadDataMemory(addr, 2);
             int group = (cbOp >> 6) & 0x03;
             int y = (cbOp >> 3) & 0x07;
@@ -150,8 +152,9 @@ namespace Spectrum128kEmulator.Z80
                     SetFlag(Flag.H, true);
                     SetFlag(Flag.P, !bitSet);
                     SetFlag(Flag.S, y == 7 && bitSet);
-                    SetFlag(Flag.F3, (((byte)(addr >> 8)) & 0x08) != 0);
-                    SetFlag(Flag.F5, (((byte)(addr >> 8)) & 0x20) != 0);
+                    byte memptrHigh = (byte)(Memptr >> 8);
+                    SetFlag(Flag.F3, (memptrHigh & 0x08) != 0);
+                    SetFlag(Flag.F5, (memptrHigh & 0x20) != 0);
                     TStates += 20;
                     break;
                 }
