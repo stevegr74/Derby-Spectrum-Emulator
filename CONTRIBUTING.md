@@ -2,7 +2,7 @@
 
 Thanks for your interest in contributing.
 
-This repository is primarily a personal project focused on building a ZX Spectrum 128K emulator in a clean, testable, and incremental way.
+This repository is primarily a personal project focused on building DERBY, a ZX Spectrum 48K/128K emulator, in a clean, testable, and incremental way.
 
 Contributions are welcome, but the scope is intentionally limited to keep the architecture consistent.
 

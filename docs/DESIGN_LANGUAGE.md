@@ -1,10 +1,21 @@
-# Spectrum 128K Emulator Design Language
+# DERBY Design Language
 
 **Status:** Active frontend standard  
 **Applies to:** Windows forms, dialogs, menus, debugger tools, and future desktop UI  
 **Implementation source:** [`Forms/EmulatorUiStyle.cs`](../Forms/EmulatorUiStyle.cs)
 
 This document is the visual and interaction specification for the Windows frontend. It combines reusable design tokens with examples captured from the current application. New UI should feel like another part of the same tool, not a separately designed utility.
+
+### Brand identity
+
+Use `DERBY` in uppercase for the product mark, window identity, and prominent
+headings. Use `Derby` for namespaces, assemblies, executable names, paths, and
+ordinary prose. The full descriptive name is **DERBY - ZX Spectrum 48K / 128K
+Emulator**. The compact `D` mark uses only `Ink`, `Paper`, and the mint brand
+accent; do not add rainbow stripes, horse imagery, gradients, or unrelated
+nostalgia motifs.
+
+![DERBY wordmark](../assets/branding/derby-wordmark.svg)
 
 ---
 

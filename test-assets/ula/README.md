@@ -17,8 +17,8 @@ script selects a numbered test after BASIC has loaded the program; replace `N`
 with `0` through `7`.
 
 ```text
-dotnet run --project Spectrum128kEmulator.ManualHarness -c Release --no-build -- <timing.tap> frames=6000 strategy=rom model=48 quiet=1 "140:N:down,142:N:up,150:enter:down,152:enter:up"
-dotnet run --project Spectrum128kEmulator.ManualHarness -c Release --no-build -- <timing.tap> frames=6000 strategy=rom model=128 quiet=1 "140:N:down,142:N:up,150:enter:down,152:enter:up"
+dotnet run --project Derby.ManualHarness -c Release --no-build -- <timing.tap> frames=6000 strategy=rom model=48 quiet=1 "140:N:down,142:N:up,150:enter:down,152:enter:up"
+dotnet run --project Derby.ManualHarness -c Release --no-build -- <timing.tap> frames=6000 strategy=rom model=128 quiet=1 "140:N:down,142:N:up,150:enter:down,152:enter:up"
 ```
 
 The opening screen must report frame durations of `69888` and `70908`. Tests 0
@@ -31,8 +31,8 @@ and `FFFF`. Test 8 additionally exercises 128K paged-memory return timing.
 Run each floating-bus TAP in its matching model:
 
 ```text
-dotnet run --project Spectrum128kEmulator.ManualHarness -c Release --no-build -- <float48k.tap> frames=600 strategy=rom model=48 quiet=1
-dotnet run --project Spectrum128kEmulator.ManualHarness -c Release --no-build -- <float128k.tap> frames=600 strategy=rom model=128 quiet=1
+dotnet run --project Derby.ManualHarness -c Release --no-build -- <float48k.tap> frames=600 strategy=rom model=48 quiet=1
+dotnet run --project Derby.ManualHarness -c Release --no-build -- <float128k.tap> frames=600 strategy=rom model=128 quiet=1
 ```
 
 Compare the generated BMP with the upstream reference image. The tested address

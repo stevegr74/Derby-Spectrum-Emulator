@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>DERBY mark</title>
+  <rect width="256" height="256" rx="40" fill="#1e2d31"/>
+  <path d="M58 45h70c46 0 78 33 78 83s-32 83-78 83H58V45zm42 38v90h27c23 0 38-17 38-45s-15-45-38-45h-27z" fill="#5fe1c3"/>
+  <path d="M100 109h68v38h-68z" fill="#f6f6f2"/>
+</svg>

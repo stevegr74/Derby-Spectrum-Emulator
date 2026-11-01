@@ -1,6 +1,10 @@
-# ZX Spectrum 128K Emulator (C#)
+# DERBY
 
-A from-scratch ZX Spectrum 128K emulator written in C# with no third-party runtime dependencies.
+![DERBY wordmark](assets/branding/derby-wordmark.svg)
+
+**DERBY - ZX Spectrum 48K / 128K Emulator**
+
+A from-scratch ZX Spectrum emulator written in C# with no third-party runtime dependencies. The name honours Derby, the development codename used for Sinclair's Spectrum 128.
 
 This project focuses on correctness, clean architecture, and incremental development, with strong validation through automated tests and Z80 compliance tooling.
 
@@ -26,9 +30,9 @@ This project focuses on correctness, clean architecture, and incremental develop
 
 ## Screenshots
 
-### Spectrum 128K Startup
+### DERBY 128K Startup
 
-![Spectrum 128K emulator showing the 128K ROM menu](docs/images/emulator-128k-basic.png)
+![DERBY showing the Spectrum 128K ROM menu](docs/images/emulator-128k-basic.png)
 
 ### Bank-Aware Debugger
 
@@ -57,6 +61,7 @@ Current limitations and active work:
 - broader protected/custom TZX compatibility remains ongoing
 - Milestone 22 USB joystick support is complete, including two independently mapped host controllers, selectable Kempston/Cursor/Sinclair interfaces, and simultaneous Interface II input
 - Milestone 23 SZX loading is complete for supported original 48K/128K CPU execution, RAM, paging, ULA, and AY state; snapshots requiring unsupported models or peripherals are rejected
+- Milestone 26 ROM-set selection supports bundled and custom 48K/Spectrum+ and original 128K/grey +2 ROM layouts; +2A/+3 paging and +3 disk hardware remain planned
 
 ### Implementation Notes
 
@@ -108,7 +113,9 @@ Kempston/Cursor/Sinclair interfaces, simultaneous Interface II input, and a
 platform-neutral core boundary. Milestone 23 SZX snapshot loading is complete
 for supported 48K and original 128K machine state. A model-selectable 48K/128K
 on-screen keyboard follows in Milestone 24. Generic Kempston and AMX mouse support follows in
-Milestone 25. Tape compatibility
+Milestone 25. Milestone 26 has established validated ROM-set selection for the
+existing 48K and original 128K hardware models; +2A/+3 machine support remains
+future hardware work rather than a ROM-only change. Tape compatibility
 and broader title-specific audio fidelity validation continue in parallel, with
 the verified media matrix plus ZEXDOC/ZEXALL used as regression gates.
 
@@ -120,8 +127,8 @@ The solution separates the platform-neutral emulator from the Windows frontend
 and diagnostic tools:
 
 ```text
-Spectrum128kEmulator/
-|-- Spectrum128kEmulator.Core/             net8.0 platform-neutral emulator
+Derby/
+|-- Derby.Core/             net8.0 platform-neutral emulator
 |   |-- Audio/                             AY/beeper synthesis and sample clock
 |   |-- Debugging/                         instruction-boundary execution controller
 |   |-- Input/                             platform-neutral joystick state and interfaces
@@ -160,7 +167,7 @@ Spectrum128kEmulator/
 |-- Pokes/                                 editable validated game/poke library and format guide
 |-- Video/                                 display modes, pixel-art scaling, presentation, and overlays
 |-- Program.cs                             Windows application entry point
-|-- Spectrum128kEmulator.csproj            net10.0 Windows frontend project
+|-- Derby.csproj            net10.0 Windows frontend project
 |-- docs/                                  user, design, compatibility, and engineering documentation
 |   |-- USER_GUIDE.md                      current emulator operation and troubleshooting
 |   |-- DESIGN_LANGUAGE.md                 Windows visual and interaction standards
@@ -168,10 +175,10 @@ Spectrum128kEmulator/
 |   |-- TAPE_STATE_OWNERSHIP.md            tape subsystem ownership and invariants
 |   `-- images/                            README and documentation screenshots
 |
-|-- Spectrum128kEmulator.Tests/            net8.0 Core unit and regression tests
-|-- Spectrum128kEmulator.Windows.Tests/    Windows presentation and host tests
-|-- Spectrum128kEmulator.ManualHarness/    net8.0 Core-only diagnostic and capture tool
-|-- Spectrum128kEmulator.Z80Compliance/    net8.0 ZEXDOC/ZEXALL compliance runner
+|-- Derby.Tests/            net8.0 Core unit and regression tests
+|-- Derby.Windows.Tests/    Windows presentation and host tests
+|-- Derby.ManualHarness/    net8.0 Core-only diagnostic and capture tool
+|-- Derby.Z80Compliance/    net8.0 ZEXDOC/ZEXALL compliance runner
 |-- ROMs/                                  required 128K ROM images
 |-- test-assets/                           checked-in test programs and fixtures
 |   |-- ula/                               external ULA diagnostic runbook (media not redistributed)
@@ -179,12 +186,12 @@ Spectrum128kEmulator/
 `-- tmp/                                   ignored local probes, captures, and scratch artifacts
 ```
 
-`Spectrum128kEmulator.Core` has no WinForms, `System.Drawing`, or Windows
+`Derby.Core` has no WinForms, `System.Drawing`, or Windows
 audio-device dependency. The `net10.0-windows` frontend consumes Core for
 emulation state and produces Windows-specific video and audio output. The
-compliance runner, `Spectrum128kEmulator.Tests`, and manual harness depend only
+compliance runner, `Derby.Tests`, and manual harness depend only
 on Core. Windows presentation, debugger UI, and host behavior are covered by
-`Spectrum128kEmulator.Windows.Tests`.
+`Derby.Windows.Tests`.
 
 ---
 
@@ -379,7 +386,7 @@ Snapshots can be loaded with `F9` (`.sna`) and `F10` (`.z80` or `.szx`) in the U
 A simple headless harness is included for debugging:
 
 ```text
-dotnet run --project Spectrum128kEmulator.ManualHarness
+dotnet run --project Derby.ManualHarness
 ```
 
 This runs the emulator without UI and logs state.
@@ -406,7 +413,7 @@ checks without redistributing the snapshot files.
 A dedicated headless runner is included for CPU validation:
 
 ```text
-dotnet run -c Release --project Spectrum128kEmulator.Z80Compliance -- test-assets/z80/zexdoc.com 7000000000
+dotnet run -c Release --project Derby.Z80Compliance -- test-assets/z80/zexdoc.com 7000000000
 ```
 
 Notes:
@@ -569,6 +576,9 @@ compatibility; completed milestones remain regression baselines.
 - Keep host pointer movement and buttons in the Windows adapter while the platform-neutral core owns emulated peripheral counters, buttons, ports, and interrupt state
 - Implement Kempston Mouse first through its wrapping X/Y counters and active-low button port, without conflating it with the existing Kempston joystick interface
 - Add AMX Mouse as a separate second phase with Z80 PIO data/control ports, movement-driven interrupts, button input, and tested interaction with normal Spectrum interrupts
+- Model real peripheral conflicts explicitly, including the AMX use of port `0x1F`, rather than allowing incompatible joystick and mouse interfaces to respond simultaneously
+- Preserve emulated mouse counters and peripheral state in Quick State and supported SZX snapshots while excluding transient host capture state
+- Add port-decoding, counter-wrap, scaling, button, capture/release, focus-loss, interrupt-ordering, save/restore, and peripheral-conflict tests plus acceptance checks with The Artist II
 
 ### Milestone 26 - ROM Sets And Later Spectrum Models In Progress
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
@@ -576,9 +586,6 @@ compatibility; completed milestones remain regression baselines.
 - Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
 - Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
 - Defers +2A/+3 claims until four-ROM selection, `1FFD` special paging, all-RAM maps and revised port decoding are implemented; +3 disk support additionally requires a uPD765-compatible FDC and drive/media model
-- Model real peripheral conflicts explicitly, including the AMX use of port `0x1F`, rather than allowing incompatible joystick and mouse interfaces to respond simultaneously
-- Preserve emulated mouse counters and peripheral state in Quick State and supported SZX snapshots while excluding transient host capture state
-- Add port-decoding, counter-wrap, scaling, button, capture/release, focus-loss, interrupt-ordering, save/restore, and peripheral-conflict tests plus acceptance checks with The Artist II
 
 ---
 

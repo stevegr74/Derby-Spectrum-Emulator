@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     internal static class Program
     {

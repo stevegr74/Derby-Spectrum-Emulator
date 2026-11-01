@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public static class SpectrumKeyboardMapping
     {

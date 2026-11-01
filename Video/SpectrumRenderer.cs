@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public static class SpectrumRenderer
     {

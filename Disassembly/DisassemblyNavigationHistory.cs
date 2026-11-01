@@ -1,4 +1,4 @@
-namespace Spectrum128kEmulator
+namespace Derby
 {
     public readonly record struct DisassemblyNavigationLocation(
         ushort ListingAddress,

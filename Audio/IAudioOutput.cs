@@ -1,6 +1,6 @@
 using System;
 
-namespace Spectrum128kEmulator.Audio
+namespace Derby.Audio
 {
     public interface IAudioOutput : IDisposable
     {
