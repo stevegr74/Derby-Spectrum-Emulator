@@ -150,7 +150,6 @@ namespace Spectrum128kEmulator.Tests
         public void LoadSna48k_Restores_Iff1_And_Iff2_From_Iff2_Bit()
         {
             string tempFolder = CreateTempRoms();
-            string snapshotPath = Path.Combine(tempFolder, "exolon.sna");
 
             try
             {
@@ -159,10 +158,9 @@ namespace Spectrum128kEmulator.Tests
                 data[23] = 0x00; data[24] = 0xC0;
                 data[27 + 0x8000] = 0x34;
                 data[27 + 0x8001] = 0x12;
-                File.WriteAllBytes(snapshotPath, data);
 
                 var machine = new Spectrum128Machine(tempFolder);
-                SnapshotLoader.LoadSna48k(machine, snapshotPath);
+                SnapshotLoader.LoadSna48k(machine, data);
 
                 Assert.True(machine.Cpu.IFF1);
                 Assert.True(machine.Cpu.IFF2);
