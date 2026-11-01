@@ -114,15 +114,16 @@ namespace Spectrum128kEmulator
                 flags.Controls.Add(flag, index, 0);
             }
 
-            TableLayoutPanel state = CreateGrid(4, 2);
+            TableLayoutPanel state = CreateGrid(5, 2);
             state.Controls.Add(CreateCpuValueLabel("I", "I"), 0, 0);
             state.Controls.Add(CreateCpuValueLabel("R", "R"), 1, 0);
             state.Controls.Add(CreateCpuValueLabel("IM", "IM"), 2, 0);
             state.Controls.Add(CreateCpuValueLabel("IFF", "IFF"), 3, 0);
             state.Controls.Add(CreateCpuValueLabel("HALT", "HALT"), 0, 1);
             state.Controls.Add(CreateCpuValueLabel("INT", "INT"), 1, 1);
+            state.Controls.Add(CreateCpuValueLabel("WZ", "WZ", clickable: true), 2, 1);
             Label tStates = CreateCpuValueLabel("T", "T");
-            state.Controls.Add(tStates, 2, 1);
+            state.Controls.Add(tStates, 3, 1);
             state.SetColumnSpan(tStates, 2);
 
             panel.Controls.Add(flags, 0, 0);
@@ -225,6 +226,7 @@ namespace Spectrum128kEmulator
             SetCpuValue("IFF", $"{Bit(cpu.IFF1)}/{Bit(cpu.IFF2)}", previous != null && (cpu.IFF1 != previous.IFF1 || cpu.IFF2 != previous.IFF2));
             SetCpuValue("HALT", Bit(cpu.IsHalted), previous != null && cpu.IsHalted != previous.IsHalted);
             SetCpuValue("INT", Bit(cpu.InterruptPending), previous != null && cpu.InterruptPending != previous.InterruptPending);
+            SetCpuValue("WZ", cpu.Memptr, previous?.Memptr);
             SetCpuValue("T", cpu.TStates.ToString(), previous != null && cpu.TStates != previous.TStates);
 
             for (int index = 0; index < 4; index++)
@@ -298,13 +300,14 @@ namespace Spectrum128kEmulator
                 "SP" => cpu.SP,
                 "IX" => cpu.IX,
                 "IY" => cpu.IY,
+                "WZ" => cpu.Memptr,
                 "Stack0" when cpu.StackWords.Count > 0 => cpu.StackWords[0],
                 "Stack1" when cpu.StackWords.Count > 1 => cpu.StackWords[1],
                 "Stack2" when cpu.StackWords.Count > 2 => cpu.StackWords[2],
                 "Stack3" when cpu.StackWords.Count > 3 => cpu.StackWords[3],
                 _ => 0
             };
-            return key is "BC" or "DE" or "HL" or "BC2" or "DE2" or "HL2" or "PC" or "SP" or "IX" or "IY" ||
+            return key is "BC" or "DE" or "HL" or "BC2" or "DE2" or "HL2" or "PC" or "SP" or "IX" or "IY" or "WZ" ||
                 key.StartsWith("Stack", StringComparison.Ordinal) && int.TryParse(key.AsSpan(5), out int index) && index < cpu.StackWords.Count;
         }
 

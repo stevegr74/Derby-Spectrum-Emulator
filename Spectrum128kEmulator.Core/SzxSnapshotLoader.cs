@@ -186,7 +186,7 @@ namespace Spectrum128kEmulator
                 ReadWord(data, offset + 8), ReadWord(data, offset + 10), ReadWord(data, offset + 12), ReadWord(data, offset + 14),
                 ReadWord(data, offset + 16), ReadWord(data, offset + 18), ReadWord(data, offset + 20), ReadWord(data, offset + 22),
                 data[offset + 24], data[offset + 25], iff1 != 0, iff2 != 0, interruptMode,
-                ReadDword(data, offset + 29), holdInterruptCycles, flags);
+                ReadDword(data, offset + 29), holdInterruptCycles, flags, ReadWord(data, offset + 35));
         }
 
         private static SpectrumState ParseSpectrum(byte[] data, int offset, int length, SpectrumMachineModel model)
@@ -362,7 +362,8 @@ namespace Spectrum128kEmulator
                 halted: (state.Flags & 0x02) != 0,
                 interruptPending: false,
                 suppressInterrupts: (state.Flags & 0x01) != 0,
-                flagsSet: (state.Flags & 0x04) != 0);
+                flagsSet: (state.Flags & 0x04) != 0,
+                memptr: state.Memptr);
         }
 
         private static ushort ReadWord(byte[] data, int offset) =>
@@ -388,7 +389,7 @@ namespace Spectrum128kEmulator
             ushort AF_, ushort BC_, ushort DE_, ushort HL_,
             ushort IX, ushort IY, ushort SP, ushort PC,
             byte I, byte R, bool IFF1, bool IFF2, byte InterruptMode,
-            uint FrameCycles, byte HoldInterruptCycles, byte Flags);
+            uint FrameCycles, byte HoldInterruptCycles, byte Flags, ushort Memptr);
 
         private sealed record SpectrumState(byte Border, byte Port7ffd, byte PortFe);
         private sealed record AyState(byte SelectedRegister, byte[] Registers);

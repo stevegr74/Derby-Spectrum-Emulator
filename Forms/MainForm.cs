@@ -607,7 +607,8 @@ namespace Spectrum128kEmulator
                     machine.Cpu.IsHalted,
                     machine.Cpu.InterruptPending,
                     machine.Cpu.TStates,
-                    stackWords);
+                    stackWords,
+                    machine.Cpu.Memptr);
                 byte[][] romBanks = Enumerable.Range(0, 2).Select(machine.GetRomBankCopy).ToArray();
                 byte[][] ramBanks = Enumerable.Range(0, 8).Select(machine.GetRamBankCopy).ToArray();
 

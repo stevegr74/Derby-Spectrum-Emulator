@@ -73,15 +73,15 @@ namespace Spectrum128kEmulator.Z80
                 TStates += 4;
             };
 
-            opcodeTable[0x02] = () => { WriteDataMemory(Regs.BC, Regs.A); TStates += 7; };
-            opcodeTable[0x0A] = () => { Regs.A = ReadDataMemory(Regs.BC); TStates += 7; };
-            opcodeTable[0x12] = () => { WriteDataMemory(Regs.DE, Regs.A); TStates += 7; };
-            opcodeTable[0x1A] = () => { Regs.A = ReadDataMemory(Regs.DE); TStates += 7; };
+            opcodeTable[0x02] = () => { WriteDataMemory(Regs.BC, Regs.A); Memptr = (ushort)((Regs.A << 8) | ((Regs.BC + 1) & 0xFF)); TStates += 7; };
+            opcodeTable[0x0A] = () => { Regs.A = ReadDataMemory(Regs.BC); Memptr = (ushort)(Regs.BC + 1); TStates += 7; };
+            opcodeTable[0x12] = () => { WriteDataMemory(Regs.DE, Regs.A); Memptr = (ushort)((Regs.A << 8) | ((Regs.DE + 1) & 0xFF)); TStates += 7; };
+            opcodeTable[0x1A] = () => { Regs.A = ReadDataMemory(Regs.DE); Memptr = (ushort)(Regs.DE + 1); TStates += 7; };
 
-            opcodeTable[0x09] = () => { Regs.HL = Add16(Regs.HL, Regs.BC); TStates += 11; };
-            opcodeTable[0x19] = () => { Regs.HL = Add16(Regs.HL, Regs.DE); TStates += 11; };
-            opcodeTable[0x29] = () => { Regs.HL = Add16(Regs.HL, Regs.HL); TStates += 11; };
-            opcodeTable[0x39] = () => { Regs.HL = Add16(Regs.HL, Regs.SP); TStates += 11; };
+            opcodeTable[0x09] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16(Regs.HL, Regs.BC); TStates += 11; };
+            opcodeTable[0x19] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16(Regs.HL, Regs.DE); TStates += 11; };
+            opcodeTable[0x29] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16(Regs.HL, Regs.HL); TStates += 11; };
+            opcodeTable[0x39] = () => { Memptr = (ushort)(Regs.HL + 1); Regs.HL = Add16(Regs.HL, Regs.SP); TStates += 11; };
 
             opcodeTable[0x10] = () => // DJNZ e
             {
@@ -90,6 +90,7 @@ namespace Spectrum128kEmulator.Z80
                 if (Regs.B != 0)
                 {
                     Regs.PC = (ushort)(Regs.PC + e);
+                    Memptr = Regs.PC;
                     TStates += 13;
                 }
                 else
@@ -102,6 +103,7 @@ namespace Spectrum128kEmulator.Z80
             {
                 sbyte e = (sbyte)FetchByte();
                 Regs.PC = (ushort)(Regs.PC + e);
+                Memptr = Regs.PC;
                 TStates += 12;
             };
 
@@ -115,6 +117,7 @@ namespace Spectrum128kEmulator.Z80
                 ushort addr = FetchWord();
                 WriteDataMemory(addr, Regs.L);
                 WriteDataMemory((ushort)(addr + 1), Regs.H);
+                Memptr = (ushort)(addr + 1);
                 TStates += 16;
             };
 
@@ -143,6 +146,7 @@ namespace Spectrum128kEmulator.Z80
                 byte low = ReadDataMemory(addr);
                 byte high = ReadDataMemory((ushort)(addr + 1));
                 Regs.HL = (ushort)(low | (high << 8));
+                Memptr = (ushort)(addr + 1);
                 TStates += 16;
             };
 
@@ -229,8 +233,8 @@ namespace Spectrum128kEmulator.Z80
             opcodeTable[0x21] = () => { Regs.HL = FetchWord(); TStates += 10; };
             opcodeTable[0x31] = () => { Regs.SP = FetchWord(); TStates += 10; };
 
-            opcodeTable[0x3A] = () => { Regs.A = ReadDataMemory(FetchWord()); TStates += 13; };
-            opcodeTable[0x32] = () => { WriteDataMemory(FetchWord(), Regs.A); TStates += 13; };
+            opcodeTable[0x3A] = () => { ushort addr = FetchWord(); Regs.A = ReadDataMemory(addr); Memptr = (ushort)(addr + 1); TStates += 13; };
+            opcodeTable[0x32] = () => { ushort addr = FetchWord(); WriteDataMemory(addr, Regs.A); Memptr = (ushort)((Regs.A << 8) | ((addr + 1) & 0xFF)); TStates += 13; };
 
             opcodeTable[0x03] = () => { Regs.BC++; TStates += 6; };
             opcodeTable[0x0B] = () => { Regs.BC--; TStates += 6; };
@@ -275,6 +279,7 @@ namespace Spectrum128kEmulator.Z80
                 WriteDataMemory(Regs.SP, Regs.L);
                 WriteDataMemory((ushort)(Regs.SP + 1), Regs.H);
                 Regs.HL = (ushort)(low | (high << 8));
+                Memptr = Regs.HL;
                 TStates += 19;
             };
 
@@ -315,7 +320,8 @@ namespace Spectrum128kEmulator.Z80
 
             opcodeTable[0xC3] = () => // JP nn
             {
-                Regs.PC = FetchWord();
+                Memptr = FetchWord();
+                Regs.PC = Memptr;
                 TStates += 10;
             };
 
@@ -331,6 +337,7 @@ namespace Spectrum128kEmulator.Z80
             opcodeTable[0xCD] = () => // CALL nn
             {
                 ushort addr = FetchWord();
+                Memptr = addr;
                 TStates += 11;
                 Push(Regs.PC);
                 Regs.PC = addr;
@@ -349,6 +356,7 @@ namespace Spectrum128kEmulator.Z80
             {
                 TStates += 4;
                 Regs.PC = Pop();
+                Memptr = Regs.PC;
             };
 
             opcodeTable[0xC0] = () => RETcc((Regs.F & 0x40) == 0);
@@ -394,6 +402,7 @@ namespace Spectrum128kEmulator.Z80
                 byte low = FetchByte();
                 ushort port = (ushort)((Regs.A << 8) | low);
                 WritePortTimed(port, Regs.A, 11);
+                Memptr = (ushort)((Regs.A << 8) | ((low + 1) & 0xFF));
             };
 
             opcodeTable[0xDB] = () => // IN A,(n)
@@ -403,6 +412,7 @@ namespace Spectrum128kEmulator.Z80
                 // The ULA sees the read during the third T-state of the final
                 // I/O cycle: 4 (M1) + 3 (operand) + 3.
                 Regs.A = ReadPortTimed?.Invoke(port, 10) ?? ReadPort(port);
+                Memptr = (ushort)(port + 1);
                 TStates += 11;
             };
 
@@ -414,6 +424,7 @@ namespace Spectrum128kEmulator.Z80
                     TStates += 5;
                     Push(Regs.PC);
                     Regs.PC = (ushort)addr;
+                    Memptr = Regs.PC;
                 };
             }
         }
@@ -428,6 +439,7 @@ namespace Spectrum128kEmulator.Z80
             {
                 TStates += 5;
                 Regs.PC = Pop();
+                Memptr = Regs.PC;
             }
             else
             {
@@ -438,6 +450,7 @@ namespace Spectrum128kEmulator.Z80
         private void CALLcc(bool condition)
         {
             ushort addr = FetchWord();
+            Memptr = addr;
             if (condition)
             {
                 TStates += 11;
@@ -456,6 +469,7 @@ namespace Spectrum128kEmulator.Z80
             if (condition)
             {
                 Regs.PC = (ushort)(Regs.PC + e);
+                Memptr = Regs.PC;
                 TStates += 12;
             }
             else
@@ -467,6 +481,7 @@ namespace Spectrum128kEmulator.Z80
         private void JPcc(bool condition)
         {
             ushort addr = FetchWord();
+            Memptr = addr;
             if (condition)
                 Regs.PC = addr;
             TStates += 10;

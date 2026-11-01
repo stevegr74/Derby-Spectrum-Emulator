@@ -52,7 +52,8 @@ namespace Spectrum128kEmulator
         bool IsHalted,
         bool InterruptPending,
         ulong TStates,
-        IReadOnlyList<ushort> StackWords);
+        IReadOnlyList<ushort> StackWords,
+        ushort Memptr = 0);
 
     public sealed class DisassemblySnapshot
     {
