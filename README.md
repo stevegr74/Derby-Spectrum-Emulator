@@ -63,7 +63,7 @@ Current limitations and active work:
 - Fast tape bootstrap is capability-gated. Unsupported initial or chained BASIC control flow, including noncanonical line tables, protected handoff directly into raw pulses, and mixed raw-stream autorun that cannot be represented safely, falls back to a clean real-ROM autorun path with the remaining tape mounted. Proven headered CODE chains preserve their follow-on USR continuation even when the next tape signal has started. In 128K mode, unsupported standard BASIC also starts through ROM 0 and the native Tape Loader with byte-copy traps disabled, preserving the ROM's complete multi-file load sequence and bank setup. Protected chained BASIC data that depends on live ROM interpreter cursors likewise remains on exact pulse/EAR playback.
 - BASIC expression syntax and header/data length consistency are preflighted before acceleration; malformed or ambiguous pairs fall back without partially executing the bootstrap. ROM-dependent malformed BASIC headers start through the native 48K `LOAD ""` command or 128K Tape Loader with byte traps disabled, preserving their intentional header side effects.
 - Explicit BASIC `LOAD ... CODE address` destinations override the address advertised by the tape header in both initial bootstrap and mounted continuation stages.
-- Address-based ROM tape services are enabled only for the fingerprinted bundled ROM pair; an unknown ROM pair uses real-time mounted pulse/EAR playback instead of assuming compatible internal addresses.
+- Address-based ROM tape services are enabled only for fingerprinted compatible ROMs; an unknown custom ROM or ROM pair uses real-time mounted pulse/EAR playback instead of assuming compatible internal addresses.
 - ROM-driven tape handoffs preserve consumed-block pauses, exact TZX pause signal transitions, and zero-duration stop markers.
 - TZX pulse and pause timings use their 3.5 MHz tape-time basis and are scaled to the selected machine clock; unstructured ROM loads return to their actual caller so banked multiload stages can continue safely.
 - Standard-speed TAP/TZX pilot length follows the complete flag range: flags below `0x80`, including custom loader flags, receive the 8,063-pulse pilot; flags at or above `0x80` receive 3,223 pulses.
@@ -143,6 +143,7 @@ Spectrum128kEmulator/
 |   |-- Spectrum128Machine.cs              machine orchestration, memory, paging, ULA timing, and input
 |   |-- Spectrum128Machine.Diagnostics.cs  trace capture, watches, and diagnostic dumps
 |   |-- SpectrumRomProfile.cs              fingerprinted ROM capabilities and internal entry points
+|   |-- SpectrumRomSet.cs                  validated model-aware ROM image selection
 |   |-- SpectrumFrameBuffer.cs             platform-neutral ARGB frame buffer
 |   |-- BorderFrame.cs                     timestamped border events
 |   |-- SnapshotLoader.cs                  SNA snapshot loading
@@ -206,6 +207,14 @@ Expected ROMs:
 
 - `128-0.rom`
 - `128-1.rom`
+
+The right-click `ROM Set` submenu selects the bundled 128K set, the bundled
+48K/Spectrum+ ROM, a custom 16KB 48K/Spectrum+ ROM, or an ordered custom
+128K/grey +2 ROM pair. Custom images are validated before the machine resets.
+ROM 0 is the 128K editor/menu ROM and ROM 1 is the 48K BASIC ROM. Unknown ROM
+layouts boot without address-based tape acceleration. +2A/+3 ROMs are not
+offered as a cosmetic ROM swap: those machines require four ROMs, the `1FFD`
+paging register and all-RAM modes, with +3 disk support requiring an FDC model.
 
 The emulator starts in fixed-size `2x Enhanced` mode. `F4` cycles 1x native
 (`320x240`), Scale2x (`640x480`), and Scale3x (`960x720`). Right-clicking the
@@ -441,6 +450,7 @@ compatibility; completed milestones remain regression baselines.
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
 | 24 | Planned | Pop-up on-screen keyboard with selectable authentic 48K and 128K layouts |
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
+| 26 | In progress | Selectable validated ROM sets for 48K/Spectrum+, original 128K/grey +2, followed by genuine +2A/+3 paging and disk hardware |
 
 ### Milestone 7 - Audio And Turbo Handoff Complete
 - Generates 48K beeper and 128K AY tone, noise, and envelope output from timestamped machine events through one mixed sample pipeline
@@ -559,6 +569,13 @@ compatibility; completed milestones remain regression baselines.
 - Keep host pointer movement and buttons in the Windows adapter while the platform-neutral core owns emulated peripheral counters, buttons, ports, and interrupt state
 - Implement Kempston Mouse first through its wrapping X/Y counters and active-low button port, without conflating it with the existing Kempston joystick interface
 - Add AMX Mouse as a separate second phase with Z80 PIO data/control ports, movement-driven interrupts, button input, and tested interaction with normal Spectrum interrupts
+
+### Milestone 26 - ROM Sets And Later Spectrum Models In Progress
+- Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
+- Added bundled 48K/Spectrum+ and 128K choices plus validated custom 16KB 48K ROM and ordered two-ROM 128K/grey +2 selection
+- Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
+- Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
+- Defers +2A/+3 claims until four-ROM selection, `1FFD` special paging, all-RAM maps and revised port decoding are implemented; +3 disk support additionally requires a uPD765-compatible FDC and drive/media model
 - Model real peripheral conflicts explicitly, including the AMX use of port `0x1F`, rather than allowing incompatible joystick and mouse interfaces to respond simultaneously
 - Preserve emulated mouse counters and peripheral state in Quick State and supported SZX snapshots while excluding transient host capture state
 - Add port-decoding, counter-wrap, scaling, button, capture/release, focus-loss, interrupt-ordering, save/restore, and peripheral-conflict tests plus acceptance checks with The Artist II

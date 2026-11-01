@@ -28,6 +28,61 @@ namespace Spectrum128kEmulator.Tests
         }
 
         [Fact]
+        public void Bundled48kRomSet_Uses48kHardwareAndKnownTapeProfile()
+        {
+            string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
+            var machine = new Spectrum128Machine(SpectrumRomSet.Bundled48K(romFolder));
+
+            Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+            Assert.Equal("Sinclair ZX Spectrum 48K", machine.RomProfile.Name);
+            Assert.True(machine.SupportsRomTapeAcceleration);
+            Assert.Equal(machine.GetRomBankCopy(0), machine.GetRomBankCopy(1));
+        }
+
+        [Fact]
+        public void CustomRomSet_RejectsImagesThatAreNotExactly16k()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            string path = Path.Combine(folder, "bad.rom");
+            File.WriteAllBytes(path, new byte[1024]);
+
+            try
+            {
+                Assert.Throws<InvalidDataException>(() =>
+                    SpectrumRomSet.Create48K("Bad ROM", path));
+            }
+            finally
+            {
+                Directory.Delete(folder, true);
+            }
+        }
+
+        [Fact]
+        public void Unknown48kRom_DisablesAddressBasedTapeServices()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(folder);
+            string path = Path.Combine(folder, "custom.rom");
+            byte[] data = new byte[16384];
+            data[0] = 0xF3;
+            File.WriteAllBytes(path, data);
+
+            try
+            {
+                var machine = new Spectrum128Machine(SpectrumRomSet.Create48K("Custom 48K", path));
+
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+                Assert.Equal("Unknown 48K ROM", machine.RomProfile.Name);
+                Assert.False(machine.SupportsRomTapeAcceleration);
+            }
+            finally
+            {
+                Directory.Delete(folder, true);
+            }
+        }
+
+        [Fact]
         public void UnknownRomPair_Disables_AddressBasedTapeServices_And_Uses_RawPlayback()
         {
             string romFolder = CreateUnknownRoms();

@@ -29,7 +29,7 @@ This manual describes the emulator as it operates today. It begins with normal l
 
 # Chapter 1 - Getting Started
 
-The emulator models both the Spectrum 48K and original 128K. The chosen model affects ROM behaviour, memory, timing, sound, and how some games divide their tape content. Select the intended model before mounting a tape.
+The emulator models Spectrum 48K/Spectrum+ hardware and original 128K/grey +2 hardware. The chosen model affects ROM behaviour, memory, timing, sound, and how some games divide their tape content. Select the intended model before mounting a tape.
 
 ## Requirements
 
@@ -45,6 +45,23 @@ dotnet run
 ```
 
 The emulator starts as a Spectrum 128K in `2x Enhanced` display mode and shows the 128K ROM menu.
+
+## ROM Sets
+
+Right-click the display and open **ROM Set** to choose:
+
+- The bundled Sinclair 128K ROM pair.
+- The bundled 48K BASIC ROM, used with 48K/Spectrum+ hardware.
+- A custom 16KB 48K or Spectrum+ ROM.
+- A custom ordered 128K or original grey +2 pair: select ROM 0 first, then ROM 1.
+
+Changing ROM set resets the machine and clears the loaded media. Files are
+validated as exact 16KB images before reset. A custom ROM can boot normally,
+but ROM-address-dependent tape acceleration is disabled when its internal
+layout is not recognized; loading then stays with real ROM execution and tape
+pulses. +2A and +3 ROM sets are deliberately rejected because those models
+need additional paging hardware, and +3 disk operation also needs a disk
+controller and drive model.
 
 ## First Use
 
