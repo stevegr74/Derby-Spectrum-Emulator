@@ -63,6 +63,7 @@ namespace Spectrum128kEmulator
         private readonly ToolStripMenuItem enhanced3xDisplayMenuItem = new ToolStripMenuItem("3x Enhanced");
         private readonly ToolStripMenuItem reset128kMenuItem = new ToolStripMenuItem("Reset to 128K");
         private readonly ToolStripMenuItem reset48kMenuItem = new ToolStripMenuItem("Reset to 48K");
+        private readonly ToolStripMenuItem romSetMenuItem = new ToolStripMenuItem("ROM Set");
         private readonly ToolStripMenuItem statusOverlayMenuItem = new ToolStripMenuItem("F2 - Status Overlay");
         private readonly ToolStripMenuItem tapeTransportMenuItem = new ToolStripMenuItem("F5 - Stop / Resume Tape");
         private readonly ToolStripMenuItem disassemblerMenuItem = new ToolStripMenuItem("F6 - Debugger / Disassembler");
@@ -73,6 +74,7 @@ namespace Spectrum128kEmulator
         private readonly ToolStripMenuItem pokeManagerMenuItem = new ToolStripMenuItem("Poke Manager...");
 
         private readonly string romFolder;
+        private SpectrumRomSet selectedRomSet = null!;
         private Spectrum128Machine machine;
         private readonly object machineLock = new();
         private readonly object inputStateLock = new();
@@ -143,6 +145,7 @@ namespace Spectrum128kEmulator
             Controls.Add(screenBox);
 
             romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
+            selectedRomSet = SpectrumRomSet.Bundled128K(romFolder);
             machine = CreateConfiguredMachine();
             joystickSettings = joystickSettingsStore.Load();
             joystickInputController = new HostJoystickInputController(joystickSource);
@@ -195,6 +198,8 @@ namespace Spectrum128kEmulator
                 reset48kMenuItem
             });
             displayContextMenu.Items.Add(machineModelMenuItem);
+            InitializeRomSetMenu();
+            displayContextMenu.Items.Add(romSetMenuItem);
 
             var displaySizeMenuItem = new ToolStripMenuItem("F4 - Display Size");
             nativeDisplayMenuItem.Click += (_, _) => SelectDisplayMode(SpectrumDisplayMode.Native);
@@ -628,8 +633,8 @@ namespace Spectrum128kEmulator
 
         private Spectrum128Machine CreateConfiguredMachine()
         {
-            var configuredMachine = new Spectrum128Machine(romFolder);
-            if (selectedMachineModel != SpectrumMachineModel.Spectrum128K)
+            var configuredMachine = new Spectrum128Machine(selectedRomSet);
+            if (selectedMachineModel != configuredMachine.MachineModel)
                 configuredMachine.Reset(selectedMachineModel);
             configuredMachine.SetScreenWriteDiagnosticsEnabled(LogFrameDiagnostics);
             if (LogUnimplementedOpcodes || LogPagingWrites)
@@ -659,6 +664,11 @@ namespace Spectrum128kEmulator
         {
             ExecuteWithEmulationPaused(() =>
             {
+                if (model == SpectrumMachineModel.Spectrum128K &&
+                    selectedRomSet.Model == SpectrumMachineModel.Spectrum48K)
+                {
+                    selectedRomSet = SpectrumRomSet.Bundled128K(romFolder);
+                }
                 selectedMachineModel = model;
                 loadedMediaDisplayName = null;
                 loadedMediaIdentity = null;
@@ -674,6 +684,7 @@ namespace Spectrum128kEmulator
             });
 
             UpdateMachineModelMenuItems();
+            UpdateRomSetMenu();
             SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
             PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
             screenBox.Focus();

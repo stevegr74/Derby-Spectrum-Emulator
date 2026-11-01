@@ -141,14 +141,24 @@ namespace Spectrum128kEmulator
         public bool IsTapeStoppedAtMarker => tapeTransport.IsStoppedAtMarker;
 
         public Spectrum128Machine(string romFolder)
-            : this(romFolder, romProfileOverride: null)
+            : this(SpectrumRomSet.Bundled128K(romFolder), romProfileOverride: null)
         {
         }
 
         internal Spectrum128Machine(string romFolder, SpectrumRomProfile? romProfileOverride)
+            : this(SpectrumRomSet.Bundled128K(romFolder), romProfileOverride)
         {
-            if (string.IsNullOrWhiteSpace(romFolder))
-                throw new ArgumentException("ROM folder must be provided.", nameof(romFolder));
+        }
+
+        public Spectrum128Machine(SpectrumRomSet romSet)
+            : this(romSet, romProfileOverride: null)
+        {
+        }
+
+        private Spectrum128Machine(SpectrumRomSet romSet, SpectrumRomProfile? romProfileOverride)
+        {
+            ArgumentNullException.ThrowIfNull(romSet);
+            RomSet = romSet;
 
             for (int i = 0; i < ramBanks.Length; i++)
                 ramBanks[i] = new byte[16384];
@@ -156,7 +166,7 @@ namespace Spectrum128kEmulator
             for (int i = 0; i < romBanks.Length; i++)
                 romBanks[i] = new byte[16384];
 
-            LoadRoms(romFolder);
+            LoadRoms(romSet);
             if (romProfileOverride != null)
                 RomProfile = romProfileOverride;
             mountedLoadContinuation = new MountedLoadContinuationController(this);
@@ -188,6 +198,8 @@ namespace Spectrum128kEmulator
             ClearDebugHistory();
             tStatesUntilNextInterrupt = 0;
             realignInterruptPhaseAfterNextAccept = false;
+            if (romSet.Model != SpectrumMachineModel.Spectrum128K)
+                Reset(romSet.Model);
         }
 
         public Z80Cpu Cpu => cpu;
@@ -207,6 +219,7 @@ namespace Spectrum128kEmulator
         public int FrameTStates => frameTStates;
         public int CurrentCpuClockHz => TimingProfile.CpuClockHz;
         public SpectrumMachineModel MachineModel { get; private set; } = SpectrumMachineModel.Spectrum128K;
+        public SpectrumRomSet RomSet { get; }
         public SpectrumRomProfile RomProfile { get; private set; } = null!;
         public bool SupportsRomTapeAcceleration => RomProfile.SupportsAddressBasedTapeServices;
         public bool FlashPhase => ((FrameCount / 16) & 1) != 0;
@@ -985,20 +998,12 @@ namespace Spectrum128kEmulator
             ulaRaster.Reset(TimingProfile);
         }
 
-        private void LoadRoms(string romFolder)
+        private void LoadRoms(SpectrumRomSet romSet)
         {
-            string rom0Path = Path.Combine(romFolder, "128-0.rom");
-            string rom1Path = Path.Combine(romFolder, "128-1.rom");
-
-            byte[] rom0 = File.ReadAllBytes(rom0Path);
-            byte[] rom1 = File.ReadAllBytes(rom1Path);
-
-            if (rom0.Length != 16384 || rom1.Length != 16384)
-                throw new InvalidOperationException("ROM files must be 16KB each.");
-
+            (byte[] rom0, byte[] rom1) = romSet.Load();
             romBanks[0] = rom0;
             romBanks[1] = rom1;
-            RomProfile = SpectrumRomProfile.Detect(rom0, rom1);
+            RomProfile = SpectrumRomProfile.Detect(rom0, rom1, romSet.Model);
         }
 
         private void ClearRam()

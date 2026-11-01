@@ -52,7 +52,10 @@ namespace Spectrum128kEmulator
                    nextInstructionAddress == 0x05F3;
         }
 
-        internal static SpectrumRomProfile Detect(byte[] rom0, byte[] rom1)
+        internal static SpectrumRomProfile Detect(
+            byte[] rom0,
+            byte[] rom1,
+            SpectrumMachineModel model = SpectrumMachineModel.Spectrum128K)
         {
             ArgumentNullException.ThrowIfNull(rom0);
             ArgumentNullException.ThrowIfNull(rom1);
@@ -64,10 +67,19 @@ namespace Spectrum128kEmulator
 
             string rom0Hash = Convert.ToHexString(SHA256.HashData(rom0));
             string rom1Hash = Convert.ToHexString(SHA256.HashData(rom1));
+            if (model == SpectrumMachineModel.Spectrum48K &&
+                rom0Hash == BundledRom1Sha256 && rom1Hash == BundledRom1Sha256)
+            {
+                return new SpectrumRomProfile("Sinclair ZX Spectrum 48K", supportsAddressBasedTapeServices: true);
+            }
+
             if (rom0Hash == BundledRom0Sha256 && rom1Hash == BundledRom1Sha256)
                 return new SpectrumRomProfile("Sinclair ZX Spectrum 128K", supportsAddressBasedTapeServices: true);
 
-            return new SpectrumRomProfile("Unknown 128K ROM pair", supportsAddressBasedTapeServices: false);
+            string description = model == SpectrumMachineModel.Spectrum48K
+                ? "Unknown 48K ROM"
+                : "Unknown 128K ROM pair";
+            return new SpectrumRomProfile(description, supportsAddressBasedTapeServices: false);
         }
 
         private static bool IsInRange(ushort value, ushort minimum, ushort maximum) =>

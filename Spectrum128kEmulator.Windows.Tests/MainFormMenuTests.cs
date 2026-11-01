@@ -29,6 +29,7 @@ namespace Spectrum128kEmulator.Tests
                             "---",
                             "F2 - Status Overlay",
                             "F3 - Reset / Switch Model",
+                            "ROM Set",
                             "F4 - Display Size",
                             "---",
                             "F5 - Stop / Resume Tape",
@@ -48,6 +49,14 @@ namespace Spectrum128kEmulator.Tests
                             "Poke Manager..."
                         ],
                         labels);
+
+                    ToolStripMenuItem romSet = menu.Items
+                        .OfType<ToolStripMenuItem>()
+                        .Single(item => item.Text == "ROM Set");
+                    Assert.Contains(romSet.DropDownItems.OfType<ToolStripMenuItem>(),
+                        item => item.Text?.StartsWith("Active: Sinclair ZX Spectrum 128K") == true);
+                    Assert.Contains(romSet.DropDownItems.OfType<ToolStripMenuItem>(),
+                        item => item.Text?.Contains("+2A / +3") == true && !item.Enabled);
                 }
                 catch (Exception exception)
                 {
