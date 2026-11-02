@@ -53,7 +53,7 @@ namespace Derby.Tests
                         .OfType<ToolStripMenuItem>()
                         .Single(item => item.Text == "F3 - Machine");
                     Assert.Equal(
-                        ["ZX Spectrum 128K", "ZX Spectrum 48K", "ZX Spectrum +2 (Grey)", "ZX Spectrum +2A", "---", "Custom Machine / ROM"],
+                        ["ZX Spectrum 128K", "ZX Spectrum 48K", "ZX Spectrum +2 (Grey)", "ZX Spectrum +2A"],
                         machineMenu.DropDownItems.Cast<ToolStripItem>()
                             .Select(item => item is ToolStripSeparator ? "---" : item.Text ?? string.Empty));
                     Assert.True(machineMenu.DropDownItems.OfType<ToolStripMenuItem>()
@@ -73,32 +73,32 @@ namespace Derby.Tests
         }
 
         [Fact]
-        public void F3MachineSwitch_RestoresLastSelectedRomProfileForEachHardwareFamily()
+        public void F3MachineSwitch_CyclesEveryBundledProfileInMenuOrder()
         {
-            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(folder);
-            string rom0 = Path.Combine(folder, "custom-0.rom");
-            string rom1 = Path.Combine(folder, "custom-1.rom");
-            File.WriteAllBytes(rom0, Enumerable.Repeat((byte)0xF3, 16384).ToArray());
-            File.WriteAllBytes(rom1, Enumerable.Repeat((byte)0xC3, 16384).ToArray());
             Exception? failure = null;
             var thread = new Thread(() =>
             {
                 try
                 {
                     using var form = new MainForm();
-                    SpectrumRomSet custom128 = SpectrumRomSet.Create128K("Custom 128K", rom0, rom1);
-                    typeof(MainForm).GetMethod("ApplyRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
-                        .Invoke(form, [custom128]);
-                    typeof(MainForm).GetMethod("ResetToMachineModel", BindingFlags.Instance | BindingFlags.NonPublic)!
-                        .Invoke(form, [SpectrumMachineModel.Spectrum48K]);
-                    typeof(MainForm).GetMethod("ResetToMachineModel", BindingFlags.Instance | BindingFlags.NonPublic)!
-                        .Invoke(form, [SpectrumMachineModel.Spectrum128K]);
+                    Type type = typeof(MainForm);
+                    MethodInfo cycle = type.GetMethod("CycleMachineProfile", BindingFlags.Instance | BindingFlags.NonPublic)!;
+                    string[] expected =
+                    [
+                        "Sinclair ZX Spectrum 48K (bundled)",
+                        "Sinclair ZX Spectrum +2 Grey (bundled)",
+                        "Sinclair ZX Spectrum +2A (bundled)",
+                        "Sinclair ZX Spectrum 128K (bundled)"
+                    ];
 
-                    SpectrumRomSet selected = (SpectrumRomSet)typeof(MainForm)
-                        .GetField("selectedRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
-                        .GetValue(form)!;
-                    Assert.Same(custom128, selected);
+                    foreach (string name in expected)
+                    {
+                        cycle.Invoke(form, null);
+                        SpectrumRomSet selected = (SpectrumRomSet)type
+                            .GetField("selectedRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
+                            .GetValue(form)!;
+                        Assert.Equal(name, selected.Name);
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -108,7 +108,6 @@ namespace Derby.Tests
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
             Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The machine-profile switching test timed out.");
-            Directory.Delete(folder, true);
             if (failure != null)
                 throw new Xunit.Sdk.XunitException(failure.ToString());
         }

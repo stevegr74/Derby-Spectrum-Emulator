@@ -61,17 +61,12 @@ Right-click the display and open **F3 - Machine** to choose:
 - **ZX Spectrum 48K:** original 48K hardware and 1982 ROM.
 - **ZX Spectrum +2 (Grey):** original 128K-family hardware and grey +2 ROM pair.
 - **ZX Spectrum +2A:** the four-ROM +2A profile with normal and special all-RAM paging.
-- **Custom Machine / ROM:** a custom 16KB 48K/Spectrum+ ROM, ordered custom 128K/+2 pair, or ordered four-ROM +2A/+3 set.
 
-`F3` switches between the selected 48K profile and the last selected
-128K-family profile, so selecting +2 and switching temporarily to 48K returns
-to +2 on the next press. Changing profile resets the machine and clears the
-loaded media. Files are validated as exact 16KB images before reset. A custom ROM can boot normally,
-but ROM-address-dependent tape acceleration is disabled when its internal
-layout is not recognized; loading then stays with real ROM execution and tape
-pulses. A four-ROM custom set uses the +2A paging profile. +3 disk operation is
-not yet available because it additionally requires a disk controller, drive,
-and media model.
+Pressing `F3` resets and cycles through 128K, 48K, +2 Grey, and +2A in menu
+order. The submenu selects any profile directly. Changing profile clears the
+loaded media. Custom ROM loading is not exposed. +3 disk operation is not yet
+available because it additionally requires a disk controller, drive, and media
+model.
 
 ## First Use
 
@@ -96,7 +91,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | --- | --- |
 | `F1` | Open or close Help; emulation pauses while Help is open |
 | `F2` | Show or hide the status overlay |
-| `F3` | Reset and switch between the selected 48K and 128K-family machine profiles |
+| `F3` | Reset and cycle 128K, 48K, +2 Grey, and +2A machine profiles |
 | `F4` | Cycle 1x Native, 2x Enhanced, and 3x Enhanced display sizes |
 | `F5` | Stop or resume the mounted tape |
 | `F6` | Open or close the paused debugger and disassembler |

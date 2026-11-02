@@ -12,7 +12,7 @@ namespace Derby
             [
                 ("F1", "Show or close this help window"),
                 ("F2", "Show or hide compact FPS, model, tape, and display diagnostics"),
-                ("F3", "Reset and switch between the selected 48K and 128K-family machine profiles"),
+                ("F3", "Reset and cycle 128K, 48K, +2 Grey, and +2A machine profiles"),
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
                 ("F5", "Stop or resume tape; its state appears in the on-screen transport badge"),
                 ("F6", "Open or close the paused debugger and disassembler"),

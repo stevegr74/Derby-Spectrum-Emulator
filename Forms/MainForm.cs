@@ -76,8 +76,6 @@ namespace Derby
         private SpectrumRomSet bundled48RomSet = null!;
         private SpectrumRomSet bundledPlus2RomSet = null!;
         private SpectrumRomSet bundledPlus2ARomSet = null!;
-        private SpectrumRomSet selected128RomSet = null!;
-        private SpectrumRomSet selected48RomSet = null!;
         private SpectrumRomSet selectedRomSet = null!;
         private Spectrum128Machine machine;
         private readonly object machineLock = new();
@@ -154,9 +152,7 @@ namespace Derby
             bundled48RomSet = SpectrumRomSet.Bundled48K(romFolder);
             bundledPlus2RomSet = SpectrumRomSet.BundledPlus2(romFolder);
             bundledPlus2ARomSet = SpectrumRomSet.BundledPlus2A(romFolder);
-            selected128RomSet = bundled128RomSet;
-            selected48RomSet = bundled48RomSet;
-            selectedRomSet = selected128RomSet;
+            selectedRomSet = bundled128RomSet;
             machine = CreateConfiguredMachine();
             joystickSettings = joystickSettingsStore.Load();
             joystickInputController = new HostJoystickInputController(joystickSource);
@@ -380,10 +376,6 @@ namespace Derby
                 if (!SameRomSet(selectedRomSet, savedRomSet))
                 {
                     selectedRomSet = savedRomSet;
-                    if (savedRomSet.Model == SpectrumMachineModel.Spectrum48K)
-                        selected48RomSet = savedRomSet;
-                    else
-                        selected128RomSet = savedRomSet;
                     lock (machineLock)
                         machine = CreateConfiguredMachine();
                 }
@@ -672,39 +664,17 @@ namespace Derby
             return configuredMachine;
         }
 
-        private void ToggleMachineModel()
+        private void CycleMachineProfile()
         {
-            SpectrumMachineModel targetModel = selectedMachineModel == SpectrumMachineModel.Spectrum128K
-                ? SpectrumMachineModel.Spectrum48K
-                : SpectrumMachineModel.Spectrum128K;
-            ResetToMachineModel(targetModel);
-        }
-
-        private void ResetToMachineModel(SpectrumMachineModel model)
-        {
-            ExecuteWithEmulationPaused(() =>
-            {
-                selectedRomSet = model == SpectrumMachineModel.Spectrum48K
-                    ? selected48RomSet
-                    : selected128RomSet;
-                selectedMachineModel = model;
-                loadedMediaDisplayName = null;
-                loadedMediaIdentity = null;
-                pokeApplications.Clear();
-                ClearHostAndSpectrumInputState();
-                lock (machineLock)
-                {
-                    machine = CreateConfiguredMachine();
-                    machine.ClearDebugHistory();
-                }
-                ResetFrameScheduler();
-                RecreateAudioPipeline();
-            });
-
-            UpdateMachineModelMenuItems();
-            SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
-            PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
-            screenBox.Focus();
+            SpectrumRomSet[] profiles =
+            [
+                bundled128RomSet,
+                bundled48RomSet,
+                bundledPlus2RomSet,
+                bundledPlus2ARomSet
+            ];
+            int current = Array.FindIndex(profiles, profile => SameRomSet(selectedRomSet, profile));
+            ApplyRomSet(profiles[(current + 1) % profiles.Length]);
         }
 
         private void FrameTimer_Tick(object? sender, EventArgs e)

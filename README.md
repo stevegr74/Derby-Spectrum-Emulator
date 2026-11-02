@@ -229,14 +229,12 @@ Expected ROMs:
 - `plus3-3.rom`
 
 The right-click `F3 - Machine` submenu presents hardware and firmware together:
-the original 48K, original 128K, grey +2, and +2A are complete selectable
-machine profiles. `F3` switches between the selected 48K profile and the last
-selected 128K-family profile. Custom 16KB 48K/Spectrum+ images, ordered custom
-128K/grey +2 pairs, and ordered four-ROM +2A/+3 sets are available under
-`Custom Machine / ROM`. Custom images are validated before reset. Unknown
-layouts boot without address-based tape acceleration. The +2A profile provides
-four-ROM and special all-RAM paging; a full +3 profile remains deferred until
-the uPD765-compatible FDC and drive/media model exist.
+the original 128K, original 48K, grey +2, and +2A are complete selectable
+machine profiles. Pressing `F3` resets and cycles through those four profiles in
+that order; the submenu selects one directly. DERBY does not expose custom ROM
+loading. The +2A profile provides four-ROM and special all-RAM paging; a full
++3 profile remains deferred until the uPD765-compatible FDC and drive/media
+model exist.
 
 The bundled ROM images retain their Sinclair/Amstrad copyright. Amstrad have
 kindly given permission for redistribution for emulator use but retain that
@@ -251,7 +249,7 @@ that do not consume a function key.
 | --- | --- |
 | `F1` | Open the control reference; emulation pauses while it is open |
 | `F2` | Toggle compact mint top-right FPS, model, tape, and display diagnostics |
-| `F3` | Reset and switch between the selected 48K and 128K-family machine profiles |
+| `F3` | Reset and cycle 128K, 48K, grey +2, and +2A machine profiles |
 | `F4` | Cycle fixed display size |
 | `F5` | Stop or resume the mounted tape without ejecting it |
 | `F6` | Open the debugger and disassembler, paused on an immutable machine capture |
@@ -606,8 +604,8 @@ compatibility; completed milestones remain regression baselines.
 
 ### Milestone 26 - Machine Profiles And Later Spectrum Models In Progress
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
-- Unified hardware and firmware selection under `F3 - Machine`, with predictable switching between the remembered 48K and 128K-family profiles
-- Added verified original 48K, original 128K, grey +2, and +2A production ROM profiles plus validated custom 16KB, two-ROM, and four-ROM selection
+- Unified hardware and firmware selection under `F3 - Machine`; plain `F3` cycles the four bundled profiles in menu order while the submenu selects one directly
+- Added verified original 48K, original 128K, grey +2, and +2A production ROM profiles, with no unsupported custom-ROM loading exposed by the frontend
 - Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
 - Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
 - Added the +2A four-ROM map, normal ROM selection, every documented `1FFD` all-RAM configuration, revised `7FFD`/`1FFD` partial decoding, shared paging lock, physical-bank contention, machine-profile-aware Quick State restoration, diagnostics, and debugger capture

@@ -53,7 +53,7 @@ namespace Derby
 
             if (IsPlainShortcut(e, Keys.F3))
             {
-                ToggleMachineModel();
+                CycleMachineProfile();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
                 return;
