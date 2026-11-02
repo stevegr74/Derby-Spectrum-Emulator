@@ -69,7 +69,8 @@ namespace Derby.Tests
                 Assert.Equal((byte)0x42, machine.PeekMemory(0x4000));
                 Assert.Equal((byte)0x99, machine.PeekMemory(0x8000));
                 Assert.Equal((byte)0x55, machine.PeekMemory(0xC000));
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.False(machine.HasAyHardware);
             }
             finally
             {
@@ -140,7 +141,7 @@ namespace Derby.Tests
         }
 
         [Fact]
-        public void LoadZ80v1_CanUse128kHardwareFor48kFormatSnapshot()
+        public void LoadZ80v1_With128kSelected_Uses48kTimingWithCompatibleAy()
         {
             string tempFolder = CreateTempRoms();
 
@@ -159,8 +160,9 @@ namespace Derby.Tests
 
                 machine.ExecuteTimeSlice(machine.FrameTStates);
 
-                Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.True(machine.HasAyHardware);
                 Assert.True(machine.HasAudibleOutput);
                 Assert.True(machine.TryDequeueCompletedAudioFrame(out var frame));
                 Assert.NotNull(frame.AyState);
@@ -237,7 +239,67 @@ namespace Derby.Tests
                 Assert.Equal(5, machine.BorderColor);
                 Assert.True(machine.PagingLocked);
                 Assert.Equal(1, machine.CurrentRomBank);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.False(machine.HasAyHardware);
+            }
+            finally
+            {
+                Directory.Delete(tempFolder, true);
+            }
+        }
+
+        [Fact]
+        public void LoadZ80v2_48k_MelodikExtension_RestoresCompatibleAyState()
+        {
+            string tempFolder = CreateTempRoms();
+            try
+            {
+                byte[] data = BuildExtendedSnapshot(
+                    additionalHeaderLength: 23,
+                    hardwareMode: 0,
+                    last7ffd: 0,
+                    compressedBlocks: false,
+                    (8, CreateFilledBank(0x11)),
+                    (4, CreateFilledBank(0x22)),
+                    (5, CreateFilledBank(0x33)));
+                data[37] = 0x04;
+                data[38] = 7;
+                data[39 + 7] = 0x3E;
+
+                var machine = new Spectrum128Machine(tempFolder);
+                Z80SnapshotLoader.Load(machine, data);
+
+                Assert.True(machine.HasAyHardware);
+                Assert.Equal((byte)7, machine.Ay.CurrentRegister);
+                Assert.Equal((byte)0x3E, machine.Ay.ReadRegister(7));
+            }
+            finally
+            {
+                Directory.Delete(tempFolder, true);
+            }
+        }
+
+        [Fact]
+        public void LoadZ80v2_48k_FullerExtension_IsRejected()
+        {
+            string tempFolder = CreateTempRoms();
+            try
+            {
+                byte[] data = BuildExtendedSnapshot(
+                    additionalHeaderLength: 23,
+                    hardwareMode: 0,
+                    last7ffd: 0,
+                    compressedBlocks: false,
+                    (8, CreateFilledBank(0x11)),
+                    (4, CreateFilledBank(0x22)),
+                    (5, CreateFilledBank(0x33)));
+                data[37] = 0x44;
+
+                var machine = new Spectrum128Machine(tempFolder);
+                NotSupportedException error = Assert.Throws<NotSupportedException>(
+                    () => Z80SnapshotLoader.Load(machine, data));
+
+                Assert.Contains("Fuller Box", error.Message, StringComparison.OrdinalIgnoreCase);
             }
             finally
             {

@@ -225,7 +225,7 @@ namespace Derby.Tests
         }
 
         [Fact]
-        public void LoadSna48k_CanUse128kHardwareFor48kFormatSnapshot()
+        public void LoadSna48k_With128kSelected_Uses48kTimingWithCompatibleAy()
         {
             string tempFolder = CreateTempRoms();
 
@@ -245,8 +245,9 @@ namespace Derby.Tests
 
                 machine.ExecuteTimeSlice(machine.FrameTStates);
 
-                Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.True(machine.HasAyHardware);
                 Assert.Equal((byte)0b0011_1110, machine.Ay.ReadRegister(7));
                 Assert.True(machine.HasAudibleOutput);
                 Assert.True(machine.TryDequeueCompletedAudioFrame(out var frame));

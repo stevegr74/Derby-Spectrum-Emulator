@@ -11,6 +11,8 @@ namespace Derby
         private const int Ram48Size = 48 * 1024;
         private const int RamBankSize = 16 * 1024;
         private const byte CompressionFlag = 0x20;
+        private const byte MelodikAyFlag = 0x04;
+        private const byte FullerBoxAyFlags = 0x44;
 
         public static void Load(Spectrum128Machine machine, string path)
         {
@@ -46,7 +48,7 @@ namespace Derby
             ushort programCounter = ReadWord(data, 6);
             if (programCounter != 0)
             {
-                LoadV1(machine, data, programCounter, hardwareModel ?? SpectrumMachineModel.Spectrum128K);
+                LoadV1(machine, data, programCounter, hardwareModel ?? SpectrumMachineModel.Spectrum48K);
                 return;
             }
 
@@ -68,7 +70,7 @@ namespace Derby
             if (programCounter == 0)
                 throw new InvalidOperationException("Expected a v1 .z80 snapshot, but found an extended v2/v3 snapshot.");
 
-            LoadV1(machine, data, programCounter, SpectrumMachineModel.Spectrum128K);
+            LoadV1(machine, data, programCounter, SpectrumMachineModel.Spectrum48K);
         }
 
         private static void LoadV1(Spectrum128Machine machine, byte[] data, ushort programCounter, SpectrumMachineModel hardwareModel)
@@ -110,6 +112,7 @@ namespace Derby
             ushort programCounter = ReadWord(data, additionalHeaderOffset);
             byte hardwareMode = data[additionalHeaderOffset + 2];
             byte last7ffd = additionalHeaderLength >= 4 ? data[additionalHeaderOffset + 3] : (byte)0;
+            byte hardwareFlags = additionalHeaderLength >= 6 ? data[additionalHeaderOffset + 5] : (byte)0;
             byte flags = NormalizeFlagsByte(data[12]);
 
             machine.Reset();
@@ -122,11 +125,17 @@ namespace Derby
 
             if (Is48kHardware(additionalHeaderLength, hardwareMode))
             {
+                if ((hardwareFlags & FullerBoxAyFlags) == FullerBoxAyFlags)
+                    throw new NotSupportedException("48K .z80 snapshots using Fuller Box AY port routing are not supported.");
+
                 Load48kPageBlocks(machine, data, blockOffset);
                 if (hardwareModel.HasValue)
                     machine.ConfigureFor48kSnapshot(borderColor, hardwareModel.Value);
                 else
-                    machine.ConfigureFor48kZ80Snapshot(borderColor);
+                    ConfigureForEmbedded48kSnapshot(machine, borderColor, hardwareFlags);
+
+                if (additionalHeaderLength >= 23 && machine.HasAyHardware)
+                    RestoreAyState(machine, data, additionalHeaderOffset);
             }
             else if (Is128kHardware(additionalHeaderLength, hardwareMode))
             {
@@ -140,6 +149,27 @@ namespace Derby
             }
 
             FinalizeLoad(machine, iff1, iff2, interruptMode);
+        }
+
+        private static void ConfigureForEmbedded48kSnapshot(
+            Spectrum128Machine machine,
+            int borderColor,
+            byte hardwareFlags)
+        {
+            machine.ConfigureFor48kZ80Snapshot(
+                borderColor,
+                compatibleAyEnabled: (hardwareFlags & MelodikAyFlag) != 0);
+        }
+
+        private static void RestoreAyState(Spectrum128Machine machine, byte[] data, int additionalHeaderOffset)
+        {
+            byte selectedRegister = data[additionalHeaderOffset + 6];
+            if (selectedRegister > 15)
+                throw new InvalidOperationException(".z80 snapshot selects an invalid AY register.");
+
+            byte[] registers = new byte[16];
+            Buffer.BlockCopy(data, additionalHeaderOffset + 7, registers, 0, registers.Length);
+            machine.RestoreSnapshotAyState(selectedRegister, registers);
         }
 
         private static void ValidateLoadArguments(Spectrum128Machine machine, string path)

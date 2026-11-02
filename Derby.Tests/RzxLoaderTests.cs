@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Xunit;
 
 namespace Derby.Tests
@@ -27,6 +28,62 @@ namespace Derby.Tests
                 machine.ExecuteFrame();
 
                 Assert.Equal(1, machine.FrameCount);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_WithEmbeddedSzx_AttachesPlaybackAndRestoresSnapshot()
+        {
+            string romFolder = CreateTempRoms();
+            string recordingPath = Path.Combine(romFolder, "embedded-szx.rzx");
+
+            try
+            {
+                byte[] szx = Build48kSzx(0x5A);
+                byte[] rzx = BuildRzx(
+                    BuildSnapshotBlock("SZX", szx),
+                    BuildInputBlock([1], [[0xFE]]));
+                File.WriteAllBytes(recordingPath, rzx);
+
+                var machine = new Spectrum128Machine(romFolder);
+                RzxLoader.Load(machine, recordingPath);
+
+                Assert.True(machine.HasRzxPlayback);
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+                Assert.Equal((byte)0x5A, machine.PeekMemory(0x4000));
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_IgnoresSnapshotsAfterInputRecordingBegins()
+        {
+            string romFolder = CreateTempRoms();
+            string recordingPath = Path.Combine(romFolder, "snapshots.rzx");
+
+            try
+            {
+                byte[] initialSna = new byte[27 + (48 * 1024)];
+                initialSna[27] = 0x11;
+                byte[] finalSna = new byte[27 + (48 * 1024)];
+                finalSna[27] = 0x22;
+                byte[] rzx = BuildRzx(
+                    BuildSnapshotBlock("SNA", initialSna),
+                    BuildInputBlock([1], [[0xFE]]),
+                    BuildSnapshotBlock("SNA", finalSna));
+                File.WriteAllBytes(recordingPath, rzx);
+
+                var machine = new Spectrum128Machine(romFolder);
+                RzxLoader.Load(machine, recordingPath);
+
+                Assert.Equal((byte)0x11, machine.PeekMemory(0x4000));
             }
             finally
             {
@@ -71,8 +128,15 @@ namespace Derby.Tests
 
         private static byte[] BuildRzxWithEmbeddedSna(byte[] sna, ushort[] frameFetchCounts, byte[][] frameInputs)
         {
+            return BuildRzx(
+                BuildSnapshotBlock("SNA", sna),
+                BuildInputBlock(frameFetchCounts, frameInputs));
+        }
+
+        private static byte[] BuildRzx(params byte[][] blocks)
+        {
             using var ms = new MemoryStream();
-            ms.Write(System.Text.Encoding.ASCII.GetBytes("RZX!"));
+            ms.Write(Encoding.ASCII.GetBytes("RZX!"));
             ms.WriteByte(0x00);
             ms.WriteByte(0x0D);
             ms.WriteByte(0x00);
@@ -80,13 +144,43 @@ namespace Derby.Tests
             ms.WriteByte(0x00);
             ms.WriteByte(0x00);
 
-            byte[] snapshotBlock = BuildSnapshotBlock("SNA", sna);
-            ms.Write(snapshotBlock, 0, snapshotBlock.Length);
-
-            byte[] inputBlock = BuildInputBlock(frameFetchCounts, frameInputs);
-            ms.Write(inputBlock, 0, inputBlock.Length);
+            foreach (byte[] block in blocks)
+                ms.Write(block, 0, block.Length);
 
             return ms.ToArray();
+        }
+
+        private static byte[] Build48kSzx(byte ramValue)
+        {
+            using var ms = new MemoryStream();
+            using var writer = new BinaryWriter(ms, Encoding.Latin1, leaveOpen: true);
+            writer.Write(Encoding.ASCII.GetBytes("ZXST"));
+            writer.Write((byte)1);
+            writer.Write((byte)5);
+            writer.Write((byte)1);
+            writer.Write((byte)0);
+
+            WriteSzxChunk(writer, "Z80R", new byte[37]);
+            WriteSzxChunk(writer, "SPCR", new byte[8]);
+            WriteSzxChunk(writer, "RAMP", BuildSzxRamBlock(5, ramValue));
+            WriteSzxChunk(writer, "RAMP", BuildSzxRamBlock(2, 0x20));
+            WriteSzxChunk(writer, "RAMP", BuildSzxRamBlock(0, 0x30));
+            return ms.ToArray();
+        }
+
+        private static void WriteSzxChunk(BinaryWriter writer, string id, byte[] data)
+        {
+            writer.Write(Encoding.Latin1.GetBytes(id));
+            writer.Write((uint)data.Length);
+            writer.Write(data);
+        }
+
+        private static byte[] BuildSzxRamBlock(int bank, byte value)
+        {
+            byte[] data = new byte[3 + (16 * 1024)];
+            data[2] = (byte)bank;
+            Array.Fill(data, value, 3, 16 * 1024);
+            return data;
         }
 
         private static byte[] BuildSnapshotBlock(string extension, byte[] snapshot)

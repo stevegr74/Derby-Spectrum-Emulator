@@ -17,10 +17,13 @@ namespace Derby
         private const byte Machine128K = 2;
         private const byte AlternateTimingsFlag = 0x01;
         private const ushort CompressedRamFlag = 0x0001;
+        private const byte FullerBoxAyFlag = 0x01;
+        private const byte MelodikAyFlag = 0x02;
+        private const int MaxFrameInstructionOverrunTStates = 256;
 
         private static readonly HashSet<string> UnsupportedHardwareBlocks = new(StringComparer.Ordinal)
         {
-            "ROM\0", "MFCE", "USPE", "DRUM", "TAPE", "IF2R", "AMXM",
+            "ROM\0", "USPE", "DRUM", "TAPE", "IF2R", "AMXM",
             "ZXPR", "IF1\0", "MDRV", "+3\0\0", "DSK\0", "LEC\0", "LCRP",
             "SCLD", "B128", "BDSK", "GS\0\0", "GSRP", "COVX", "DOCK",
             "ZXAT", "ATRP", "ZXCF", "CFRP", "PLSD", "PDSK", "OPUS",
@@ -113,6 +116,10 @@ namespace Derby
                         ay = ParseAy(data, offset, length, model);
                         break;
 
+                    case "MFCE":
+                        ValidateDormantMultiface(data, offset, length);
+                        break;
+
                     case "KEYB":
                         ValidateKeyboard(data, offset, length, model);
                         break;
@@ -154,8 +161,11 @@ namespace Derby
             int frameTStates = model == SpectrumMachineModel.Spectrum48K
                 ? Spectrum128Machine.FrameTStates48
                 : Spectrum128Machine.FrameTStates128;
-            if (cpu.FrameCycles >= frameTStates)
-                throw new InvalidOperationException($"SZX CPU frame position {cpu.FrameCycles} is outside the {frameTStates}-T-state frame.");
+            if (cpu.FrameCycles >= frameTStates + MaxFrameInstructionOverrunTStates)
+            {
+                throw new InvalidOperationException(
+                    $"SZX CPU frame position {cpu.FrameCycles} exceeds the supported end-of-frame instruction overrun.");
+            }
 
             return new ParsedSnapshot(model, cpu, spectrum, ay, ramBanks);
         }
@@ -243,10 +253,18 @@ namespace Derby
         {
             if (length < 18)
                 throw new InvalidOperationException("SZX AY block is too short.");
-            if (model == SpectrumMachineModel.Spectrum48K)
-                throw new NotSupportedException("48K SZX snapshots requiring an external AY sound interface are not supported.");
-            if (data[offset] != 0)
-                throw new NotSupportedException($"SZX AY peripheral flags 0x{data[offset]:X2} are not supported.");
+            byte peripheralFlags = data[offset];
+            if ((peripheralFlags & ~(FullerBoxAyFlag | MelodikAyFlag)) != 0)
+                throw new NotSupportedException($"SZX AY peripheral flags 0x{peripheralFlags:X2} are not supported.");
+            if (model == SpectrumMachineModel.Spectrum48K && peripheralFlags != MelodikAyFlag)
+            {
+                throw new NotSupportedException(
+                    peripheralFlags == FullerBoxAyFlag
+                        ? "48K SZX snapshots using Fuller Box AY port routing are not supported."
+                        : $"48K SZX AY peripheral flags 0x{peripheralFlags:X2} do not select the supported Melodik/128-compatible interface.");
+            }
+            if (model == SpectrumMachineModel.Spectrum128K && peripheralFlags != 0)
+                throw new InvalidOperationException("128K SZX snapshots must use the machine's built-in AY interface.");
             if (data[offset + 1] > 15)
                 throw new InvalidOperationException("SZX AY block selects an invalid register.");
 
@@ -266,6 +284,71 @@ namespace Derby
                 throw new NotSupportedException("SZX snapshot requires Issue 2 keyboard/ULA behavior, which is not supported.");
             if (length >= 5 && data[offset + 4] > 8)
                 throw new InvalidOperationException("SZX KEYB block contains an invalid keyboard joystick type.");
+        }
+
+        private static void ValidateDormantMultiface(byte[] data, int offset, int length)
+        {
+            const byte pagedInFlag = 0x01;
+            const byte compressedFlag = 0x02;
+            const byte ram16kFlag = 0x20;
+            const byte supportedFlags = 0x3F;
+
+            if (length < 2)
+                throw new InvalidOperationException("SZX MFCE block is too short.");
+
+            byte model = data[offset];
+            if (model > 1)
+                throw new NotSupportedException($"SZX MFCE model {model} is not supported.");
+
+            byte flags = data[offset + 1];
+            if ((flags & ~supportedFlags) != 0)
+                throw new NotSupportedException($"SZX MFCE flags 0x{flags:X2} are not supported.");
+            if ((flags & pagedInFlag) != 0)
+                throw new NotSupportedException("SZX snapshot has Multiface memory paged in, which is not supported.");
+
+            int expectedRamLength = (flags & ram16kFlag) != 0 ? 16 * 1024 : 8 * 1024;
+            int payloadOffset = offset + 2;
+            int payloadLength = length - 2;
+            if ((flags & compressedFlag) != 0)
+                ValidateCompressedPayload(data, payloadOffset, payloadLength, expectedRamLength, "MFCE");
+            else if (payloadLength != expectedRamLength)
+                throw new InvalidOperationException($"SZX MFCE RAM is {payloadLength} bytes; expected {expectedRamLength}.");
+
+            // Dormant Multiface RAM cannot affect execution unless the peripheral is
+            // activated later. RZX input recordings contain no Multiface button event.
+        }
+
+        private static void ValidateCompressedPayload(
+            byte[] data,
+            int offset,
+            int length,
+            int expectedLength,
+            string blockId)
+        {
+            try
+            {
+                using var input = new MemoryStream(data, offset, length, writable: false);
+                using var zlib = new ZLibStream(input, CompressionMode.Decompress);
+                byte[] buffer = new byte[4096];
+                int total = 0;
+                int read;
+                while ((read = zlib.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    total = checked(total + read);
+                    if (total > expectedLength)
+                        break;
+                }
+
+                if (total != expectedLength)
+                {
+                    throw new InvalidOperationException(
+                        $"SZX {blockId} RAM expands to {total} bytes; expected {expectedLength}.");
+                }
+            }
+            catch (InvalidDataException ex)
+            {
+                throw new InvalidOperationException($"SZX {blockId} RAM compression is invalid.", ex);
+            }
         }
 
         private static void ValidateJoystick(byte[] data, int offset, int length)
@@ -328,9 +411,13 @@ namespace Derby
             RestoreCpu(machine.Cpu, snapshot.Cpu);
             machine.RestoreSnapshotUlaState(snapshot.Spectrum.PortFe);
             if (snapshot.Ay != null)
+            {
+                machine.ConfigureExternalAyHardware(snapshot.Model == SpectrumMachineModel.Spectrum48K);
                 machine.RestoreSnapshotAyState(snapshot.Ay.SelectedRegister, snapshot.Ay.Registers);
+            }
 
-            machine.SetSnapshotResumeFramePhase((int)snapshot.Cpu.FrameCycles);
+            int framePhase = (int)(snapshot.Cpu.FrameCycles % (uint)machine.FrameTStates);
+            machine.SetSnapshotResumeFramePhase(framePhase);
             machine.ClearLogs();
             machine.RestoreSnapshotInterruptPulse(snapshot.Cpu.HoldInterruptCycles);
             machine.ClearKeyboard();
