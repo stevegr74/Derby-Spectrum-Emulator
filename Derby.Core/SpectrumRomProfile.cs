@@ -10,6 +10,13 @@ namespace Derby
         private const string Original48RomSha256 = "D55DAA439B673B0E3F5897F99AC37ECB45F974D1862B4DADB85DEC34AF99CB42";
         private const string Plus2Rom0Sha256 = "51DC881D1D3E8242972390224E7CFD8650987D9A620E086ACA9DFDF6988FCBF1";
         private const string Plus2Rom1Sha256 = "AE6D95F1E6D16C3D1C947B77E6087952F3204B7930C6CADAE3769289A1F5A1B9";
+        private static readonly string[] Plus3RomSha256 =
+        [
+            "841D54545C743A7202FB9B068534ED906A08CC657A19955AE20A8DE5AF8AB185",
+            "6D6CCAB28F255B01C8CD89CEAB9E7B60247F4610471118092F290F6C7768B7E3",
+            "C5590212A269117657CE611ACBAC582E41E9DB87DC78DB480DA2615E413B2DA6",
+            "8EC5CB9FD7EC24A041800314BB5A2C99BE02F7E50745194EB649ED6D9085BD1F"
+        ];
 
         private SpectrumRomProfile(string name, bool supportsAddressBasedTapeServices)
         {
@@ -87,6 +94,24 @@ namespace Derby
                 ? "Unknown 48K ROM"
                 : "Unknown 128K ROM pair";
             return new SpectrumRomProfile(description, supportsAddressBasedTapeServices: false);
+        }
+
+        internal static SpectrumRomProfile DetectPlus2A(IReadOnlyList<byte[]> romBanks)
+        {
+            ArgumentNullException.ThrowIfNull(romBanks);
+            if (romBanks.Count != 4)
+                throw new ArgumentException("A +2A/+3 ROM set must contain four banks.", nameof(romBanks));
+
+            bool bundled = true;
+            for (int bank = 0; bank < romBanks.Count; bank++)
+            {
+                string hash = Convert.ToHexString(SHA256.HashData(romBanks[bank]));
+                bundled &= hash == Plus3RomSha256[bank];
+            }
+
+            return new SpectrumRomProfile(
+                bundled ? "Sinclair ZX Spectrum +2A/+3" : "Unknown +2A/+3 ROM set",
+                supportsAddressBasedTapeServices: false);
         }
 
         private static bool IsInRange(ushort value, ushort minimum, ushort maximum) =>

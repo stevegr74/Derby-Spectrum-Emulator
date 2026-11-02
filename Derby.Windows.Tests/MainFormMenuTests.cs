@@ -53,7 +53,7 @@ namespace Derby.Tests
                         .OfType<ToolStripMenuItem>()
                         .Single(item => item.Text == "F3 - Machine");
                     Assert.Equal(
-                        ["ZX Spectrum 128K", "ZX Spectrum 48K", "ZX Spectrum +2 (Grey)", "---", "Custom Machine / ROM"],
+                        ["ZX Spectrum 128K", "ZX Spectrum 48K", "ZX Spectrum +2 (Grey)", "ZX Spectrum +2A", "---", "Custom Machine / ROM"],
                         machineMenu.DropDownItems.Cast<ToolStripItem>()
                             .Select(item => item is ToolStripSeparator ? "---" : item.Text ?? string.Empty));
                     Assert.True(machineMenu.DropDownItems.OfType<ToolStripMenuItem>()
@@ -109,6 +109,50 @@ namespace Derby.Tests
             thread.Start();
             Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The machine-profile switching test timed out.");
             Directory.Delete(folder, true);
+            if (failure != null)
+                throw new Xunit.Sdk.XunitException(failure.ToString());
+        }
+
+        [Fact]
+        public void QuickStateRestore_ReinstatesItsFourRomMachineProfile()
+        {
+            Exception? failure = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    using var form = new MainForm();
+                    Type type = typeof(MainForm);
+                    SpectrumRomSet plus2A = (SpectrumRomSet)type
+                        .GetField("bundledPlus2ARomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .GetValue(form)!;
+                    SpectrumRomSet standard128 = (SpectrumRomSet)type
+                        .GetField("bundled128RomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .GetValue(form)!;
+                    MethodInfo apply = type.GetMethod("ApplyRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+                    apply.Invoke(form, [plus2A]);
+                    type.GetMethod("SaveQuickState", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(form, null);
+                    apply.Invoke(form, [standard128]);
+                    type.GetMethod("RestoreQuickState", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(form, null);
+
+                    SpectrumRomSet selected = (SpectrumRomSet)type
+                        .GetField("selectedRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .GetValue(form)!;
+                    Spectrum128Machine machine = (Spectrum128Machine)type
+                        .GetField("machine", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .GetValue(form)!;
+                    Assert.Equal(SpectrumMemoryPagingModel.Plus2APlus3, selected.PagingModel);
+                    Assert.Equal(SpectrumMemoryPagingModel.Plus2APlus3, machine.MemoryPagingModel);
+                }
+                catch (Exception exception)
+                {
+                    failure = exception;
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The Quick State profile test timed out.");
             if (failure != null)
                 throw new Xunit.Sdk.XunitException(failure.ToString());
         }

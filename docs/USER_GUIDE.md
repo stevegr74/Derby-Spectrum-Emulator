@@ -3,7 +3,7 @@
 ## User Guide
 
 **Windows edition**  
-**Covers:** 48K and 128K operation, snapshots, tape images, Quick State, controllers, pokes, and debugging
+**Covers:** 48K, 128K, grey +2, and +2A operation, snapshots, tape images, Quick State, controllers, pokes, and debugging
 
 ![DERBY at the 128K ROM menu](images/emulator-128k-basic.png)
 
@@ -29,7 +29,10 @@ This manual describes the emulator as it operates today. It begins with normal l
 
 # Chapter 1 - Getting Started
 
-The emulator models Spectrum 48K/Spectrum+ hardware and original 128K/grey +2 hardware. The chosen model affects ROM behaviour, memory, timing, sound, and how some games divide their tape content. Select the intended model before mounting a tape.
+The emulator models Spectrum 48K/Spectrum+ hardware, original 128K/grey +2
+hardware, and +2A four-ROM paging. The chosen model affects ROM behaviour,
+memory, timing, sound, and how some games divide their tape content. Select the
+intended model before mounting a tape.
 
 ## Requirements
 
@@ -40,6 +43,7 @@ The emulator models Spectrum 48K/Spectrum+ hardware and original 128K/grey +2 ha
   - `128-1.rom`
   - `plus2-0.rom`
   - `plus2-1.rom`
+  - `plus3-0.rom` through `plus3-3.rom`
 
 From source, start the emulator with:
 
@@ -56,7 +60,8 @@ Right-click the display and open **F3 - Machine** to choose:
 - **ZX Spectrum 128K:** original 128K hardware and ROM pair.
 - **ZX Spectrum 48K:** original 48K hardware and 1982 ROM.
 - **ZX Spectrum +2 (Grey):** original 128K-family hardware and grey +2 ROM pair.
-- **Custom Machine / ROM:** a custom 16KB 48K/Spectrum+ ROM or ordered custom 128K/+2 pair.
+- **ZX Spectrum +2A:** the four-ROM +2A profile with normal and special all-RAM paging.
+- **Custom Machine / ROM:** a custom 16KB 48K/Spectrum+ ROM, ordered custom 128K/+2 pair, or ordered four-ROM +2A/+3 set.
 
 `F3` switches between the selected 48K profile and the last selected
 128K-family profile, so selecting +2 and switching temporarily to 48K returns
@@ -64,9 +69,9 @@ to +2 on the next press. Changing profile resets the machine and clears the
 loaded media. Files are validated as exact 16KB images before reset. A custom ROM can boot normally,
 but ROM-address-dependent tape acceleration is disabled when its internal
 layout is not recognized; loading then stays with real ROM execution and tape
-pulses. +2A and +3 profiles are deliberately unavailable because those models
-need additional paging hardware, and +3 disk operation also needs a disk
-controller and drive model.
+pulses. A four-ROM custom set uses the +2A paging profile. +3 disk operation is
+not yet available because it additionally requires a disk controller, drive,
+and media model.
 
 ## First Use
 
@@ -266,7 +271,11 @@ Quick State is one temporary, in-memory save slot.
 - Saving again replaces the previous slot.
 - The slot is discarded when the emulator exits.
 
-Quick State restores CPU state, all RAM banks, paging, ULA/video state, audio generation state, current media name, tape pulse/EAR and loader-continuation position, and RZX replay position. It can survive loading different media during the same emulator session and then return to the captured state.
+Quick State restores CPU state, all RAM banks, paging, ULA/video state, audio
+generation state, current media name, tape pulse/EAR and loader-continuation
+position, and RZX replay position. It can survive loading different media or
+switching machine profiles during the same emulator session, then reinstate the
+captured ROM set and paging family before returning to the captured state.
 
 Live host details such as a controller connection are not stored as emulated machine state. Audio and input adapters are cleaned up when a state is restored.
 
@@ -381,7 +390,7 @@ Press `F6` to open the debugger. The emulator pauses safely at an instruction bo
 
 The debugger includes:
 
-- Mapped 64K, both ROM banks, and all eight physical RAM banks.
+- Mapped 64K, every ROM bank in the selected profile, and all eight physical RAM banks.
 - Current paging map and active display bank.
 - Main and alternate registers.
 - Individual flags, interrupt state, HALT state, and T-states.
@@ -426,7 +435,9 @@ The **Memory View** selector distinguishes:
 - Individual ROM banks.
 - Individual 16K RAM banks.
 
-The four paging blocks show which ROM/RAM occupies `0000-3FFF`, `4000-7FFF`, `8000-BFFF`, and `C000-FFFF`. The display-bank label identifies the RAM bank currently scanned by the ULA.
+The four paging blocks show which ROM/RAM occupies `0000-3FFF`, `4000-7FFF`,
+`8000-BFFF`, and `C000-FFFF`. This includes +2A all-RAM configurations. The
+display-bank label identifies the RAM bank currently scanned by the ULA.
 
 ## Memory Inspector
 
@@ -505,6 +516,7 @@ Press `F5` once. If loading fails immediately, capture the exact error rather th
 # Appendix A - Current Limitations
 
 - SZX support currently targets exact 48K and original 128K machine state; peripheral-bearing snapshots and other Spectrum models are not yet supported.
+- +3 floppy-controller, drive, and disk-image support is not yet implemented; select +2A for the shared four-ROM and paging environment.
 - An on-screen 48K/128K keyboard is planned but not implemented.
 - Kempston Mouse and AMX Mouse are planned but not implemented.
 - Broader protected/custom TZX compatibility remains ongoing.

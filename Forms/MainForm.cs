@@ -75,6 +75,7 @@ namespace Derby
         private SpectrumRomSet bundled128RomSet = null!;
         private SpectrumRomSet bundled48RomSet = null!;
         private SpectrumRomSet bundledPlus2RomSet = null!;
+        private SpectrumRomSet bundledPlus2ARomSet = null!;
         private SpectrumRomSet selected128RomSet = null!;
         private SpectrumRomSet selected48RomSet = null!;
         private SpectrumRomSet selectedRomSet = null!;
@@ -127,6 +128,7 @@ namespace Derby
         private long tapeTransportFullOverlayExpiresAtTicks;
         private long tapeTransportIconExpiresAtTicks;
         private Spectrum128Machine.QuickState? quickState;
+        private SpectrumRomSet? quickStateRomSet;
         private string? loadedMediaDisplayName;
         private string? quickStateMediaDisplayName;
         private PokeMediaIdentity? loadedMediaIdentity;
@@ -151,6 +153,7 @@ namespace Derby
             bundled128RomSet = SpectrumRomSet.Bundled128K(romFolder);
             bundled48RomSet = SpectrumRomSet.Bundled48K(romFolder);
             bundledPlus2RomSet = SpectrumRomSet.BundledPlus2(romFolder);
+            bundledPlus2ARomSet = SpectrumRomSet.BundledPlus2A(romFolder);
             selected128RomSet = bundled128RomSet;
             selected48RomSet = bundled48RomSet;
             selectedRomSet = selected128RomSet;
@@ -353,6 +356,7 @@ namespace Derby
             });
             quickStateMediaDisplayName = loadedMediaDisplayName;
             quickStateMediaIdentity = loadedMediaIdentity;
+            quickStateRomSet = selectedRomSet;
 
             UpdateQuickStateMenuItems();
             ShowQuickStateOverlay("QUICK STATE SAVED");
@@ -371,6 +375,18 @@ namespace Derby
 
             ExecuteWithEmulationPaused(() =>
             {
+                SpectrumRomSet savedRomSet = quickStateRomSet ?? selectedRomSet;
+                selectedMachineModel = state.MachineModel;
+                if (!SameRomSet(selectedRomSet, savedRomSet))
+                {
+                    selectedRomSet = savedRomSet;
+                    if (savedRomSet.Model == SpectrumMachineModel.Spectrum48K)
+                        selected48RomSet = savedRomSet;
+                    else
+                        selected128RomSet = savedRomSet;
+                    lock (machineLock)
+                        machine = CreateConfiguredMachine();
+                }
                 loadedMediaDisplayName = quickStateMediaDisplayName;
                 loadedMediaIdentity = quickStateMediaIdentity;
                 pokeApplications.Clear();
@@ -381,6 +397,7 @@ namespace Derby
                 RecreateAudioPipeline();
             });
 
+            UpdateMachineModelMenuItems();
             ShowMountedTapeTransportFeedback();
             ShowQuickStateOverlay("QUICK STATE RESTORED");
             SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
@@ -612,8 +629,11 @@ namespace Derby
                     machine.Cpu.TStates,
                     stackWords,
                     machine.Cpu.Memptr);
-                byte[][] romBanks = Enumerable.Range(0, 2).Select(machine.GetRomBankCopy).ToArray();
+                byte[][] romBanks = Enumerable.Range(0, machine.RomBankCount).Select(machine.GetRomBankCopy).ToArray();
                 byte[][] ramBanks = Enumerable.Range(0, 8).Select(machine.GetRamBankCopy).ToArray();
+                int[] mappedRamBanks = Enumerable.Range(0, 4)
+                    .Select(slot => machine.IsMappedSlotRom(slot) ? -1 : machine.GetMappedRamBankForSlot(slot))
+                    .ToArray();
 
                 return new DisassemblySnapshot(
                     memory,
@@ -625,7 +645,9 @@ namespace Derby
                     cpuState: cpuState,
                     romBanks: romBanks,
                     ramBanks: ramBanks,
-                    analysisContext: $"{machine.MachineModel}:{loadedMediaDisplayName ?? "(no media)"}");
+                    analysisContext: $"{machine.MachineModel}:{loadedMediaDisplayName ?? "(no media)"}",
+                    memoryPagingModel: machine.MemoryPagingModel,
+                    mappedRamBanks: mappedRamBanks);
             }
         }
 
@@ -640,7 +662,7 @@ namespace Derby
                 configuredMachine.Trace = s =>
                 {
                     if ((LogUnimplementedOpcodes && s.StartsWith("UNIMPL")) ||
-                        (LogPagingWrites && s.StartsWith("[7FFD]")))
+                        (LogPagingWrites && (s.StartsWith("[7FFD]") || s.StartsWith("[1FFD]"))))
                     {
                         Console.WriteLine(s);
                         Console.Out.Flush();

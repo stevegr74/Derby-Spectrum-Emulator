@@ -2,7 +2,7 @@
 
 ![DERBY wordmark](assets/branding/derby-wordmark.svg)
 
-**DERBY - ZX Spectrum 48K / 128K Emulator**
+**DERBY - ZX Spectrum 48K / 128K / +2A Emulator**
 
 A from-scratch ZX Spectrum emulator written in C# with no third-party runtime dependencies. The name honours Derby, the development codename used for Sinclair's Spectrum 128.
 
@@ -13,7 +13,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 ## Features
 
 - Z80 CPU with passing ZEXDOC and ZEXALL instruction groups
-- Explicit 48K and 128K models, 128K paging, keyboard matrix, interrupts, and a model-specific timing baseline
+- Explicit 48K, 128K/grey +2, and +2A profiles with standard or `1FFD` special paging, keyboard matrix, interrupts, and a model-specific timing baseline
 - Beam-latched Spectrum display with INK, PAPER, BRIGHT, FLASH, timestamped borders, and fixed 1x/Scale2x/Scale3x modes
 - 48K beeper and AY-3-8912 tone, noise, envelope, and mixing through a clock-driven audio pipeline
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
@@ -44,7 +44,8 @@ For operation and controls, see the [User Guide](docs/USER_GUIDE.md). UI changes
 
 ## Current Status
 
-`master` is a stable, playable baseline for the original 48K, 128K, and grey +2.
+`master` is a stable, playable baseline for the original 48K, 128K, grey +2,
+and +2A.
 It includes beam-aware video, clock-driven audio, resumable tape transport,
 snapshot and replay loading, USB joystick support, Quick State, a bank-aware
 debugger, and a checksum-aware Poke Manager. ZEXDOC and ZEXALL pass in the
@@ -56,7 +57,8 @@ Manually tested titles, formats, and reached checkpoints are tracked in
 
 Current limitations and active work:
 
-- +2A/+3 paging, four-ROM selection, and +3 disk hardware are not yet implemented.
+- +3 disk hardware and disk-image loading are not yet implemented; +2A uses the
+  shared four-ROM firmware and paging hardware without claiming floppy support.
 - Protected and custom tape compatibility continues to expand as new media is
   tested.
 - Broader timing-sensitive software and subjective title-by-title audio
@@ -73,7 +75,8 @@ Current limitations and active work:
   Header/data structure, BASIC semantics, physical pulse timing, stop markers,
   and ROM handoffs are preserved without consulting media names or game hashes.
 - Protected playback and Quick State preserve precise tape pulse, EAR,
-  loader-continuation, replay, paging, CPU, and peripheral positions.
+  loader-continuation, replay, machine-profile, paging, CPU, and peripheral
+  positions.
 - Model-specific ULA profiles drive contention, floating-bus fetches, frame
   timing, and raster mapping. The event-driven raster captures timed bitmap,
   attribute, border, and 128K shadow-screen changes.
@@ -115,8 +118,9 @@ platform-neutral core boundary. Milestone 23 SZX snapshot loading is complete
 for supported 48K and original 128K machine state. A model-selectable 48K/128K
 on-screen keyboard follows in Milestone 24. Generic Kempston and AMX mouse support follows in
 Milestone 25. Milestone 26 now provides unified machine profiles for the
-original 48K, original 128K, and grey +2, with validated custom ROM layouts;
-+2A/+3 machine support remains future hardware work rather than a ROM-only change. Tape compatibility
+original 48K, original 128K, grey +2, and +2A, including four-ROM selection,
+revised port decoding, `1FFD` ROM selection, and all-RAM maps. +3 disk hardware
+remains the next model-specific phase rather than a ROM-only change. Tape compatibility
 and broader title-specific audio fidelity validation continue in parallel, with
 the verified media matrix plus ZEXDOC/ZEXALL used as regression gates.
 
@@ -152,6 +156,7 @@ Derby/
 |   |-- Spectrum128Machine.Diagnostics.cs  trace capture, watches, and diagnostic dumps
 |   |-- SpectrumRomProfile.cs              fingerprinted ROM capabilities and internal entry points
 |   |-- SpectrumRomSet.cs                  validated model-aware ROM image selection
+|   |-- SpectrumMemoryPagingModel.cs       fixed, standard 128K, and +2A/+3 paging families
 |   |-- SpectrumFrameBuffer.cs             platform-neutral ARGB frame buffer
 |   |-- BorderFrame.cs                     timestamped border events
 |   |-- SnapshotLoader.cs                  SNA snapshot loading
@@ -180,7 +185,7 @@ Derby/
 |-- Derby.Windows.Tests/    Windows presentation and host tests
 |-- Derby.ManualHarness/    net8.0 Core-only diagnostic and capture tool
 |-- Derby.Z80Compliance/    net8.0 ZEXDOC/ZEXALL compliance runner
-|-- ROMs/                                  verified 48K, 128K, and grey +2 ROM images and provenance
+|-- ROMs/                                  verified 48K, 128K, grey +2, and shared +2A/+3 ROM images and provenance
 |-- test-assets/                           checked-in test programs and fixtures
 |   |-- ula/                               external ULA diagnostic runbook (media not redistributed)
 |   `-- z80/                               ZEXDOC/ZEXALL compliance programs
@@ -218,16 +223,20 @@ Expected ROMs:
 - `128-1.rom`
 - `plus2-0.rom`
 - `plus2-1.rom`
+- `plus3-0.rom`
+- `plus3-1.rom`
+- `plus3-2.rom`
+- `plus3-3.rom`
 
 The right-click `F3 - Machine` submenu presents hardware and firmware together:
-the original 48K, original 128K, and grey +2 are complete selectable machine
-profiles. `F3` switches between the selected 48K profile and the last selected
-128K-family profile. Custom 16KB 48K/Spectrum+ images and ordered custom
-128K/grey +2 pairs remain available under `Custom Machine / ROM`. Custom images
-are validated before reset. Unknown layouts boot without address-based tape
-acceleration. +2A/+3 are not cosmetic ROM swaps: they require four ROMs, the
-`1FFD` paging register and all-RAM modes, with +3 disk support also requiring an
-FDC model.
+the original 48K, original 128K, grey +2, and +2A are complete selectable
+machine profiles. `F3` switches between the selected 48K profile and the last
+selected 128K-family profile. Custom 16KB 48K/Spectrum+ images, ordered custom
+128K/grey +2 pairs, and ordered four-ROM +2A/+3 sets are available under
+`Custom Machine / ROM`. Custom images are validated before reset. Unknown
+layouts boot without address-based tape acceleration. The +2A profile provides
+four-ROM and special all-RAM paging; a full +3 profile remains deferred until
+the uPD765-compatible FDC and drive/media model exist.
 
 The bundled ROM images retain their Sinclair/Amstrad copyright. Amstrad have
 kindly given permission for redistribution for emulator use but retain that
@@ -286,7 +295,7 @@ the associated media name as well as CPU, RAM banks, paging, ULA/audio frame
 state, tape, and RZX position; it survives media loads during the session and is
 discarded on exit.
 
-The debugger captures the mapped logical 64K, both ROM banks, all eight RAM
+The debugger captures the mapped logical 64K, every ROM bank, all eight RAM
 banks, registers, flags, interrupt state, stack context, model, and paging state.
 Its grouped CPU panel highlights values changed since the previous stopped
 capture, shows the instruction at `PC`, and retains the main and alternate
@@ -333,6 +342,7 @@ Test coverage includes:
 - FLASH timing
 - Renderer correctness
 - ROM boot smoke tests
+- +2A four-ROM selection, every special all-RAM map, partial port decoding, paging lock, Quick State, and production-ROM boot coverage
 - Focused opcode regression tests
 - Snapshot loading
 - Poke-library schema, checksum/alias matching, mapped and physical-bank application, guarded restoration, and STA WinForms interaction
@@ -470,7 +480,7 @@ compatibility; completed milestones remain regression baselines.
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
 | 24 | Planned | Pop-up on-screen keyboard with selectable authentic 48K and 128K layouts |
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
-| 26 | In progress | Unified machine profiles for original 48K, 128K, and grey +2, followed by genuine +2A/+3 paging and disk hardware |
+| 26 | In progress | Unified 48K/128K/grey +2/+2A profiles and genuine +2A paging complete; +3 disk hardware remains |
 
 ### Milestone 7 - Audio And Turbo Handoff Complete
 - Generates 48K beeper and 128K AY tone, noise, and envelope output from timestamped machine events through one mixed sample pipeline
@@ -487,7 +497,7 @@ compatibility; completed milestones remain regression baselines.
 - Timestamped opcode/immediate fetches, ordinary/indexed/block/stack memory accesses, interrupt-vector reads, and port reads/writes at their machine-cycle positions, including contended I/O and the distinct block-I/O repeat tail
 - Generalized the floating-bus model for the original Spectrum 128K and grey +2, including normal bank 5 and shadow bank 7 screen selection
 - Decoded attached input devices before the floating-bus fallback, including `IN (0xFFFD)` reading the selected AY register
-- Corrected and tested border, beeper, and AY write timestamps plus eight-pixel border-latch and visible pixel/T-state mapping without claiming +2A/+3 behavior
+- Corrected and tested border, beeper, and AY write timestamps plus eight-pixel border-latch and visible pixel/T-state mapping; those timing references remain specific to 48K/128K ULA behavior
 - Preserved interrupt phase across instruction-boundary overshoot, producing exact published frame lengths of 69,888 T-states for 48K and 70,908 T-states for 128K
 - Matched the Patrik Rak Timing Test 0.3 reference captures pixel-for-pixel for 48K/128K contended NOP, snow-effect NOP, and all six even/odd I/O contention cases
 - Matched the Mark Woodmass Float48K and Float128K reference address/value sequences, with the repeatable external-media procedure recorded under `test-assets/ula`
@@ -510,7 +520,7 @@ compatibility; completed milestones remain regression baselines.
 - Refreshes the immutable capture only after a safe stop, avoiding mutable-state inspection while execution is active
 
 ### Milestone 19 - Bank-Aware Disassembly And Symbolic Analysis Complete
-- Completed immutable inspection of both ROM banks and all eight RAM banks independently of the currently mapped 64K address space
+- Completed immutable inspection of every ROM bank and all eight RAM banks independently of the currently mapped 64K address space
 - Completed explicit mapped versus bank-qualified offset context across navigation history, search, copy, and 64K/16K export
 - Completed persistent user labels, automatic followed-target labels, symbol-aware navigation, and bank-qualified symbol import/export
 - Completed refreshed paging context without conflating physical offsets with logical CPU addresses
@@ -597,10 +607,13 @@ compatibility; completed milestones remain regression baselines.
 ### Milestone 26 - Machine Profiles And Later Spectrum Models In Progress
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
 - Unified hardware and firmware selection under `F3 - Machine`, with predictable switching between the remembered 48K and 128K-family profiles
-- Added verified original 48K, original 128K, and grey +2 production ROM profiles plus validated custom 16KB 48K ROM and ordered two-ROM 128K/grey +2 selection
+- Added verified original 48K, original 128K, grey +2, and +2A production ROM profiles plus validated custom 16KB, two-ROM, and four-ROM selection
 - Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
 - Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
-- Defers +2A/+3 claims until four-ROM selection, `1FFD` special paging, all-RAM maps and revised port decoding are implemented; +3 disk support additionally requires a uPD765-compatible FDC and drive/media model
+- Added the +2A four-ROM map, normal ROM selection, every documented `1FFD` all-RAM configuration, revised `7FFD`/`1FFD` partial decoding, shared paging lock, physical-bank contention, machine-profile-aware Quick State restoration, diagnostics, and debugger capture
+- Fingerprints the complete bundled four-ROM set while deliberately keeping address-based tape traps disabled for +2A ROM internals
+- Validated the production +2A ROM through automated boot/display smoke coverage and a live startup/debugger acceptance pass
+- Defers the +3 machine claim until a uPD765-compatible FDC and drive/media model are implemented; the shared ROM and paging foundation is now present
 
 ---
 

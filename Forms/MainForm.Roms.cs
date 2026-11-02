@@ -5,6 +5,7 @@ namespace Derby
         private ToolStripMenuItem bundled128RomMenuItem = null!;
         private ToolStripMenuItem bundled48RomMenuItem = null!;
         private ToolStripMenuItem bundledPlus2RomMenuItem = null!;
+        private ToolStripMenuItem bundledPlus2ARomMenuItem = null!;
         private ToolStripMenuItem customRomMenuItem = null!;
 
         private void InitializeMachineMenu()
@@ -21,6 +22,10 @@ namespace Derby
                 "ZX Spectrum +2 (Grey)",
                 null,
                 (_, _) => ApplyRomSet(bundledPlus2RomSet));
+            bundledPlus2ARomMenuItem = new ToolStripMenuItem(
+                "ZX Spectrum +2A",
+                null,
+                (_, _) => ApplyRomSet(bundledPlus2ARomSet));
 
             customRomMenuItem = new ToolStripMenuItem("Custom Machine / ROM");
             customRomMenuItem.DropDownItems.Add(
@@ -31,10 +36,15 @@ namespace Derby
                 "Load 128K / +2 ROM pair...",
                 null,
                 (_, _) => SelectCustom128kRomPair());
+            customRomMenuItem.DropDownItems.Add(
+                "Load +2A / +3 ROM set...",
+                null,
+                (_, _) => SelectCustomPlus2ARomSet());
 
             machineMenuItem.DropDownItems.Add(bundled128RomMenuItem);
             machineMenuItem.DropDownItems.Add(bundled48RomMenuItem);
             machineMenuItem.DropDownItems.Add(bundledPlus2RomMenuItem);
+            machineMenuItem.DropDownItems.Add(bundledPlus2ARomMenuItem);
             machineMenuItem.DropDownItems.Add(new ToolStripSeparator());
             machineMenuItem.DropDownItems.Add(customRomMenuItem);
             machineMenuItem.DropDownOpening += (_, _) => UpdateMachineMenu();
@@ -49,16 +59,20 @@ namespace Derby
             bundled128RomMenuItem.Checked = SameRomSet(selectedRomSet, bundled128RomSet);
             bundled48RomMenuItem.Checked = SameRomSet(selectedRomSet, bundled48RomSet);
             bundledPlus2RomMenuItem.Checked = SameRomSet(selectedRomSet, bundledPlus2RomSet);
+            bundledPlus2ARomMenuItem.Checked = SameRomSet(selectedRomSet, bundledPlus2ARomSet);
             customRomMenuItem.Checked =
                 !bundled128RomMenuItem.Checked &&
                 !bundled48RomMenuItem.Checked &&
-                !bundledPlus2RomMenuItem.Checked;
+                !bundledPlus2RomMenuItem.Checked &&
+                !bundledPlus2ARomMenuItem.Checked;
         }
 
         private static bool SameRomSet(SpectrumRomSet left, SpectrumRomSet right) =>
             left.Model == right.Model &&
-            string.Equals(Path.GetFullPath(left.Rom0Path), Path.GetFullPath(right.Rom0Path), StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(Path.GetFullPath(left.Rom1Path), Path.GetFullPath(right.Rom1Path), StringComparison.OrdinalIgnoreCase);
+            left.PagingModel == right.PagingModel &&
+            left.RomPaths.Select(Path.GetFullPath).SequenceEqual(
+                right.RomPaths.Select(Path.GetFullPath),
+                StringComparer.OrdinalIgnoreCase);
 
         private void SelectCustom48kRom()
         {
@@ -85,6 +99,25 @@ namespace Derby
                 $"Custom 128K/+2: {Path.GetFileNameWithoutExtension(rom0Dialog.FileName)} + {Path.GetFileNameWithoutExtension(rom1Dialog.FileName)}",
                 rom0Dialog.FileName,
                 rom1Dialog.FileName));
+        }
+
+        private void SelectCustomPlus2ARomSet()
+        {
+            var paths = new string[4];
+            for (int bank = 0; bank < paths.Length; bank++)
+            {
+                using var dialog = CreateRomDialog($"Select ROM {bank} (+2A / +3 four-ROM set)");
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+                paths[bank] = dialog.FileName;
+            }
+
+            TryApplyRomSet(() => SpectrumRomSet.CreatePlus2A(
+                $"Custom +2A: {Path.GetFileNameWithoutExtension(paths[0])} set",
+                paths[0],
+                paths[1],
+                paths[2],
+                paths[3]));
         }
 
         private static OpenFileDialog CreateRomDialog(string title) => new()

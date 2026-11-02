@@ -22,6 +22,7 @@ namespace Derby
             internal int BorderColor;
             internal int FrameCount;
             internal byte Last7ffdValue;
+            internal byte Last1ffdValue;
             internal bool Uses48kMemoryMap;
             internal int FrameTStates;
             internal byte LastAyRegister;
@@ -82,6 +83,7 @@ namespace Derby
                 BorderColor = BorderColor,
                 FrameCount = FrameCount,
                 Last7ffdValue = last7ffdValue,
+                Last1ffdValue = last1ffdValue,
                 Uses48kMemoryMap = uses48kMemoryMap,
                 FrameTStates = frameTStates,
                 LastAyRegister = lastAyRegister,
@@ -142,6 +144,7 @@ namespace Derby
             BorderColor = state.BorderColor;
             FrameCount = state.FrameCount;
             last7ffdValue = state.Last7ffdValue;
+            last1ffdValue = state.Last1ffdValue;
             uses48kMemoryMap = state.Uses48kMemoryMap;
             frameTStates = state.FrameTStates;
             lastAyRegister = state.LastAyRegister;

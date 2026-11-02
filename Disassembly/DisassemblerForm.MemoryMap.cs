@@ -79,23 +79,26 @@ namespace Derby
 
         private void UpdateMappingPanel(string viewRange)
         {
-            string model = snapshot.MachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : "128K";
+            string model = snapshot.MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3
+                ? "+2A"
+                : snapshot.MachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : "128K";
             mappingSummaryLabel.Text =
                 $"VIEW {selectedAddressSpace.DisplayName} | LISTING {listingAddress:X4}H | PC {snapshot.ProgramCounter:X4}H | {model}";
 
-            int[] mappedBanks = [-1, 5, 2, snapshot.PagedRamBank];
-            string[] labels =
-            [
-                $"0000 ROM {snapshot.CurrentRomBank}",
-                "4000 RAM 5",
-                "8000 RAM 2",
-                $"C000 RAM {snapshot.PagedRamBank}"
-            ];
+            int[] mappedBanks = snapshot.MappedRamBanks.ToArray();
+            string[] labels = new string[4];
+            for (int slot = 0; slot < labels.Length; slot++)
+            {
+                string location = $"{slot * 0x4000:X4}";
+                labels[slot] = mappedBanks[slot] < 0
+                    ? $"{location} ROM {snapshot.CurrentRomBank}"
+                    : $"{location} RAM {mappedBanks[slot]}";
+            }
             bool[] listingBlocks = GetListingMemoryBlocks(mappedBanks);
             for (int index = 0; index < mappingBlockLabels.Length; index++)
             {
                 Label block = mappingBlockLabels[index];
-                bool isScreenBank = index > 0 && mappedBanks[index] == snapshot.ScreenBank;
+                bool isScreenBank = mappedBanks[index] == snapshot.ScreenBank;
                 block.Text = labels[index];
                 block.BackColor = listingBlocks[index]
                     ? isScreenBank ? Color.FromArgb(70, 205, 176) : Color.FromArgb(95, 225, 195)
@@ -128,7 +131,7 @@ namespace Derby
                 return result;
             }
 
-            for (int index = 1; index < mappedBanks.Length; index++)
+            for (int index = 0; index < mappedBanks.Length; index++)
                 result[index] = selectedAddressSpace.Bank == mappedBanks[index];
             return result;
         }

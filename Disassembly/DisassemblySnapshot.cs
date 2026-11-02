@@ -72,20 +72,28 @@ namespace Derby
             DisassemblyCpuState? cpuState = null,
             IReadOnlyList<byte[]>? romBanks = null,
             IReadOnlyList<byte[]>? ramBanks = null,
-            string? analysisContext = null)
+            string? analysisContext = null,
+            SpectrumMemoryPagingModel memoryPagingModel = SpectrumMemoryPagingModel.Standard128K,
+            IReadOnlyList<int>? mappedRamBanks = null)
         {
             ArgumentNullException.ThrowIfNull(memory);
             if (memory.Length != 65536)
                 throw new ArgumentException("A disassembly snapshot must contain the full logical 64K address space.", nameof(memory));
 
             this.memory = (byte[])memory.Clone();
-            this.romBanks = CloneBanks(romBanks, 2, nameof(romBanks));
+            if (romBanks != null && romBanks.Count is not (2 or 4))
+                throw new ArgumentException("Expected a complete two-bank or four-bank ROM set.", nameof(romBanks));
+            this.romBanks = CloneBanks(romBanks, romBanks?.Count ?? 0, nameof(romBanks));
             this.ramBanks = CloneBanks(ramBanks, 8, nameof(ramBanks));
             ProgramCounter = programCounter;
             MachineModel = machineModel;
             CurrentRomBank = currentRomBank;
             PagedRamBank = pagedRamBank;
             ScreenBank = screenBank;
+            MemoryPagingModel = memoryPagingModel;
+            MappedRamBanks = mappedRamBanks?.ToArray() ?? [-1, 5, 2, pagedRamBank];
+            if (MappedRamBanks.Count != 4)
+                throw new ArgumentException("A mapped capture must describe four 16K slots.", nameof(mappedRamBanks));
             AnalysisContext = string.IsNullOrWhiteSpace(analysisContext) ? "default" : analysisContext.Trim();
             CapturedAtUtc = capturedAtUtc ?? DateTime.UtcNow;
             CpuState = cpuState is null
@@ -98,6 +106,8 @@ namespace Derby
         public int CurrentRomBank { get; }
         public int PagedRamBank { get; }
         public int ScreenBank { get; }
+        public SpectrumMemoryPagingModel MemoryPagingModel { get; }
+        public IReadOnlyList<int> MappedRamBanks { get; }
         public string AnalysisContext { get; }
         public DateTime CapturedAtUtc { get; }
         public DisassemblyCpuState? CpuState { get; }
@@ -131,9 +141,25 @@ namespace Derby
             return address < 0x4000 ? banks[addressSpace.Bank][address] : (byte)0xFF;
         }
 
-        public string MappingText => MachineModel == SpectrumMachineModel.Spectrum48K
-            ? "48K | ROM 1 | 4000-7FFF: RAM 5 | 8000-BFFF: RAM 2 | C000-FFFF: RAM 0"
-            : $"128K | ROM {CurrentRomBank} | 4000-7FFF: RAM 5 | 8000-BFFF: RAM 2 | C000-FFFF: RAM {PagedRamBank} | Screen: RAM {ScreenBank}";
+        public string MappingText
+        {
+            get
+            {
+                string model = MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3
+                    ? "+2A"
+                    : MachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : "128K";
+                string[] slots = new string[4];
+                for (int slot = 0; slot < slots.Length; slot++)
+                {
+                    int start = slot * 0x4000;
+                    int end = start + 0x3FFF;
+                    slots[slot] = MappedRamBanks[slot] < 0
+                        ? $"{start:X4}-{end:X4}: ROM {CurrentRomBank}"
+                        : $"{start:X4}-{end:X4}: RAM {MappedRamBanks[slot]}";
+                }
+                return $"{model} | {string.Join(" | ", slots)} | Screen: RAM {ScreenBank}";
+            }
+        }
 
         private static byte[][] CloneBanks(IReadOnlyList<byte[]>? source, int expectedCount, string parameterName)
         {

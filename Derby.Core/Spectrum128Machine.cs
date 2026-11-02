@@ -31,7 +31,7 @@ namespace Derby
 
         private readonly Z80Cpu cpu = new Z80Cpu();
         private readonly byte[][] ramBanks = new byte[8][];
-        private readonly byte[][] romBanks = new byte[2][];
+        private readonly byte[][] romBanks;
         private readonly byte[] keyboardMatrix = new byte[8]
         {
             0xFF, 0xFF, 0xFF, 0xFF,
@@ -134,6 +134,7 @@ namespace Derby
         }
 
         private byte last7ffdValue = 0xFF;
+        private byte last1ffdValue;
         private RzxPlaybackSession? rzxPlayback;
         private MountedTape? mountedTape => tapeTransport.MountedTape;
         public MountedTape? MountedTape => tapeTransport.MountedTape;
@@ -160,6 +161,7 @@ namespace Derby
         {
             ArgumentNullException.ThrowIfNull(romSet);
             RomSet = romSet;
+            romBanks = new byte[romSet.RomPaths.Count][];
 
             for (int i = 0; i < ramBanks.Length; i++)
                 ramBanks[i] = new byte[16384];
@@ -199,7 +201,8 @@ namespace Derby
             ClearDebugHistory();
             tStatesUntilNextInterrupt = 0;
             realignInterruptPhaseAfterNextAccept = false;
-            if (romSet.Model != SpectrumMachineModel.Spectrum128K)
+            if (romSet.Model != SpectrumMachineModel.Spectrum128K ||
+                romSet.PagingModel == SpectrumMemoryPagingModel.Plus2APlus3)
                 Reset(romSet.Model);
         }
 
@@ -220,8 +223,13 @@ namespace Derby
         public int FrameTStates => frameTStates;
         public int CurrentCpuClockHz => TimingProfile.CpuClockHz;
         public SpectrumMachineModel MachineModel { get; private set; } = SpectrumMachineModel.Spectrum128K;
+        public SpectrumMemoryPagingModel MemoryPagingModel => RomSet.PagingModel;
+        public bool SpecialPagingEnabled =>
+            MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3 &&
+            (last1ffdValue & 0x01) != 0;
         public bool HasAyHardware => ayHardwareEnabled;
         public SpectrumRomSet RomSet { get; }
+        public int RomBankCount => romBanks.Length;
         public SpectrumRomProfile RomProfile { get; private set; } = null!;
         public bool SupportsRomTapeAcceleration => RomProfile.SupportsAddressBasedTapeServices;
         public bool FlashPhase => ((FrameCount / 16) & 1) != 0;
@@ -253,7 +261,10 @@ namespace Derby
             BorderColor = 1;
             FrameCount = 0;
             LastAboveWriteFrame = -1;
-            last7ffdValue = model == SpectrumMachineModel.Spectrum48K ? (byte)0x10 : (byte)0xFF;
+            last7ffdValue = model == SpectrumMachineModel.Spectrum48K
+                ? (byte)0x10
+                : MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3 ? (byte)0x00 : (byte)0xFF;
+            last1ffdValue = 0;
             tapeTransport.Reset();
             ResetMountedTapeActivityTracking();
             rzxPlayback = null;
@@ -501,17 +512,22 @@ namespace Derby
             return phase < 6 ? (ulong)(6 - phase) : 0;
         }
 
-        private bool Is48kContendedMemoryAddress(ushort addr)
+        private bool IsContendedMemoryAddress(ushort addr)
         {
-            if (addr >= 0x4000 && addr < 0x8000)
-                return true;
+            int slot = addr >> 14;
+            if (IsMappedSlotRom(slot))
+                return false;
 
-            return !uses48kMemoryMap && addr >= 0xC000 && (PagedRamBank & 0x01) != 0;
+            int bank = GetMappedRamBankForSlot(slot);
+            if (MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3)
+                return bank >= 4;
+
+            return bank == 5 || (!uses48kMemoryMap && slot == 3 && (bank & 0x01) != 0);
         }
 
-        private void Apply48kMemoryContention(ushort addr)
+        private void ApplyMemoryContention(ushort addr)
         {
-            if (!Is48kContendedMemoryAddress(addr))
+            if (!IsContendedMemoryAddress(addr))
                 return;
 
             ulong delay = GetUlaContentionDelay(cpu.TStates);
@@ -521,7 +537,7 @@ namespace Derby
 
         private ulong GetIoContentionDelay(ushort port, int ioCycleStartOffsetTStates = 0)
         {
-            bool highContended = Is48kContendedMemoryAddress((ushort)(port & 0xFF00));
+            bool highContended = IsContendedMemoryAddress((ushort)(port & 0xFF00));
             bool lowBitClear = (port & 0x0001) == 0;
 
             if (!highContended && !lowBitClear)
@@ -568,13 +584,13 @@ namespace Derby
 
         private byte ReadMemoryWithContention(ushort addr)
         {
-            Apply48kMemoryContention(addr);
+            ApplyMemoryContention(addr);
             return ReadMemory(addr);
         }
 
         private byte ReadMemoryWithContentionAtOffset(ushort addr, int offsetTStates)
         {
-            if (Is48kContendedMemoryAddress(addr))
+            if (IsContendedMemoryAddress(addr))
             {
                 ulong delay = GetUlaContentionDelay(
                     cpu.TStates + (ulong)Math.Max(0, offsetTStates));
@@ -587,7 +603,7 @@ namespace Derby
 
         private void WriteMemoryWithContention(ushort addr, byte value)
         {
-            Apply48kMemoryContention(addr);
+            ApplyMemoryContention(addr);
             const ulong memoryWriteCycleTStates = 3;
             AdvanceUlaBeforeScreenWrite(addr, cpu.TStates + memoryWriteCycleTStates);
             WriteMemory(addr, value);
@@ -596,7 +612,7 @@ namespace Derby
         private void WriteMemoryWithContentionAtOffset(ushort addr, byte value, int offsetTStates)
         {
             int safeOffsetTStates = Math.Max(0, offsetTStates);
-            if (Is48kContendedMemoryAddress(addr))
+            if (IsContendedMemoryAddress(addr))
             {
                 ulong delay = GetUlaContentionDelay(
                     cpu.TStates + (ulong)safeOffsetTStates);
@@ -613,10 +629,11 @@ namespace Derby
 
         private void AdvanceUlaBeforeScreenWrite(ushort addr, ulong writeTStates)
         {
-            if (addr < 0x4000)
+            int slot = addr >> 14;
+            if (IsMappedSlotRom(slot))
                 return;
 
-            int bank = GetMappedRamBank(addr);
+            int bank = GetMappedRamBankForSlot(slot);
             int offset = addr & 0x3FFF;
             if ((bank == 5 || bank == 7) && offset < 0x1B00)
                 ulaRaster.AdvanceTo(writeTStates);
@@ -747,18 +764,19 @@ namespace Derby
             int oldRam = PagedRamBank;
             int oldScreen = ScreenBank;
             int oldRom = CurrentRomBank;
+            byte oldPaging = last7ffdValue;
 
             PagedRamBank = value & 0x07;
             ScreenBank = ((value & 0x08) != 0) ? 7 : 5;
-            CurrentRomBank = ((value & 0x10) != 0) ? 1 : 0;
+            last7ffdValue = (byte)(value & 0x3F);
+            UpdateCurrentRomBank();
 
             if ((value & 0x20) != 0)
                 PagingLocked = true;
 
             byte newPaging = (byte)(value & 0x3F);
-            if (newPaging != last7ffdValue)
+            if (newPaging != oldPaging)
             {
-                last7ffdValue = newPaging;
                 Trace?.Invoke(
                     $"[7FFD*] PC=0x{cpu.Regs.PC:X4} Frame={FrameCount} RAM {oldRam}->{PagedRamBank} SCREEN {oldScreen}->{ScreenBank} ROM {oldRom}->{CurrentRomBank} VAL=0x{value:X2}");
             }
@@ -1003,10 +1021,12 @@ namespace Derby
 
         private void LoadRoms(SpectrumRomSet romSet)
         {
-            (byte[] rom0, byte[] rom1) = romSet.Load();
-            romBanks[0] = rom0;
-            romBanks[1] = rom1;
-            RomProfile = SpectrumRomProfile.Detect(rom0, rom1, romSet.Model);
+            byte[][] loadedBanks = romSet.Load();
+            for (int bank = 0; bank < loadedBanks.Length; bank++)
+                romBanks[bank] = loadedBanks[bank];
+            RomProfile = romSet.PagingModel == SpectrumMemoryPagingModel.Plus2APlus3
+                ? SpectrumRomProfile.DetectPlus2A(loadedBanks)
+                : SpectrumRomProfile.Detect(loadedBanks[0], loadedBanks[1], romSet.Model);
         }
 
         private void ClearRam()
@@ -1028,7 +1048,7 @@ namespace Derby
 
         private byte ReadMemory(ushort addr)
         {
-            if (addr < 0x4000)
+            if (addr < 0x4000 && !SpecialPagingEnabled)
                 return romBanks[CurrentRomBank][addr];
 
             int bank = GetMappedRamBank(addr);
@@ -1038,7 +1058,7 @@ namespace Derby
 
         private void WriteMemory(ushort addr, byte value)
         {
-            if (addr < 0x4000)
+            if (addr < 0x4000 && !SpecialPagingEnabled)
                 return;
 
             int bank = GetMappedRamBank(addr);
@@ -1064,12 +1084,50 @@ namespace Derby
                 RecordMemoryEvent($"T={cpu.TStates,10} W {addr:X4}={value:X2} bank={bank} PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4}");
         }
 
-        private int GetMappedRamBank(ushort addr) => addr switch
+        private int GetMappedRamBank(ushort addr) => GetMappedRamBankForSlot(addr >> 14);
+
+        public int GetMappedRamBankForSlot(int slot)
         {
-            < 0x8000 => 5,
-            < 0xC000 => 2,
-            _ => PagedRamBank
-        };
+            if ((uint)slot >= 4)
+                throw new ArgumentOutOfRangeException(nameof(slot));
+
+            if (!SpecialPagingEnabled)
+            {
+                return slot switch
+                {
+                    1 => 5,
+                    2 => 2,
+                    3 => PagedRamBank,
+                    _ => throw new InvalidOperationException("Slot 0 currently contains ROM.")
+                };
+            }
+
+            int configuration = (last1ffdValue >> 1) & 0x03;
+            return configuration switch
+            {
+                0 => slot,
+                1 => slot + 4,
+                2 => slot == 3 ? 3 : slot + 4,
+                3 => slot switch { 0 => 4, 1 => 7, 2 => 6, _ => 3 },
+                _ => throw new InvalidOperationException()
+            };
+        }
+
+        public bool IsMappedSlotRom(int slot)
+        {
+            if ((uint)slot >= 4)
+                throw new ArgumentOutOfRangeException(nameof(slot));
+            return slot == 0 && !SpecialPagingEnabled;
+        }
+
+        private void UpdateCurrentRomBank()
+        {
+            int lowBit = (last7ffdValue >> 4) & 0x01;
+            int highBit = MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3
+                ? (last1ffdValue >> 1) & 0x02
+                : 0;
+            CurrentRomBank = highBit | lowBit;
+        }
 
         public byte ReadPort(ushort port)
         {
@@ -1370,6 +1428,7 @@ namespace Derby
             floatingBusDisplayStartAdjustTStates = 0;
             floatingBusSampleAdjustTStates = 0;
             last7ffdValue = 0x10;
+            last1ffdValue = 0;
             autoDebugDumpPending = false;
             autoDebugDumpReason = null;
             autoDebugDumpSnapshot = null;
@@ -1397,6 +1456,8 @@ namespace Derby
             FrameCount = 0;
             floatingBusDisplayStartAdjustTStates = 0;
             floatingBusSampleAdjustTStates = 0;
+            last7ffdValue = 0x10;
+            last1ffdValue = 0;
             autoDebugDumpPending = false;
             autoDebugDumpReason = null;
             autoDebugDumpSnapshot = null;
@@ -1488,6 +1549,7 @@ namespace Derby
             floatingBusDisplayStartAdjustTStates = 0;
             floatingBusSampleAdjustTStates = 0;
             this.last7ffdValue = (byte)(last7ffdValue & 0x3F);
+            last1ffdValue = 0;
             autoDebugDumpPending = false;
             autoDebugDumpReason = null;
             autoDebugDumpSnapshot = null;
@@ -1528,7 +1590,19 @@ namespace Derby
 
             HandleAyPortWrite(port, value, writeTStates);
 
-            if ((port & 0x8002) == 0 && (port & 0x00FF) == 0xFD)
+            if (IsPlus3PagingPort(port))
+            {
+                if (PagingLocked)
+                    return;
+
+                last1ffdValue = (byte)(value & 0x1F);
+                UpdateCurrentRomBank();
+                Trace?.Invoke(
+                    $"[1FFD] PC=0x{cpu.Regs.PC:X4} Frame={FrameCount} SPECIAL={(SpecialPagingEnabled ? 1 : 0)} ROM={CurrentRomBank} VAL=0x{value:X2}");
+                return;
+            }
+
+            if (Is7ffdPagingPort(port))
             {
                 if (PagingLocked)
                     return;
@@ -1538,23 +1612,35 @@ namespace Derby
                 int oldRam = PagedRamBank;
                 int oldScreen = ScreenBank;
                 int oldRom = CurrentRomBank;
+                byte oldPaging = last7ffdValue;
 
                 PagedRamBank = value & 0x07;
                 ScreenBank = ((value & 0x08) != 0) ? 7 : 5;
-                CurrentRomBank = ((value & 0x10) != 0) ? 1 : 0;
+                last7ffdValue = (byte)(value & 0x3F);
+                UpdateCurrentRomBank();
 
                 if ((value & 0x20) != 0)
                     PagingLocked = true;
 
                 byte newPaging = (byte)(value & 0x3F);
-                if (newPaging != last7ffdValue)
+                if (newPaging != oldPaging)
                 {
-                    last7ffdValue = newPaging;
                     Trace?.Invoke(
                         $"[7FFD] PC=0x{cpu.Regs.PC:X4} Frame={FrameCount} RAM {oldRam}->{PagedRamBank} SCREEN {oldScreen}->{ScreenBank} ROM {oldRom}->{CurrentRomBank} VAL=0x{value:X2}");
                 }
             }
         }
+
+        private bool Is7ffdPagingPort(ushort port) => MemoryPagingModel switch
+        {
+            SpectrumMemoryPagingModel.Standard128K => (port & 0x8002) == 0,
+            SpectrumMemoryPagingModel.Plus2APlus3 => (port & 0xC002) == 0x4000,
+            _ => false
+        };
+
+        private bool IsPlus3PagingPort(ushort port) =>
+            MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3 &&
+            (port & 0xF002) == 0x1000;
 
         private void TriggerFrameInterrupt()
         {

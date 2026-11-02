@@ -25,5 +25,24 @@ namespace Derby.Tests
             Assert.InRange(machine.Cpu.Regs.SP, (ushort)0x4000, ushort.MaxValue);
             Assert.InRange(machine.Cpu.Regs.PC, (ushort)0x0000, ushort.MaxValue);
         }
+
+        [Fact]
+        public void Plus2A_BootsProductionRomAndDrawsStartupScreen()
+        {
+            string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
+            if (Enumerable.Range(0, 4).Any(bank =>
+                !File.Exists(Path.Combine(romFolder, $"plus3-{bank}.rom"))))
+            {
+                return;
+            }
+
+            var machine = new Spectrum128Machine(SpectrumRomSet.BundledPlus2A(romFolder));
+            for (int frame = 0; frame < 100; frame++)
+                machine.ExecuteFrame();
+
+            Assert.Equal(SpectrumMemoryPagingModel.Plus2APlus3, machine.MemoryPagingModel);
+            Assert.InRange(machine.Cpu.Regs.SP, (ushort)0x4000, ushort.MaxValue);
+            Assert.Contains(machine.GetScreenBankData().Take(0x1B00), value => value != 0 && value != 0x38);
+        }
     }
 }

@@ -2,18 +2,24 @@ namespace Derby
 {
     public sealed class SpectrumRomSet
     {
-        private SpectrumRomSet(string name, SpectrumMachineModel model, string rom0Path, string rom1Path)
+        private SpectrumRomSet(
+            string name,
+            SpectrumMachineModel model,
+            SpectrumMemoryPagingModel pagingModel,
+            params string[] romPaths)
         {
             Name = name;
             Model = model;
-            Rom0Path = rom0Path;
-            Rom1Path = rom1Path;
+            PagingModel = pagingModel;
+            RomPaths = Array.AsReadOnly(romPaths);
         }
 
         public string Name { get; }
         public SpectrumMachineModel Model { get; }
-        public string Rom0Path { get; }
-        public string Rom1Path { get; }
+        public SpectrumMemoryPagingModel PagingModel { get; }
+        public IReadOnlyList<string> RomPaths { get; }
+        public string Rom0Path => RomPaths[0];
+        public string Rom1Path => RomPaths[1];
 
         public static SpectrumRomSet Bundled128K(string romFolder) =>
             Create128K(
@@ -32,11 +38,24 @@ namespace Derby
                 Path.Combine(romFolder, "plus2-0.rom"),
                 Path.Combine(romFolder, "plus2-1.rom"));
 
+        public static SpectrumRomSet BundledPlus2A(string romFolder) =>
+            CreatePlus2A(
+                "Sinclair ZX Spectrum +2A (bundled)",
+                Path.Combine(romFolder, "plus3-0.rom"),
+                Path.Combine(romFolder, "plus3-1.rom"),
+                Path.Combine(romFolder, "plus3-2.rom"),
+                Path.Combine(romFolder, "plus3-3.rom"));
+
         public static SpectrumRomSet Create48K(string name, string romPath)
         {
             ValidateName(name);
             ValidateRomFile(romPath);
-            return new SpectrumRomSet(name, SpectrumMachineModel.Spectrum48K, romPath, romPath);
+            return new SpectrumRomSet(
+                name,
+                SpectrumMachineModel.Spectrum48K,
+                SpectrumMemoryPagingModel.Fixed48K,
+                romPath,
+                romPath);
         }
 
         public static SpectrumRomSet Create128K(string name, string rom0Path, string rom1Path)
@@ -44,16 +63,42 @@ namespace Derby
             ValidateName(name);
             ValidateRomFile(rom0Path);
             ValidateRomFile(rom1Path);
-            return new SpectrumRomSet(name, SpectrumMachineModel.Spectrum128K, rom0Path, rom1Path);
+            return new SpectrumRomSet(
+                name,
+                SpectrumMachineModel.Spectrum128K,
+                SpectrumMemoryPagingModel.Standard128K,
+                rom0Path,
+                rom1Path);
         }
 
-        internal (byte[] Rom0, byte[] Rom1) Load()
+        public static SpectrumRomSet CreatePlus2A(
+            string name,
+            string rom0Path,
+            string rom1Path,
+            string rom2Path,
+            string rom3Path)
         {
-            byte[] rom0 = File.ReadAllBytes(Rom0Path);
-            byte[] rom1 = File.ReadAllBytes(Rom1Path);
-            if (rom0.Length != 16384 || rom1.Length != 16384)
-                throw new InvalidOperationException("ROM files must be exactly 16KB each.");
-            return (rom0, rom1);
+            ValidateName(name);
+            string[] paths = [rom0Path, rom1Path, rom2Path, rom3Path];
+            foreach (string path in paths)
+                ValidateRomFile(path);
+            return new SpectrumRomSet(
+                name,
+                SpectrumMachineModel.Spectrum128K,
+                SpectrumMemoryPagingModel.Plus2APlus3,
+                paths);
+        }
+
+        internal byte[][] Load()
+        {
+            var banks = new byte[RomPaths.Count][];
+            for (int bank = 0; bank < banks.Length; bank++)
+            {
+                banks[bank] = File.ReadAllBytes(RomPaths[bank]);
+                if (banks[bank].Length != 16384)
+                    throw new InvalidOperationException("ROM files must be exactly 16KB each.");
+            }
+            return banks;
         }
 
         private static void ValidateName(string name)
