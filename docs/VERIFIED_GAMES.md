@@ -13,6 +13,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | APB (Hit Squad) | `.tzx` | ROM-driven protected loading reaches the ownership prompt and advances to the complete APB title screen |
 | 🟢 | Arkanoid (Imagine) | `.tzx` | Protected loading completes and gameplay runs; Milestone 17 beam-aware rendering eliminates the previously observed ship flicker; sound behavior and timing compare closely with JSspeccy, although JSspeccy has a slightly warmer timbre |
 | 🟢 | Arkanoid (Hit Squad) | `.tzx` | LOAD capability gating falls back to the real-ROM protected path; loading reaches gameplay and beam-aware rendering eliminates the previously observed ship flicker |
+| 🟢 | Back to Skool (Alternative and Microsphere original) | `.tzx` | Both releases complete native ROM loading, end the tape cleanly, and reach their active demonstration screens |
 | 🟢 | Batman | `.tzx` | Chained BASIC and protected loading complete; game runs |
 | 🟢 | Bear Grud | `.tap` | Loading reaches the control-selection menu and remains stable through an extended execution soak |
 | 🟢 | Booze Up | `.tzx` | Interactive BASIC loading remains under real-ROM control, reaches the loaded program, and detects the terminal tape state correctly |
@@ -30,6 +31,8 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Frankie (original Speedlock 1 release) | `.tzx` | Protected Speedlock pulse playback completes in both machine modes, ends the tape cleanly, reaches the joystick-selection menu, and accepts input into keyboard definition |
 | 🟢 | Head Over Heels | `.tap` | Loading reaches the complete illustrated title screen and remains stable |
 | 🟢 | Glider Rider (Bug-Byte and Quicksilva original) | `.tzx` | The Bug-Byte release reaches its complete title screen in 48K mode; the Quicksilva 128K release completes native ROM pulse loading, reaches its control menu, accepts Kempston selection, and enters gameplay |
+| 🟢 | Harrier Attack | `.tzx` | Standard loading completes and reaches the illustrated skill-selection screen |
+| 🟢 | Hydrofool (original and Rack-It) | `.tzx` | Both releases complete their mounted continuation, end the tape cleanly, and reach the control-selection menu |
 | 🟢 | Ikari Warriors | `.tzx` | Both the original and Encore releases load and run; transport stops after loading |
 | 🟢 | Impossible Mission | `.tap`, `.tzx` | The TAP plus primary, Bugfix, and Ricochet TZX releases complete protected loading and reach the control menu; protected chained BASIC stages retain exact ROM interpreter-cursor handling |
 | 🟢 | Impossible Mission II | `.tzx` | US Gold original and both Kixx sides complete protected loading and reach stable game/control screens |
@@ -41,6 +44,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Kwah! (Melbourne House original) | `.tzx` | In 48K mode, the ROM-driven continuation completes, ends the tape cleanly, accepts SPACE at the start prompt, and enters the game |
 | 🟢 | Magician | `.tap` | Loading reaches the illustrated adventure opening and remains stable |
 | 🟢 | Manic Miner | `.tzx` | Standard header/data loading completes in 48K mode and reaches the stable animated game/attract screen |
+| 🟢 | OutRun | `.tap` | Native ROM loading reaches tape end and the complete loading picture; the post-load key handoff advances to the game mode menu |
 | 🟢 | Pac-Land | `.tzx` | In 48K mode, ROM-driven loading reaches the game/high-score screen and remains stable |
 | 🟢 | Paperboy (Elite original and Encore) | `.tzx` | Both releases reach the high-score/start screen and remain stable; Encore completes protected playback and ends the tape cleanly from both 48K and 128K startup selections |
 | 🟢 | Paperboy 2 (Mindscape) | `.tzx` | Loading reaches the character-selection menu and remains stable |
@@ -53,6 +57,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Roller Coaster (Elite) | `.tzx` | End-of-load transition starts the game correctly |
 | 🟢 | Rotozlow | `.tap` | Loading reaches the demo-generation sequence and continues executing without an error |
 | 🟢 | Scuba Dive (Durell) | `.tzx` | Nonstandard leading tape structure mounts and loads correctly |
+| 🟢 | Skool Daze (Microsphere original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the active demonstration screen |
 | 🟢 | Space Harrier (Elite original and Encore) | `.tzx` | Both releases reach the start/control menu and remain stable |
 | 🟢 | Star Wars (Hit Squad) | `.tzx` | Loading reaches the complete X-Wing control menu and remains stable |
 | 🟢 | Star Wars (Domark original, sides 1 and 2) | `.tzx` | The explicit stop/key/resume sequence reaches the complete title screen from both sides; side 2 requires 48K mode |
@@ -69,7 +74,11 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | The Oracle's Cave (Doric Computer) | `.tzx` | ROM-driven multi-stage loading completes; maze generation and level selection lead into the playable cave |
 | 🟢 | The Way of the Exploding Fist (Melbourne House original and Ricochet) | `.tzx` | Both releases complete their multi-file load and reach the animated title screen; explicit BASIC CODE destinations override conflicting header addresses |
 | 🟢 | Turbo Esprit (Durell original, side 2) | `.tzx` | ROM-driven loading and the explicit copyright prompts advance to the city-selection menu |
+| 🟢 | Turbo Out Run | `.tap` | Native ROM loading reaches the start/continue screen and automatically stops with the remaining multiload tape retained |
 | 🟢 | Uridium and Uridium Plus (Hewson original) | `.tzx` | Both releases preserve their intentionally malformed BASIC headers under native ROM loading and reach the animated title sequence from 48K and 128K startup; Uridium auto-stops at its completed handoff and Uridium Plus ends cleanly |
+| 🟢 | V (Ocean original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the control-selection menu |
+| 🟢 | Virus (Firebird original) | `.tzx` | Mounted protected loading completes, ends the tape cleanly, and reaches the title/input prompt |
+| 🟢 | Vixen (Martech original, sides 1 and 2) | `.tzx` | Both sides independently reach the control-selection menu and stop at their appropriate handoff boundaries |
 | 🟢 | Wanted! Monty Mole (Gremlin original) | `.tzx` | In 48K mode, the ROM-driven continuation completes, ends the tape cleanly, reaches the options menu, and enters gameplay |
 | 🟢 | WEC Le Mans (Imagine original, sides A and B) | `.tzx` | Protected loading reaches active racing in both machine modes. The 128K load consumes side A completely; in 48K mode, gameplay reaches the side-B request, the first side-B record stops at its explicit marker, and the later manual resume consumes the final record before the game reaches its high-score screen |
 | 🟢 | Where Time Stood Still | `.tap` | Fast load completes and terminal tape state is detected |
@@ -80,6 +89,9 @@ that every level, control path, or hardware edge case has been tested.
 | Status | Title / file | Format | Verified checkpoint and notes |
 | :---: | --- | --- | --- |
 | 🟢 | Auf Wiedersehen Monty | `.sna`, `.z80` | Both snapshots reach the control menu and remain stable for 2,000 frames |
+| 🟢 | Back to Skool | `.sna` | Snapshot reaches the active demonstration screen and remains stable for 2,000 frames |
+| 🟢 | Barbarian / Barbarian II | `.sna` | Both snapshots reach their complete title or demonstration-selection screens and remain stable for 2,000 frames |
+| 🟢 | Barry Burger | `hamburge.z80` | Snapshot reaches active gameplay and remains stable for 2,000 frames with sustained audio output |
 | 🟢 | Candy | `CANDY.Z80` | Snapshot reaches the illustrated title screen and remains stable |
 | 🟢 | Captain America Defies the Doom Tube | `.z80` | Snapshot reaches the complete title screen and remains stable |
 | 🟢 | Cauldron / Cauldron II | `.sna`, `.z80` | Both snapshots reach their control menus and remain stable |
@@ -90,13 +102,15 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Cybernoid: The Fighting Machine | `.sna`, `Cybernoid_The_Fighting_Machine_1988_Hewson_Consultants_a_128K.z80` | Both snapshots reach the title/control screen; the 128K Z80 remains responsive with good AY audio after the Milestone 16 timing changes |
 | 🟢 | Donkey Kong | `DONKKONG.Z80` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Elite | `Elite.sna`, `Elite128.z80` | Both snapshots reach the commander prompt and remain stable |
-| 🟢 | Exolon | `.sna`, `.z80` | Both snapshot forms load and run with 128K audio |
+| 🟢 | Exolon | `.sna`, `.szx`, `.z80` | All three snapshot forms load and reach the title/control screen; the SNA and Z80 run with 128K audio |
 | 🟢 | Feud | `.z80` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Flying Shark | `flyshark.sna` | Repaired from the matching original tape image; player selection, active gameplay, repeated fire, life loss, and the high-score screen pass a 1,500-frame acceptance run |
 | 🟢 | Frankie Goes to Hollywood | `.sna` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Glider Rider | `.sna` | Snapshot reaches the control-selection screen and remains stable |
 | 🟢 | Gods | `.sna`, `.z80` | Both snapshots reach the complete title screen and remain stable |
 | 🟢 | Green Beret | `.sna`, `.z80` | Both snapshots reach the control-selection screen and remain stable |
+| 🟢 | Harrier Attack | `.sna` | Snapshot reaches the illustrated skill-selection screen and remains stable for 2,000 frames |
+| 🟢 | Hydrofool | `.z80` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
 | 🟢 | Ikari Warriors | `.sna`, `.z80` | Both snapshots reach the control/title screen and remain stable |
 | 🟢 | Jet Set Willy | `JETSETW1.Z80`, `jsw013 (2016 edition, bugfixed).sna`, `jswx.sna` | All three variants reach active title/game screens and remain stable |
 | 🟢 | Jet Set Willy April | `JSWAPRIL.Z80` | Snapshot loads and executes |
@@ -117,6 +131,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Sabrina | `.sna` | Snapshot reaches the illustrated title screen and remains stable |
 | 🟢 | Scorias | `.z80` | Snapshot reaches the preview/title screen and remains stable |
 | 🟢 | Sex Simulator 1 | `.sna` | Snapshot reaches its menu and remains stable |
+| 🟢 | Skool Daze | `.sna`, `.z80` | Both snapshots reach the active demonstration screen and remain stable for 2,000 frames |
 | 🟢 | Space Harrier | `.sna`, `.z80` | Both snapshots reach the title screen and remain stable |
 | 🟢 | Starglider | `.sna` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Star Wars | `.sna` | Snapshot reaches the complete title screen and remains stable |
@@ -124,6 +139,9 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | The Thompson Twins | `ttwins.sna` | Snapshot reaches active gameplay and remains stable |
 | 🟢 | The Way of the Exploding Fist | `fist.sna` | Snapshot reaches active gameplay and remains stable |
 | 🟢 | Uridium / Uridium Plus | `Uridium.sna`, `uridplus.z80` | Both snapshots reach stable title/game screens |
+| 🟢 | V | `v.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
+| 🟢 | Virus | `virus.sna` | Snapshot reaches the title/input prompt and remains stable for 2,000 frames |
+| 🟢 | Vixen | `vixen.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
 | 🟢 | Wanted! Monty Mole | `.sna` | Snapshot reaches the complete title screen and remains stable |
 | 🟢 | Who Dares Wins | `who_dare.sna` | Snapshot reaches active gameplay and remains stable |
 | 🟢 | Xenon | `.z80` | Snapshot reaches the control-selection screen and remains stable |
