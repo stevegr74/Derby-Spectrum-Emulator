@@ -77,15 +77,7 @@ namespace Derby
 
             if (IsPlainShortcut(e, Keys.F7))
             {
-                SaveQuickState();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F8))
-            {
-                RestoreQuickState();
+                OpenQuickStateManager();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
                 return;
@@ -163,8 +155,7 @@ namespace Derby
 
             if (IsPlainShortcut(e, Keys.F1) || IsPlainShortcut(e, Keys.F2) ||
                 IsPlainShortcut(e, Keys.F3) || IsPlainShortcut(e, Keys.F5) ||
-                IsPlainShortcut(e, Keys.F6) || IsPlainShortcut(e, Keys.F7) ||
-                IsPlainShortcut(e, Keys.F8))
+                IsPlainShortcut(e, Keys.F6) || IsPlainShortcut(e, Keys.F7))
             {
                 e.Handled = true;
                 e.SuppressKeyPress = true;

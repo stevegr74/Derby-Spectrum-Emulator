@@ -95,8 +95,8 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F4` | Cycle 1x Native, 2x Enhanced, and 3x Enhanced display sizes |
 | `F5` | Stop or resume the mounted tape |
 | `F6` | Open or close the paused debugger and disassembler |
-| `F7` | Save the current machine to the temporary Quick State slot |
-| `F8` | Restore the temporary Quick State |
+| `F7` | Open the paused eight-slot Quick State Manager |
+| `F8` | Unassigned |
 | `F9` | Load a `.sna` snapshot |
 | `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
 | `F11` | Mount a `.tap` or `.tzx` tape image |
@@ -104,7 +104,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F12` | Write a machine diagnostic dump |
 | Right-click | Open the complete context menu |
 
-The context menu presents function-key actions in order, followed by joystick options and the Poke Manager. Unavailable commands, such as restoring before a Quick State exists, are disabled.
+The context menu presents assigned function-key actions in order, followed by joystick options and the Poke Manager. `F8` is intentionally absent because it is currently unassigned.
 
 ![Complete right-click context menu](images/context-menu.png)
 
@@ -258,19 +258,39 @@ The emulator also handles supported TZX pauses, stop markers, tape end, and dete
 
 # Chapter 7 - Quick State
 
-Quick State is one temporary, in-memory save slot.
+Press `F7` to open the paused Quick State Manager. It provides eight persistent
+slots in a compact two-column window with no scrolling.
 
-- Press `F7` to capture it.
-- Press `F8` to restore it.
-- `F8` remains unavailable until a state has been saved.
-- Saving again replaces the previous slot.
-- The slot is discarded when the emulator exits.
+![Fixed Quick State Manager showing all eight persistent slots](images/quick-state-manager.png)
+
+*Figure 7.1. All eight slots remain visible without scrolling; empty slots cannot be loaded.*
+
+Each slot shows a clean Spectrum-frame thumbnail, the loaded media name, the
+captured machine profile, and the local capture date and time. Empty slots are
+clearly labelled and cannot be loaded.
+
+1. Choose **Save** on an empty slot to capture the current machine.
+2. Choose **Load** on an occupied slot to restore it and close the manager.
+3. Choose **Replace** to overwrite an occupied slot after confirmation.
+4. Choose the small **X** in an occupied card's top-right corner to delete that slot after confirmation.
+5. Choose **Close** or press `Escape` to return without changing machine state.
+
+`F8` is unassigned. All eight slots are stored together in
+`%LocalAppData%\Derby\quick-states.dat`. DERBY compresses the versioned archive
+and replaces it atomically after a successful save, so application updates and
+read-only installation folders do not endanger the slots.
 
 Quick State restores CPU state, all RAM banks, paging, ULA/video state, audio
 generation state, current media name, tape pulse/EAR and loader-continuation
 position, and RZX replay position. It can survive loading different media or
 switching machine profiles during the same emulator session, then reinstate the
 captured ROM set and paging family before returning to the captured state.
+
+After DERBY is restarted, a persisted slot restores CPU registers, RAM, paging,
+machine profile, border/video-visible state, AY registers, and interrupt timing.
+An in-flight external tape or RZX stream is not reopened automatically after a
+restart; within the original session, the richer live slot still restores its
+exact tape pulse/EAR, loader-continuation, and replay position.
 
 Live host details such as a controller connection are not stored as emulated machine state. Audio and input adapters are cleaned up when a state is restored.
 

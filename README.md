@@ -22,7 +22,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings plus automatic or explicit controller selection and configurable raw-axis, hat, fire-button, and dead-zone mapping
 - Platform-neutral headless core with Windows presentation/audio adapters
 - Paused `F6` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
-- In-memory `F7`/`F8` Quick State save and restore
+- Paused `F7` Quick State Manager with eight persistent slots, clean thumbnails, metadata, and complete live-session machine/media restoration
 - Paused Poke Manager with an editable validated library, checksum-aware suggestions, mapped or physical-bank one-off writes, previews, and guarded restoration
 - Headless manual diagnostics and Z80 compliance runners
 
@@ -38,6 +38,10 @@ This project focuses on correctness, clean architecture, and incremental develop
 
 ![Paused Z80 debugger showing the paging map, grouped CPU state, memory inspector, and execution controls](docs/images/debugger-bank-aware.png)
 
+### Quick State Manager
+
+![Fixed eight-slot persistent Quick State Manager](docs/images/quick-state-manager.png)
+
 For operation and controls, see the [User Guide](docs/USER_GUIDE.md). UI changes should follow the [Design Language](docs/DESIGN_LANGUAGE.md).
 
 ---
@@ -47,7 +51,7 @@ For operation and controls, see the [User Guide](docs/USER_GUIDE.md). UI changes
 `master` is a stable, playable baseline for the original 48K, 128K, grey +2,
 and +2A.
 It includes beam-aware video, clock-driven audio, resumable tape transport,
-snapshot and replay loading, USB joystick support, Quick State, a bank-aware
+snapshot and replay loading, USB joystick support, the eight-slot Quick State Manager, a bank-aware
 debugger, and a checksum-aware Poke Manager. ZEXDOC and ZEXALL pass in the
 headless compliance runner, although no CPU suite proves every interaction with
 the surrounding hardware.
@@ -253,7 +257,7 @@ that do not consume a function key.
 | `F4` | Cycle fixed display size |
 | `F5` | Stop or resume the mounted tape without ejecting it |
 | `F6` | Open the debugger and disassembler, paused on an immutable machine capture |
-| `F7` / `F8` | Save or restore the temporary in-memory Quick State |
+| `F7` | Open the paused eight-slot Quick State Manager; `F8` is unassigned |
 | `F9` | Load a 48K or 128K `.sna` snapshot |
 | `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
 | `F11` | Mount a `.tap` or `.tzx` tape image |
@@ -288,10 +292,14 @@ restore the most recent session poke when the game has not changed those bytes.
 Tape changes show a top-left badge: full text for three seconds, then a compact
 playing icon; paused/auto-stopped icons hide after five seconds. The title bar
 shows the current media name, while transport state remains in the temporary
-overlay and optional `F2` diagnostics. The temporary Quick State slot restores
-the associated media name as well as CPU, RAM banks, paging, ULA/audio frame
-state, tape, and RZX position; it survives media loads during the session and is
-discarded on exit.
+overlay and optional `F2` diagnostics. The Quick State Manager holds eight
+persistent slots in one per-user archive. Each slot records the associated media
+name, machine profile, capture time, and a clean frame thumbnail, and restores
+CPU, RAM banks, paging, video-visible state, audio registers, and interrupt
+timing after restart. Within the session, the richer live state also restores
+exact tape continuation and RZX position. The archive is written atomically to
+`%LocalAppData%\Derby\quick-states.dat`; external tape and replay streams are
+not silently reopened after DERBY restarts.
 
 The debugger captures the mapped logical 64K, every ROM bank, all eight RAM
 banks, registers, flags, interrupt state, stack context, model, and paging state.
@@ -360,7 +368,7 @@ Test coverage includes:
 - Audio sample generation, long-run 48K/128K sample-clock drift, and clipping diagnostics
 - Audio pipeline behaviour, including turbo suppression, clean frame-boundary resume, and Quick State transition restoration
 - Z80 instruction decoding, bank-aware disassembly navigation/search, paging-map presentation, grouped CPU-state changes and address links, labels, classifications, control/data cross-references, hexadecimal memory inspection, listing export, settings, snapshot behavior, and STA WinForms interaction
-- Quick State deterministic machine, tape-cursor, and RZX-cursor restoration
+- Quick State deterministic machine, tape-cursor, RZX-cursor, eight-slot archive, metadata, thumbnail, corruption handling, and frontend restoration behavior
 - ZEXDOC and ZEXALL compliance validation via the dedicated runner
 
 ZEXDOC and ZEXALL are used separately for full CPU validation.
@@ -479,6 +487,7 @@ compatibility; completed milestones remain regression baselines.
 | 24 | Planned | Pop-up on-screen keyboard with selectable authentic 48K and 128K layouts |
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
 | 26 | In progress | Unified 48K/128K/grey +2/+2A profiles and genuine +2A paging complete; +3 disk hardware remains |
+| 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
 
 ### Milestone 7 - Audio And Turbo Handoff Complete
 - Generates 48K beeper and 128K AY tone, noise, and envelope output from timestamped machine events through one mixed sample pipeline
@@ -612,6 +621,14 @@ compatibility; completed milestones remain regression baselines.
 - Fingerprints the complete bundled four-ROM set while deliberately keeping address-based tape traps disabled for +2A ROM internals
 - Validated the production +2A ROM through automated boot/display smoke coverage and a live startup/debugger acceptance pass
 - Defers the +3 machine claim until a uPD765-compatible FDC and drive/media model are implemented; the shared ROM and paging foundation is now present
+
+### Milestone 27 - Eight-Slot Quick State Manager Complete
+- Replaced separate save and restore shortcuts with one paused Quick State Manager on `F7`, leaving `F8` unassigned
+- Provides eight persistent slots with explicit Save, Load, confirmed Replace, and compact confirmed-delete actions in a two-column, no-scroll workspace
+- Shows each slot's machine profile, loaded media, local capture time, and clean Spectrum-frame thumbnail while clearly distinguishing empty slots
+- Preserves the complete existing CPU, RAM, paging, ULA/audio, tape continuation, replay, media identity, and machine-profile restoration contract for live-session slots
+- Persists all eight slots in one versioned, compressed, atomically replaced `%LocalAppData%\Derby\quick-states.dat` archive; restart restoration retains machine state while deliberately not reopening transient external tape or RZX streams
+- Follows the shared dialog design language and adds focused no-scroll layout, metadata, guarded replacement, load routing, archive round-trip/corruption, context-menu, and machine-profile restoration regressions
 
 ---
 

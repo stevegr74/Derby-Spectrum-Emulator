@@ -168,17 +168,28 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 - Show a preview before memory edits or other consequential changes.
 - Empty states should say what the user needs to do next.
 
-### 5.5 Category navigation
+### 5.5 Persistent slot cards
+
+![Quick State Manager showing persistent slot cards](images/quick-state-manager.png)
+
+*Figure 5. The Quick State Manager uses repeated cards for equivalent saved objects: preview first, concise metadata second, and explicit secondary/primary actions last. Empty states remain visible but inactive.*
+
+- Use a fixed no-scroll grid when the complete bounded collection fits at the minimum supported window size.
+- Keep preview proportions stable, use ellipsis for long media names, and distinguish empty slots with words as well as disabled actions.
+- Require confirmation before replacing an occupied persistent slot.
+- Show a compact neutral outlined `X` only on occupied cards, provide an explicit delete tooltip/accessibility name, and require confirmation before permanent removal.
+
+### 5.6 Category navigation
 
 - Use `AccentSoft` for the selected category and `Accent` for its key text.
 - Keep all categories visible when practical.
 - The right-hand content title should repeat the selected category so orientation does not depend on colour.
 
-### 5.6 Dense technical workspaces
+### 5.7 Dense technical workspaces
 
 ![Debugger demonstrating the dense technical layout](images/debugger-bank-aware.png)
 
-*Figure 5. The debugger preserves the same colours and type hierarchy while using a compact layout for navigation, execution, paging, CPU state, disassembly, references, and breakpoints.*
+*Figure 6. The debugger preserves the same colours and type hierarchy while using a compact layout for navigation, execution, paging, CPU state, disassembly, references, and breakpoints.*
 
 - Machine values and aligned columns use Consolas.
 - Changed values use `Changed`; active flags use `AccentSoft`.
@@ -186,7 +197,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 - Primary execution state is obvious without turning every command into an accent button.
 - Frozen captures remain clearly labelled.
 
-### 5.7 On-screen overlays
+### 5.8 On-screen overlays
 
 - Draw emulator overlays into the presented image so they remain attached to the Spectrum presentation; use explicit per-mode metrics for compact host diagnostics rather than enlarging them in direct proportion to the emulated pixels.
 - Persistent diagnostics use compact, right-aligned mint technical text without a surrounding panel; a subtle dark text shadow may preserve clarity over changing screen content.

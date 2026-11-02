@@ -34,8 +34,7 @@ namespace Derby.Tests
                             "F5 - Stop / Resume Tape",
                             "---",
                             "F6 - Debugger / Disassembler",
-                            "F7 - Save Quick State",
-                            "F8 - Restore Quick State",
+                            "F7 - Quick State Manager...",
                             "---",
                             "F9 - Load .sna Snapshot",
                             "F10 - Load .z80/.szx Snapshot / Play .rzx",
@@ -131,9 +130,10 @@ namespace Derby.Tests
                     MethodInfo apply = type.GetMethod("ApplyRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
                     apply.Invoke(form, [plus2A]);
-                    type.GetMethod("SaveQuickState", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(form, null);
+                    type.GetMethod("SaveQuickStateSlot", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(form, [0]);
                     apply.Invoke(form, [standard128]);
-                    type.GetMethod("RestoreQuickState", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(form, null);
+                    bool restored = (bool)type.GetMethod("RestoreQuickStateSlot", BindingFlags.Instance | BindingFlags.NonPublic)!
+                        .Invoke(form, [0])!;
 
                     SpectrumRomSet selected = (SpectrumRomSet)type
                         .GetField("selectedRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
@@ -143,6 +143,7 @@ namespace Derby.Tests
                         .GetValue(form)!;
                     Assert.Equal(SpectrumMemoryPagingModel.Plus2APlus3, selected.PagingModel);
                     Assert.Equal(SpectrumMemoryPagingModel.Plus2APlus3, machine.MemoryPagingModel);
+                    Assert.True(restored);
                 }
                 catch (Exception exception)
                 {

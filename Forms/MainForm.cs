@@ -32,6 +32,7 @@ namespace Derby
         private const double QuickStateOverlaySeconds = 2.5;
         private const string ApplicationTitle = "DERBY";
         private const int MaximumMediaTitleLength = 48;
+        private const int QuickStateSlotCount = 8;
 
         private int framesRenderedThisSecond;
         private int displayedFps;
@@ -65,8 +66,7 @@ namespace Derby
         private readonly ToolStripMenuItem statusOverlayMenuItem = new ToolStripMenuItem("F2 - Status Overlay");
         private readonly ToolStripMenuItem tapeTransportMenuItem = new ToolStripMenuItem("F5 - Stop / Resume Tape");
         private readonly ToolStripMenuItem disassemblerMenuItem = new ToolStripMenuItem("F6 - Debugger / Disassembler");
-        private readonly ToolStripMenuItem saveQuickStateMenuItem = new ToolStripMenuItem("F7 - Save Quick State");
-        private readonly ToolStripMenuItem restoreQuickStateMenuItem = new ToolStripMenuItem("F8 - Restore Quick State");
+        private readonly ToolStripMenuItem quickStateManagerMenuItem = new ToolStripMenuItem("F7 - Quick State Manager...");
         private readonly ToolStripMenuItem replaceTapeMenuItem = new ToolStripMenuItem("Shift+F11 - Replace Tape (Preserve Machine)");
         private readonly ToolStripMenuItem joystickMenuItem = new ToolStripMenuItem("Joystick");
         private readonly ToolStripMenuItem pokeManagerMenuItem = new ToolStripMenuItem("Poke Manager...");
@@ -125,12 +125,11 @@ namespace Derby
         private bool tapeTransportOverlayMarkerStop;
         private long tapeTransportFullOverlayExpiresAtTicks;
         private long tapeTransportIconExpiresAtTicks;
-        private Spectrum128Machine.QuickState? quickState;
-        private SpectrumRomSet? quickStateRomSet;
+        private readonly QuickStateSlot?[] quickStateSlots = new QuickStateSlot?[QuickStateSlotCount];
+        private readonly QuickStateArchiveStore quickStateArchiveStore;
+        private bool quickStateArchiveLoaded;
         private string? loadedMediaDisplayName;
-        private string? quickStateMediaDisplayName;
         private PokeMediaIdentity? loadedMediaIdentity;
-        private PokeMediaIdentity? quickStateMediaIdentity;
         private readonly Stack<PokeApplication> pokeApplications = new();
         private string? quickStateOverlayText;
         private long quickStateOverlayExpiresAtTicks;
@@ -139,13 +138,20 @@ namespace Derby
         private DisassemblerForm? disassemblerForm;
         private IDisposable? disassemblerPauseLease;
 
-        public MainForm()
+        public MainForm() : this(new QuickStateArchiveStore())
         {
+        }
+
+        internal MainForm(QuickStateArchiveStore quickStateArchiveStore)
+        {
+            this.quickStateArchiveStore = quickStateArchiveStore ??
+                throw new ArgumentNullException(nameof(quickStateArchiveStore));
             Text = ApplicationTitle;
             AutoScaleMode = AutoScaleMode.None;
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Controls.Add(screenBox);
+            Shown += (_, _) => LoadQuickStateArchive();
 
             romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
             bundled128RomSet = SpectrumRomSet.Bundled128K(romFolder);
@@ -220,10 +226,8 @@ namespace Derby
             disassemblerMenuItem.Click += (_, _) => ToggleDisassemblerWindow();
             displayContextMenu.Items.Add(disassemblerMenuItem);
 
-            saveQuickStateMenuItem.Click += (_, _) => SaveQuickState();
-            displayContextMenu.Items.Add(saveQuickStateMenuItem);
-            restoreQuickStateMenuItem.Click += (_, _) => RestoreQuickState();
-            displayContextMenu.Items.Add(restoreQuickStateMenuItem);
+            quickStateManagerMenuItem.Click += (_, _) => OpenQuickStateManager();
+            displayContextMenu.Items.Add(quickStateManagerMenuItem);
 
             displayContextMenu.Items.Add(new ToolStripSeparator());
             displayContextMenu.Items.Add("F9 - Load .sna Snapshot", null, (_, _) => LoadSnaSnapshotFromDialog());
@@ -241,13 +245,11 @@ namespace Derby
             displayContextMenu.Opening += (_, _) =>
             {
                 UpdateTapeTransportMenuItem();
-                UpdateQuickStateMenuItems();
                 lock (machineLock)
                     replaceTapeMenuItem.Enabled = machine.HasMountedTape;
             };
             UpdateMachineModelMenuItems();
             UpdateTapeTransportMenuItem();
-            UpdateQuickStateMenuItems();
             screenBox.ContextMenuStrip = displayContextMenu;
         }
 
@@ -341,65 +343,6 @@ namespace Derby
                 TapeTransportState.Stopped => "F5 - Resume Tape",
                 _ => "F5 - Stop / Resume Tape"
             };
-        }
-
-        private void SaveQuickState()
-        {
-            ExecuteWithEmulationPaused(() =>
-            {
-                lock (machineLock)
-                    quickState = machine.CaptureQuickState();
-            });
-            quickStateMediaDisplayName = loadedMediaDisplayName;
-            quickStateMediaIdentity = loadedMediaIdentity;
-            quickStateRomSet = selectedRomSet;
-
-            UpdateQuickStateMenuItems();
-            ShowQuickStateOverlay("QUICK STATE SAVED");
-            PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
-            screenBox.Focus();
-        }
-
-        private void RestoreQuickState()
-        {
-            Spectrum128Machine.QuickState? state = quickState;
-            if (state == null)
-            {
-                screenBox.Focus();
-                return;
-            }
-
-            ExecuteWithEmulationPaused(() =>
-            {
-                SpectrumRomSet savedRomSet = quickStateRomSet ?? selectedRomSet;
-                selectedMachineModel = state.MachineModel;
-                if (!SameRomSet(selectedRomSet, savedRomSet))
-                {
-                    selectedRomSet = savedRomSet;
-                    lock (machineLock)
-                        machine = CreateConfiguredMachine();
-                }
-                loadedMediaDisplayName = quickStateMediaDisplayName;
-                loadedMediaIdentity = quickStateMediaIdentity;
-                pokeApplications.Clear();
-                lock (machineLock)
-                    machine.RestoreQuickState(state);
-                ClearHostAndSpectrumInputState();
-                ResetFrameScheduler();
-                RecreateAudioPipeline();
-            });
-
-            UpdateMachineModelMenuItems();
-            ShowMountedTapeTransportFeedback();
-            ShowQuickStateOverlay("QUICK STATE RESTORED");
-            SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
-            PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
-            screenBox.Focus();
-        }
-
-        private void UpdateQuickStateMenuItems()
-        {
-            restoreQuickStateMenuItem.Enabled = quickState != null;
         }
 
         private void ShowQuickStateOverlay(string text)
@@ -1364,6 +1307,8 @@ namespace Derby
                 screenBitmap.Dispose();
                 enhanced2xBitmap.Dispose();
                 enhanced3xBitmap.Dispose();
+                foreach (QuickStateSlot? slot in quickStateSlots)
+                    slot?.Dispose();
                 displayContextMenu.Dispose();
                 frameTimer.Dispose();
             }

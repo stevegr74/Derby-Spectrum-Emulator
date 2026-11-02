@@ -16,8 +16,7 @@ namespace Derby
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
                 ("F5", "Stop or resume tape; its state appears in the on-screen transport badge"),
                 ("F6", "Open or close the paused debugger and disassembler"),
-                ("F7", "Save the current machine state to the temporary Quick State slot"),
-                ("F8", "Restore the temporary Quick State; unavailable until one is saved"),
+                ("F7", "Open the paused eight-slot Quick State Manager to save, replace, or load a persistent state"),
                 ("Right-click", "Open the quick menu for joystick selection and the Poke Manager")
             ]),
             new("Loading and diagnostics",
