@@ -44,56 +44,57 @@ For operation and controls, see the [User Guide](docs/USER_GUIDE.md). UI changes
 
 ## Current Status
 
-`master` is a stable, playable baseline with a headless core, clock-driven audio,
-explicit machine models, resumable tape transport, a paused execution debugger,
-a temporary Quick State slot, and a bank-aware Poke Manager. ZEXDOC and ZEXALL
-pass in the headless compliance runner, although they are not proof that every
-undocumented hardware interaction is complete.
+`master` is a stable, playable baseline for the original 48K, 128K, and grey +2.
+It includes beam-aware video, clock-driven audio, resumable tape transport,
+snapshot and replay loading, USB joystick support, Quick State, a bank-aware
+debugger, and a checksum-aware Poke Manager. ZEXDOC and ZEXALL pass in the
+headless compliance runner, although no CPU suite proves every interaction with
+the surrounding hardware.
 
 Manually tested titles, formats, and reached checkpoints are tracked in
 [Verified Games And Media](docs/VERIFIED_GAMES.md).
 
 Current limitations and active work:
 
-- opcode/immediate fetches, ordinary/indexed/block/stack memory accesses, port I/O, border, and floating-bus timing use model-specific machine-cycle positions validated against published 48K and 128K diagnostics
-- beam-aware 48K and original 128K/+2 video is implemented and validated; broader timing-sensitive software coverage remains ongoing
-- clock-driven audio and the turbo-to-real-time handoff are hardened; broader subjective title-by-title audio comparison remains ongoing
-- broader protected/custom TZX compatibility remains ongoing
-- Milestone 22 USB joystick support is complete, including two independently mapped host controllers, selectable Kempston/Cursor/Sinclair interfaces, and simultaneous Interface II input
-- Milestone 23 SZX loading is complete for supported original 48K/128K CPU execution, RAM, paging, ULA, and AY state; snapshots requiring unsupported models or peripherals are rejected
-- Milestone 26 machine profiles include verified original 48K, original 128K, and grey +2 ROMs plus validated custom layouts; +2A/+3 paging and +3 disk hardware remain planned
+- +2A/+3 paging, four-ROM selection, and +3 disk hardware are not yet implemented.
+- Protected and custom tape compatibility continues to expand as new media is
+  tested.
+- Broader timing-sensitive software and subjective title-by-title audio
+  comparison remain ongoing validation work.
+- The on-screen keyboard and host mouse peripherals remain planned roadmap items.
 
 ### Implementation Notes
 
-- Fast tape bootstrap is capability-gated. Unsupported initial or chained BASIC control flow, including noncanonical line tables, protected handoff directly into raw pulses, and mixed raw-stream autorun that cannot be represented safely, falls back to a clean real-ROM autorun path with the remaining tape mounted. Proven headered CODE chains preserve their follow-on USR continuation even when the next tape signal has started. In 128K mode, unsupported standard BASIC also starts through ROM 0 and the native Tape Loader with byte-copy traps disabled, preserving the ROM's complete multi-file load sequence and bank setup. Protected chained BASIC data that depends on live ROM interpreter cursors likewise remains on exact pulse/EAR playback.
-- BASIC expression syntax and header/data length consistency are preflighted before acceleration; malformed or ambiguous pairs fall back without partially executing the bootstrap. ROM-dependent malformed BASIC headers start through the native 48K `LOAD ""` command or 128K Tape Loader with byte traps disabled, preserving their intentional header side effects.
-- Explicit BASIC `LOAD ... CODE address` destinations override the address advertised by the tape header in both initial bootstrap and mounted continuation stages.
-- Address-based ROM tape services are enabled only for fingerprinted compatible ROMs; an unknown custom ROM or ROM pair uses real-time mounted pulse/EAR playback instead of assuming compatible internal addresses.
-- ROM-driven tape handoffs preserve consumed-block pauses, exact TZX pause signal transitions, and zero-duration stop markers.
-- TZX pulse and pause timings use their 3.5 MHz tape-time basis and are scaled to the selected machine clock; unstructured ROM loads return to their actual caller so banked multiload stages can continue safely.
-- Standard-speed TAP/TZX pilot length follows the complete flag range: flags below `0x80`, including custom loader flags, receive the 8,063-pulse pilot; flags at or above `0x80` receive 3,223 pulses.
-- TZX blocks containing a checksum-valid ROM header or header-declared data record followed by archive padding retain every physical tape byte for EAR playback while exposing only the logical ROM record to planning and byte traps.
-- Mounted playback detects stable keyboard/HALT handoffs, pauses at multiload boundaries, and preserves custom ROM flag and LOAD/VERIFY state across accelerated blocks.
-- Accelerated BASIC bootstrap expressions preserve `INT` and division semantics used by byte-extraction loader idioms instead of rejecting otherwise safe programs.
-- Protected playback and Quick State preserve precise tape pulse, EAR, loader-continuation and replay positions.
-- Continuations classified as unrepresentable remain under real ROM pulse/EAR control for the mounted remainder; byte-copy traps are disabled for that tape rather than contradicting the planner's safety decision.
-- Mounted-loader continuation state, BASIC workspace preservation, resume gating, and Quick State capture are isolated from the machine in a dedicated controller.
-- Tape strategy and continuation decisions do not inspect media names or game hashes; preloaded custom-loader handoff requires a unique wait loop that the executed BASIC bootstrap demonstrably patched in live RAM.
-- The background emulation loop owns mutable machine state; the UI consumes copied snapshots and uses nested pause leases for safe inspection.
-- Help, joystick configuration, the debugger, and the Poke Manager share one DPI-aware Windows visual system; interface chrome uses Segoe UI while machine addresses, registers, instructions, and byte values remain monospace.
-- The Poke Manager pauses emulation before inspecting or changing RAM; exact media checksums are trusted matches, filename aliases are discovery hints only, and restoration is refused if the running program has since changed an applied byte.
-- Windows key messages are captured before control/menu preprocessing, then applied by the emulation loop through a scan-aware matrix bridge; shared Spectrum chords retain independent host-key ownership and use emulated T-states rather than UI scheduler ticks.
-- USB controllers are discovered only by the Windows adapter; up to two immutable readings become independent five-bit platform-neutral joystick states that the core exposes through Kempston or keyboard-matrix interfaces, with RZX input retaining precedence and live host state excluded from Quick State.
-- The undocumented Z80 Q latch is tracked by flag-writing semantics, including prefix and interrupt boundaries, with focused regressions alongside ZEXDOC/ZEXALL.
-- The undocumented Z80 WZ/MEMPTR latch follows control-flow, indexed-address, I/O, block-instruction, interrupt, and `BIT (HL)` flag behavior; Quick State and SZX restore it and the debugger exposes it as `WZ`.
-- Maskable interrupt acceptance resets both Z80 interrupt flip-flops; `LD A,I`/`LD A,R`, `RETN`/`RETI`, and delayed `EI` behavior have focused regressions across both execution schedulers.
-- Z80 IM 0 executes the interrupting device's data-bus opcode, including normal-memory operand fetches and acknowledge-cycle timing; the Spectrum defaults that bus to `0xFF` (`RST 38H`), while IM 1 retains its fixed `0x0038` vector.
-- Model-specific ULA profiles now drive contention, floating-bus fetches, frame timing, and raster mapping; original 128K/+2 floating-bus reads follow the selected bank 5 or bank 7 screen, and `IN (0xFFFD)` reads the selected AY register.
-- Border, beeper, and AY writes are timestamped at the completed I/O cycle, including contended and repeating block-I/O paths; border changes are reconstructed in hardware-sized eight-pixel latch groups without stretching visible pixels across horizontal flyback.
-- Audio sample counts are accumulated from emulated T-states without long-run fractional drift; turbo loading suppresses host audio and discards any partially captured transition frame before resuming from the next complete frame boundary.
-- Contended opcode, prefix, and immediate-byte fetches use their individual machine-cycle offsets; corrected indexed-instruction totals cover ignored `DD`/`FD` prefixes, absolute IX/IY loads and stores, stack exchange, and stack-pointer transfer.
-- Interrupt scheduling carries instruction-boundary overshoot into the next frame, preserving the 69,888-T-state 48K and 70,908-T-state 128K frame cadence without truncating instructions.
-- An event-driven ULA raster latches bitmap and per-scanline attribute bytes at their fetch times, including mid-frame 128K bank 5/bank 7 screen switches; each immutable completed frame owns its matching border timeline across the background-loop/UI boundary.
+- Fast tape bootstrap is capability-gated. Unsupported BASIC control flow falls
+  back to the real ROM autorun path with the remaining tape mounted; unknown
+  ROMs likewise use exact pulse/EAR playback instead of assumed internal
+  addresses.
+- Tape planning is format- and behavior-driven rather than title-specific.
+  Header/data structure, BASIC semantics, physical pulse timing, stop markers,
+  and ROM handoffs are preserved without consulting media names or game hashes.
+- Protected playback and Quick State preserve precise tape pulse, EAR,
+  loader-continuation, replay, paging, CPU, and peripheral positions.
+- Model-specific ULA profiles drive contention, floating-bus fetches, frame
+  timing, and raster mapping. The event-driven raster captures timed bitmap,
+  attribute, border, and 128K shadow-screen changes.
+- Audio is derived from emulated T-states without cumulative sample drift.
+  Turbo loading suppresses host audio and resumes only after discarding an
+  incomplete transition frame.
+- The Z80 core models Q and WZ/MEMPTR behavior, full maskable/NMI interrupt
+  state, general IM 0 bus instructions, and instruction-boundary frame
+  overshoot, with focused regressions alongside ZEXDOC/ZEXALL.
+- The background emulation loop owns mutable machine state; the UI consumes
+  copied snapshots and uses nested pause leases for safe inspection or mutation.
+- Windows keyboard and controller adapters produce platform-neutral input
+  state. Matrix ownership, simultaneous Interface II input, RZX precedence,
+  focus-loss cleanup, and host-state exclusion from Quick State are explicit.
+- Snapshot loaders validate supported state before replacing the running
+  machine and reject hardware they cannot represent. The Poke Manager similarly
+  pauses before atomic writes and guards restoration against later program
+  changes.
+- Windows tools and dialogs share the documented DPI-aware design language
+  while machine addresses, registers, instructions, and byte values remain
+  monospace.
 
 ## Development Priorities
 
