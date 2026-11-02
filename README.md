@@ -385,6 +385,7 @@ Current snapshot status:
   - validates the complete snapshot before changing the machine
   - supports 48K Melodik/128-compatible AY state and dormant unpaged Multiface metadata; rejects Fuller AY routing, paged Multiface memory, unsupported machine models, alternate timing, Issue 2 behavior, and other unsupported peripherals rather than approximating them
   - restores the SZX `WZ/MEMPTR` field alongside the documented CPU and execution state
+  - self-contained 48K and 128K construction, load, and execution smoke tests cover the supported subset
 
 Snapshots can be loaded with `F9` (`.sna`) and `F10` (`.z80` or `.szx`) in the UI.
 
@@ -414,8 +415,6 @@ deliberately kept out of the harness.
 The [ULA timing validation runbook](test-assets/ula/README.md) records how the
 48K/128K Timing Test and floating-bus diagnostics are run without redistributing
 their GPL-licensed media.
-
-checks without redistributing the snapshot files.
 
 > Intended for debugging, not performance measurement.
 
@@ -575,6 +574,7 @@ compatibility; completed milestones remain regression baselines.
 - Restores supported 48K and original 128K CPU registers and execution state, including the undocumented WZ/MEMPTR latch, RAM, paging, frame phase, ULA state, and AY state through existing machine boundaries
 - Accepts compressed and uncompressed RAM pages, arbitrary chunk order, 48K Melodik AY state, dormant unpaged Multiface metadata, and safely optional unknown metadata while rejecting unsupported machines, timing variants, Fuller AY routing, paged Multiface memory, and other active peripheral state
 - Integrated `.szx` with the shared F10 picker, media-title handling, reset lifecycle, audio/input cleanup, manual harness, and existing machine ownership rules
+- Added self-contained chunk-order, unknown-chunk, truncation, compression, duplicate/missing-state, paging, interrupt-pulse/suppression, Q-latch, WZ/MEMPTR, reserved-state, unsupported-model/peripheral, and 48K/128K execution smoke tests
 
 ### Milestone 24 - On-Screen Keyboard Planned
 - Add a discoverable non-modal pop-up keyboard through the normal menus and right-click context menu without consuming another function key
