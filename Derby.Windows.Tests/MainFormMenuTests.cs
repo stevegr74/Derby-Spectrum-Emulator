@@ -89,14 +89,19 @@ namespace Derby.Tests
                         "Sinclair ZX Spectrum +2A (bundled)",
                         "Sinclair ZX Spectrum 128K (bundled)"
                     ];
+                    string[] expectedDebuggerNames = ["48K", "+2", "+2A", "128K"];
 
-                    foreach (string name in expected)
+                    for (int index = 0; index < expected.Length; index++)
                     {
                         cycle.Invoke(form, null);
                         SpectrumRomSet selected = (SpectrumRomSet)type
                             .GetField("selectedRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
                             .GetValue(form)!;
-                        Assert.Equal(name, selected.Name);
+                        DisassemblySnapshot snapshot = (DisassemblySnapshot)type
+                            .GetMethod("CaptureDisassemblySnapshot", BindingFlags.Instance | BindingFlags.NonPublic)!
+                            .Invoke(form, null)!;
+                        Assert.Equal(expected[index], selected.Name);
+                        Assert.Equal(expectedDebuggerNames[index], snapshot.MachineProfileName);
                     }
                 }
                 catch (Exception exception)

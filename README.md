@@ -303,13 +303,16 @@ not silently reopened after DERBY restarts.
 
 The debugger captures the mapped logical 64K, every ROM bank, all eight RAM
 banks, registers, flags, interrupt state, stack context, model, and paging state.
+Captures retain the selected 48K, 128K, grey +2, or +2A profile identity rather
+than inferring it from the shared paging family.
 Its grouped CPU panel highlights values changed since the previous stopped
 capture, shows the instruction at `PC`, and retains the main and alternate
 registers, individual flags, interrupt state, timing, and four stack words.
 Register addresses open in Memory, while the PC and stack values navigate the
-disassembly listing. The visual paging map identifies the current ROM, all three
-mapped RAM slots, and the active display bank; its compact fallback preserves the
-same context at narrow window widths. The memory-view selector keeps mapped
+disassembly listing. The visual paging map identifies the ROM or RAM occupying
+each of the four 16K slots, including every +2A all-RAM configuration, plus the
+active display bank; its compact fallback preserves the same context at narrow
+window widths. The memory-view selector keeps mapped
 addresses distinct from bank-qualified physical offsets; search, history, copy,
 and export follow the selected view.
 Bank-qualified labels persist between sessions, can be imported or exported as

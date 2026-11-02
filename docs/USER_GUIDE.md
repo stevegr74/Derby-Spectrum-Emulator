@@ -452,7 +452,10 @@ The **Memory View** selector distinguishes:
 
 The four paging blocks show which ROM/RAM occupies `0000-3FFF`, `4000-7FFF`,
 `8000-BFFF`, and `C000-FFFF`. This includes +2A all-RAM configurations. The
-display-bank label identifies the RAM bank currently scanned by the ULA.
+display-bank label identifies the RAM bank currently scanned by the ULA. The
+summary retains the selected 48K, 128K, grey +2, or +2A profile name. Selecting
+a physical ROM or RAM view highlights a paging block only when that bank is
+actually present in the captured logical map.
 
 ## Memory Inspector
 

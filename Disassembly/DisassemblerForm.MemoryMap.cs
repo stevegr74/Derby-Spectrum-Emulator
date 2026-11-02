@@ -79,11 +79,8 @@ namespace Derby
 
         private void UpdateMappingPanel(string viewRange)
         {
-            string model = snapshot.MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3
-                ? "+2A"
-                : snapshot.MachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : "128K";
             mappingSummaryLabel.Text =
-                $"VIEW {selectedAddressSpace.DisplayName} | LISTING {listingAddress:X4}H | PC {snapshot.ProgramCounter:X4}H | {model}";
+                $"VIEW {selectedAddressSpace.DisplayName} | LISTING {listingAddress:X4}H | PC {snapshot.ProgramCounter:X4}H | {snapshot.MachineProfileName}";
 
             int[] mappedBanks = snapshot.MappedRamBanks.ToArray();
             string[] labels = new string[4];
@@ -127,7 +124,7 @@ namespace Derby
 
             if (selectedAddressSpace.Kind == DisassemblyAddressSpaceKind.Rom)
             {
-                result[0] = selectedAddressSpace.Bank == snapshot.CurrentRomBank;
+                result[0] = mappedBanks[0] < 0 && selectedAddressSpace.Bank == snapshot.CurrentRomBank;
                 return result;
             }
 

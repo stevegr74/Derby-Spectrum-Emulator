@@ -343,6 +343,87 @@ namespace Derby.Tests
                 throw new Xunit.Sdk.XunitException(failure.ToString());
         }
 
+        [Fact]
+        public void Form_ShowsEveryPlus2AAllRamMapWithoutHighlightingAnInactiveRom()
+        {
+            Exception? failure = null;
+            var thread = new Thread(() =>
+            {
+                string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+                try
+                {
+                    Directory.CreateDirectory(folder);
+                    int[][] configurations =
+                    [
+                        [0, 1, 2, 3],
+                        [4, 5, 6, 7],
+                        [4, 5, 6, 3],
+                        [4, 7, 6, 3]
+                    ];
+                    DisassemblySnapshot snapshot = CreatePlus2ASnapshot([-1, 5, 2, 7]);
+                    using var form = new DisassemblerForm(
+                        () => snapshot,
+                        new DisassemblerWindowSettingsStore(Path.Combine(folder, "disassembler.json")));
+                    form.Show();
+                    Application.DoEvents();
+
+                    ComboBox memoryView = Descendants(form).OfType<ComboBox>()
+                        .Single(combo => combo.Items.Count == 13);
+                    memoryView.SelectedItem = DisassemblyAddressSpace.Rom(0);
+                    Application.DoEvents();
+
+                    Label summary = Descendants(form).OfType<Label>()
+                        .Single(label => label.Name == "MemoryMapSummary");
+                    Label[] memoryBlocks = Descendants(form).OfType<Label>()
+                        .Where(label => label.Name.StartsWith("MemoryMapBlock", StringComparison.Ordinal))
+                        .OrderBy(label => label.Name)
+                        .ToArray();
+
+                    Assert.Contains("| +2A", summary.Text);
+                    Assert.Equal(
+                        ["0000 ROM 0", "4000 RAM 5", "8000 RAM 2", "C000 RAM 7"],
+                        memoryBlocks.Select(block => block.Text));
+                    Assert.Equal(Color.FromArgb(95, 225, 195), memoryBlocks[0].BackColor);
+
+                    foreach (int[] configuration in configurations)
+                    {
+                        snapshot = CreatePlus2ASnapshot(configuration);
+                        typeof(DisassemblerForm)
+                            .GetMethod("RefreshSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)!
+                            .Invoke(form, null);
+                        Application.DoEvents();
+
+                        Assert.Contains("| +2A", summary.Text);
+                        Assert.Equal(
+                            configuration.Select((bank, slot) => $"{slot * 0x4000:X4} RAM {bank}"),
+                            memoryBlocks.Select(block => block.Text));
+                        Assert.Equal(Color.FromArgb(235, 237, 232), memoryBlocks[0].BackColor);
+                        Assert.All(
+                            configuration.Select((bank, slot) =>
+                                $"{slot * 0x4000:X4}-{slot * 0x4000 + 0x3FFF:X4}: RAM {bank}"),
+                            part => Assert.Contains(part, snapshot.MappingText, StringComparison.Ordinal));
+                    }
+
+                    form.Close();
+                    Application.DoEvents();
+                }
+                catch (Exception ex)
+                {
+                    failure = ex;
+                }
+                finally
+                {
+                    if (Directory.Exists(folder))
+                        Directory.Delete(folder, true);
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The +2A debugger map test timed out.");
+            if (failure != null)
+                throw new Xunit.Sdk.XunitException(failure.ToString());
+        }
+
         private static DisassemblySnapshot CreateSnapshot(string analysisContext)
         {
             var memory = new byte[65536];
@@ -361,6 +442,26 @@ namespace Derby.Tests
                 romBanks: romBanks,
                 ramBanks: ramBanks,
                 analysisContext: analysisContext);
+        }
+
+        private static DisassemblySnapshot CreatePlus2ASnapshot(IReadOnlyList<int> mappedRamBanks)
+        {
+            var memory = new byte[65536];
+            byte[][] romBanks = Enumerable.Range(0, 4).Select(_ => new byte[0x4000]).ToArray();
+            byte[][] ramBanks = Enumerable.Range(0, 8).Select(_ => new byte[0x4000]).ToArray();
+            return new DisassemblySnapshot(
+                memory,
+                programCounter: 0x8000,
+                SpectrumMachineModel.Spectrum128K,
+                currentRomBank: 0,
+                pagedRamBank: 0,
+                screenBank: 5,
+                romBanks: romBanks,
+                ramBanks: ramBanks,
+                analysisContext: "plus2a-map-test",
+                memoryPagingModel: SpectrumMemoryPagingModel.Plus2APlus3,
+                mappedRamBanks: mappedRamBanks,
+                machineProfileName: "+2A");
         }
 
         private static DisassemblySnapshot CreateSnapshotWithCpu(

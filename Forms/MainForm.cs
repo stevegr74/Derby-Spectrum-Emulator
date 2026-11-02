@@ -582,8 +582,20 @@ namespace Derby
                     ramBanks: ramBanks,
                     analysisContext: $"{machine.MachineModel}:{loadedMediaDisplayName ?? "(no media)"}",
                     memoryPagingModel: machine.MemoryPagingModel,
-                    mappedRamBanks: mappedRamBanks);
+                    mappedRamBanks: mappedRamBanks,
+                    machineProfileName: GetDebuggerMachineProfileName());
             }
+        }
+
+        private string GetDebuggerMachineProfileName()
+        {
+            if (SameRomSet(selectedRomSet, bundled48RomSet))
+                return "48K";
+            if (SameRomSet(selectedRomSet, bundledPlus2RomSet))
+                return "+2";
+            if (SameRomSet(selectedRomSet, bundledPlus2ARomSet))
+                return "+2A";
+            return "128K";
         }
 
         private Spectrum128Machine CreateConfiguredMachine()
