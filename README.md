@@ -137,63 +137,35 @@ and diagnostic tools:
 
 ```text
 Derby/
-|-- Derby.Core/             net8.0 platform-neutral emulator
-|   |-- Audio/                             AY/beeper synthesis and sample clock
-|   |-- Debugging/                         instruction-boundary execution controller
-|   |-- Input/                             platform-neutral joystick state and interfaces
-|   |-- Pokes/                             library validation, matching, preview, apply, and restore
-|   |-- Tape/                              TAP/TZX parsing, transport, and bootstrap policy
-|   |   |-- MountedTape.cs                 pulse/EAR playback state
-|   |   |-- MountedTape.RomLoading.cs      ROM-load traps and byte-stream handling
-|   |   |-- TapLoader.cs                   TAP orchestration and plan execution
-|   |   |-- TapLoader.NativeRomBootstrap.cs  native 48K/128K ROM loader startup
-|   |   |-- TapLoader.TimingAndParsing.cs  TAP parsing and pulse timing
-|   |   |-- TapLoader.BasicBootstrap.cs    BASIC bootstrap analysis and execution
-|   |   |-- TapLoader.BasicExpressions.cs  bootstrap expression parser
-|   |   |-- TapLoader.MountedContinuation.cs  mounted-load bootstrap handoff
-|   |   |-- TapeLoadPlanner.cs             capability-gated strategy selection
-|   |   |-- TapeLoadContracts.cs           plans, reason codes, results, and transport state
-|   |   `-- MountedLoadContinuationController.cs  ROM-profile-aware loader resume policy
-|   |-- Z80/                               CPU execution plus side-effect-free instruction decoding
-|   |-- Ula/                               timing profiles plus event-driven raster capture and immutable frames
-|   |-- Spectrum128Machine.cs              machine orchestration, memory, paging, ULA timing, and input
-|   |-- Spectrum128Machine.Diagnostics.cs  trace capture, watches, and diagnostic dumps
-|   |-- SpectrumRomProfile.cs              fingerprinted ROM capabilities and internal entry points
-|   |-- SpectrumRomSet.cs                  validated model-aware ROM image selection
-|   |-- SpectrumMemoryPagingModel.cs       fixed, standard 128K, and +2A/+3 paging families
-|   |-- SpectrumFrameBuffer.cs             platform-neutral ARGB frame buffer
-|   |-- BorderFrame.cs                     timestamped border events
-|   |-- SnapshotLoader.cs                  SNA snapshot loading
-|   |-- Z80SnapshotLoader.cs               Z80 snapshot loading
-|   |-- SzxSnapshotLoader.cs               bounded SZX chunk parsing and state restoration
-|   |-- RzxLoader.cs                       RZX replay loading
-|   `-- RzxPlaybackSession.cs              RZX playback orchestration
+|-- Derby.Core/                 net8.0 platform-neutral emulator
+|   |-- Audio/                  AY, beeper, and emulated sample timing
+|   |-- Debugging/              instruction-boundary execution control
+|   |-- Input/                  Spectrum joystick interfaces and state
+|   |-- Pokes/                  poke validation, matching, apply, and restore
+|   |-- Tape/                   TAP/TZX parsing, playback, bootstrap, and continuation
+|   |-- Ula/                    timing profiles and beam-aware raster capture
+|   `-- Z80/                    CPU execution and instruction decoding
 |
-|-- Audio/                                 Windows audio pipeline and output adapters
-|-- Disassembly/                           debugger UI, bank captures, symbolic analysis, memory inspection, and export
-|-- Host/                                  background loop, pause ownership, and UI snapshots
-|-- Forms/                                 main window partials, shared UI styling, Poke Manager, and shortcut-reference dialog
-|-- Input/                                 Windows keyboard and USB-controller adapters
-|-- Pokes/                                 editable validated game/poke library and format guide
-|-- Video/                                 display modes, pixel-art scaling, presentation, and overlays
-|-- Program.cs                             Windows application entry point
-|-- Derby.csproj            net10.0 Windows frontend project
-|-- docs/                                  user, design, compatibility, and engineering documentation
-|   |-- USER_GUIDE.md                      current emulator operation and troubleshooting
-|   |-- DESIGN_LANGUAGE.md                 Windows visual and interaction standards
-|   |-- VERIFIED_GAMES.md                  manual media compatibility record
-|   |-- TAPE_STATE_OWNERSHIP.md            tape subsystem ownership and invariants
-|   `-- images/                            README and documentation screenshots
+|-- Audio/                      Windows audio pipeline and output adapters
+|-- Disassembly/                debugger UI, analysis, memory inspection, and export
+|-- Forms/                      main window, dialogs, and shared UI styling
+|-- Host/                       background loop, pause ownership, and UI snapshots
+|-- Input/                      Windows keyboard and USB-controller adapters
+|-- Pokes/                      editable game/poke library and format guide
+|-- Video/                      display scaling, presentation, and overlays
 |
-|-- Derby.Tests/            net8.0 Core unit and regression tests
-|-- Derby.Windows.Tests/    Windows presentation and host tests
-|-- Derby.ManualHarness/    net8.0 Core-only diagnostic and capture tool
-|-- Derby.Z80Compliance/    net8.0 ZEXDOC/ZEXALL compliance runner
-|-- ROMs/                                  verified 48K, 128K, grey +2, and shared +2A/+3 ROM images and provenance
-|-- test-assets/                           checked-in test programs and fixtures
-|   |-- ula/                               external ULA diagnostic runbook (media not redistributed)
-|   `-- z80/                               ZEXDOC/ZEXALL compliance programs
-`-- tmp/                                   ignored local probes, captures, and scratch artifacts
+|-- Derby.Tests/                 Core unit and regression tests
+|-- Derby.Windows.Tests/         Windows presentation and host tests
+|-- Derby.ManualHarness/         Core-only diagnostic and capture tool
+|-- Derby.Z80Compliance/         ZEXDOC/ZEXALL compliance runner
+|
+|-- assets/                      product branding assets
+|-- docs/                        user, design, compatibility, and engineering guides
+|-- ROMs/                        verified bundled ROM images and provenance
+|-- test-assets/                 checked-in test programs and fixtures
+|-- Derby.csproj                 net10.0 Windows frontend project
+|-- Program.cs                   Windows application entry point
+`-- README.md                    project overview, status, and roadmap
 ```
 
 `Derby.Core` has no WinForms, `System.Drawing`, or Windows
@@ -257,7 +229,7 @@ that do not consume a function key.
 | `F4` | Cycle fixed display size |
 | `F5` | Stop or resume the mounted tape without ejecting it |
 | `F6` | Open the debugger and disassembler, paused on an immutable machine capture |
-| `F7` | Open the paused eight-slot Quick State Manager; `F8` is unassigned |
+| `F7` | Open the paused eight-slot Quick State Manager |
 | `F9` | Load a 48K or 128K `.sna` snapshot |
 | `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
 | `F11` | Mount a `.tap` or `.tzx` tape image |
@@ -626,7 +598,7 @@ compatibility; completed milestones remain regression baselines.
 - Defers the +3 machine claim until a uPD765-compatible FDC and drive/media model are implemented; the shared ROM and paging foundation is now present
 
 ### Milestone 27 - Eight-Slot Quick State Manager Complete
-- Replaced separate save and restore shortcuts with one paused Quick State Manager on `F7`, leaving `F8` unassigned
+- Replaced separate save and restore shortcuts with one paused Quick State Manager on `F7`
 - Provides eight persistent slots with explicit Save, Load, confirmed Replace, and compact confirmed-delete actions in a two-column, no-scroll workspace
 - Shows each slot's machine profile, loaded media, local capture time, and clean Spectrum-frame thumbnail while clearly distinguishing empty slots
 - Preserves the complete existing CPU, RAM, paging, ULA/audio, tape continuation, replay, media identity, and machine-profile restoration contract for live-session slots
