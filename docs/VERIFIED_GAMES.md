@@ -92,7 +92,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Elite | `Elite.sna`, `Elite128.z80` | Both snapshots reach the commander prompt and remain stable |
 | 🟢 | Exolon | `.sna`, `.z80` | Both snapshot forms load and run with 128K audio |
 | 🟢 | Feud | `.z80` | Snapshot reaches the control menu and remains stable |
-| 🟢 | Flying Shark | `.sna` | Snapshot reaches the player-selection screen and remains stable |
+| 🟢 | Flying Shark | `flyshark.sna` | Repaired from the matching original tape image; player selection, active gameplay, repeated fire, life loss, and the high-score screen pass a 1,500-frame acceptance run |
 | 🟢 | Frankie Goes to Hollywood | `.sna` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Glider Rider | `.sna` | Snapshot reaches the control-selection screen and remains stable |
 | 🟢 | Gods | `.sna`, `.z80` | Both snapshots reach the complete title screen and remain stable |

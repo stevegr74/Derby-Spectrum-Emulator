@@ -40,7 +40,12 @@ namespace Derby
                 switch (blockId)
                 {
                     case SnapshotBlockId:
-                        ParseSnapshotBlock(fileData, offset, blockLength, out snapshotData, out snapshotExtension);
+                        ParseSnapshotBlock(fileData, offset, blockLength, out byte[] parsedSnapshot, out string parsedExtension);
+                        if (frames.Count == 0)
+                        {
+                            snapshotData = parsedSnapshot;
+                            snapshotExtension = parsedExtension;
+                        }
                         break;
 
                     case InputRecordingBlockId:
@@ -133,6 +138,12 @@ namespace Derby
             if (extension.Equals("Z80", StringComparison.OrdinalIgnoreCase))
             {
                 Z80SnapshotLoader.Load(machine, snapshotData);
+                return;
+            }
+
+            if (extension.Equals("SZX", StringComparison.OrdinalIgnoreCase))
+            {
+                SzxSnapshotLoader.Load(machine, snapshotData);
                 return;
             }
 

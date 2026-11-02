@@ -174,13 +174,16 @@ Supported SNA state includes:
 - 128K snapshots with all RAM banks, paging state, and explicit program counter.
 - The supported duplicate-current-page 128K layout.
 
-TR-DOS snapshots are rejected because the emulator does not provide a TR-DOS ROM. A 48K-format snapshot may run on either the selected 48K or 128K machine model.
+TR-DOS snapshots are rejected because the emulator does not provide a TR-DOS ROM. A 48K-format snapshot always retains the 48K memory map and timing. When 128K mode is selected, compatible external AY audio remains available without applying 128K CPU or ULA timing.
 
 ## Z80 Snapshots
 
 Press `F10` and choose a `.z80` file.
 
-The emulator supports Z80 v1, v2, and v3 snapshots, including applicable 128K paging and RAM-bank state.
+The emulator supports Z80 v1, v2, and v3 snapshots, including applicable 128K
+paging and RAM-bank state. A 48K-layout snapshot keeps 48K memory and timing.
+Selecting 128K mode provides compatible AY audio, while model-less extended
+snapshots follow their Melodik metadata. Fuller AY port routing is rejected.
 
 ## SZX Snapshots
 
@@ -196,14 +199,16 @@ The debugger displays the restored latch as `WZ` in its CPU-state panel. The
 latch is also preserved by Quick State so resumed execution retains its
 undocumented flag and addressing behavior.
 
-SZX can also describe hardware that this emulator does not provide. Snapshots
-requiring another Spectrum model, alternate timing, Issue 2 behavior, an
-external 48K AY interface, or a known unsupported peripheral are rejected with
-an explanatory message rather than loaded inaccurately.
+SZX can also describe hardware that this emulator does not provide. The
+Melodik/128-compatible AY interface is supported for 48K snapshots, and dormant
+unpaged Multiface metadata is harmless. Fuller AY routing, paged Multiface
+memory, another Spectrum model, alternate timing, Issue 2 behavior, or another
+unsupported peripheral is rejected with an explanatory message rather than
+loaded inaccurately.
 
 ## RZX Recordings
 
-Press `F10` and choose an `.rzx` recording. Recorded input has priority over live joystick port input so replay remains deterministic. Quick State also preserves the replay position.
+Press `F10` and choose an `.rzx` recording. Embedded SNA, Z80, and SZX start snapshots are supported; when a recording contains later checkpoint snapshots, the last snapshot before recorded input begins is used as the initial state. Recorded input has priority over live joystick port input so replay remains deterministic. Quick State also preserves the replay position.
 
 # Chapter 6 - Tape Images And Multi-load Games
 

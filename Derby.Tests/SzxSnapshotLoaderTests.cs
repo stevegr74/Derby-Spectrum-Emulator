@@ -101,6 +101,192 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void Load48k_WithMelodikAy_RestoresAyWithoutChanging48kTiming()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: 456, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(border: 2, port7ffd: 0, portFe: 0)),
+                    ("AY\0\0", BuildAyBlock(selectedRegister: 7, peripheralFlags: 0x02)),
+                    RamBlock(5, 0x10, compressed: false),
+                    RamBlock(2, 0x20, compressed: false),
+                    RamBlock(0, 0x30, compressed: false));
+
+                var machine = new Spectrum128Machine(romFolder);
+                SzxSnapshotLoader.Load(machine, snapshot);
+
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.True(machine.HasAyHardware);
+                Assert.Equal((byte)7, machine.Ay.CurrentRegister);
+                Assert.Equal((byte)0x87, machine.Ay.ReadRegister(7));
+
+                machine.DebugWritePort(0xFFFD, 8);
+                machine.DebugWritePort(0xBFFD, 0x0F);
+                Assert.Equal((byte)0x0F, machine.Ay.ReadRegister(8));
+
+                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                machine.Reset(SpectrumMachineModel.Spectrum48K);
+                Assert.False(machine.HasAyHardware);
+                machine.RestoreQuickState(state);
+                Assert.True(machine.HasAyHardware);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load48k_WithFullerBoxAy_RejectsUnsupportedPortRouting()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: 0, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(border: 0, port7ffd: 0, portFe: 0)),
+                    ("AY\0\0", BuildAyBlock(selectedRegister: 0, peripheralFlags: 0x01)),
+                    RamBlock(5, 0, compressed: false),
+                    RamBlock(2, 0, compressed: false),
+                    RamBlock(0, 0, compressed: false));
+
+                var machine = new Spectrum128Machine(romFolder);
+                NotSupportedException error = Assert.Throws<NotSupportedException>(
+                    () => SzxSnapshotLoader.Load(machine, snapshot));
+
+                Assert.Contains("Fuller Box", error.Message, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_WithDormantMultifaceState_IgnoresUnpagedPeripheralRam()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] multiface = new byte[2 + (8 * 1024)];
+                multiface[0] = 1;
+                multiface[1] = 0x0C;
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: 0, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(border: 0, port7ffd: 0, portFe: 0)),
+                    ("MFCE", multiface),
+                    RamBlock(5, 0, compressed: false),
+                    RamBlock(2, 0, compressed: false),
+                    RamBlock(0, 0, compressed: false));
+
+                var machine = new Spectrum128Machine(romFolder);
+                SzxSnapshotLoader.Load(machine, snapshot);
+
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_WithPagedMultifaceState_RejectsUnsupportedMemoryMapping()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] multiface = new byte[2 + (8 * 1024)];
+                multiface[0] = 1;
+                multiface[1] = 0x01;
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: 0, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(border: 0, port7ffd: 0, portFe: 0)),
+                    ("MFCE", multiface),
+                    RamBlock(5, 0, compressed: false),
+                    RamBlock(2, 0, compressed: false),
+                    RamBlock(0, 0, compressed: false));
+
+                var machine = new Spectrum128Machine(romFolder);
+                NotSupportedException error = Assert.Throws<NotSupportedException>(
+                    () => SzxSnapshotLoader.Load(machine, snapshot));
+
+                Assert.Contains("paged in", error.Message, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_WithMalformedDormantMultifaceRam_IsRejected()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] multiface = new byte[3];
+                multiface[0] = 1;
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: 0, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(border: 0, port7ffd: 0, portFe: 0)),
+                    ("MFCE", multiface),
+                    RamBlock(5, 0, compressed: false),
+                    RamBlock(2, 0, compressed: false),
+                    RamBlock(0, 0, compressed: false));
+
+                var machine = new Spectrum128Machine(romFolder);
+                InvalidOperationException error = Assert.Throws<InvalidOperationException>(
+                    () => SzxSnapshotLoader.Load(machine, snapshot));
+
+                Assert.Contains("expected 8192", error.Message, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_WithCompressedDormantMultifaceRam_ValidatesPayload()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] compressedRam = Compress(new byte[8 * 1024]);
+                byte[] multiface = new byte[2 + compressedRam.Length];
+                multiface[0] = 1;
+                multiface[1] = 0x02;
+                Buffer.BlockCopy(compressedRam, 0, multiface, 2, compressedRam.Length);
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: 0, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(border: 0, port7ffd: 0, portFe: 0)),
+                    ("MFCE", multiface),
+                    RamBlock(5, 0, compressed: false),
+                    RamBlock(2, 0, compressed: false),
+                    RamBlock(0, 0, compressed: false));
+
+                var machine = new Spectrum128Machine(romFolder);
+                SzxSnapshotLoader.Load(machine, snapshot);
+
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
         public void Load_RejectsTruncatedChunkBeforeMutatingMachine()
         {
             string romFolder = CreateTempRoms();
@@ -148,7 +334,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                byte[] snapshot = BuildSnapshot(1, ("MFCE", new byte[] { 0, 0 }));
+                byte[] snapshot = BuildSnapshot(1, ("USPE", new byte[] { 0 }));
                 var machine = new Spectrum128Machine(romFolder);
 
                 NotSupportedException error = Assert.Throws<NotSupportedException>(
@@ -214,6 +400,57 @@ namespace Derby.Tests
                 Assert.True(machine.Cpu.InterruptPending);
                 Spectrum128Machine.QuickState state = machine.CaptureQuickState();
                 Assert.Equal(machine.Cpu.TStates + 7UL, state.InterruptPulseEndTStates);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_NormalizesInstructionOverrunAtFrameBoundary()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: Spectrum128Machine.FrameTStates48 + 19, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(0, 0, 0)),
+                    RamBlock(5, 0, compressed: false),
+                    RamBlock(2, 0, compressed: false),
+                    RamBlock(0, 0, compressed: false));
+                var machine = new Spectrum128Machine(romFolder);
+
+                SzxSnapshotLoader.Load(machine, snapshot);
+
+                Assert.Equal(19UL, machine.Cpu.TStates % (ulong)Spectrum128Machine.FrameTStates48);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Fact]
+        public void Load_RejectsImplausibleFramePosition()
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] snapshot = BuildSnapshot(
+                    1,
+                    ("Z80R", BuildCpuBlock(frameCycles: Spectrum128Machine.FrameTStates48 + 256, flags: 0)),
+                    ("SPCR", BuildSpectrumBlock(0, 0, 0)),
+                    RamBlock(5, 0, compressed: false),
+                    RamBlock(2, 0, compressed: false),
+                    RamBlock(0, 0, compressed: false));
+                var machine = new Spectrum128Machine(romFolder);
+
+                InvalidOperationException error = Assert.Throws<InvalidOperationException>(
+                    () => SzxSnapshotLoader.Load(machine, snapshot));
+
+                Assert.Contains("instruction overrun", error.Message, StringComparison.OrdinalIgnoreCase);
             }
             finally
             {
@@ -337,9 +574,10 @@ namespace Derby.Tests
         private static byte[] BuildSpectrumBlock(byte border, byte port7ffd, byte portFe) =>
             new byte[] { border, port7ffd, 0, portFe, 0, 0, 0, 0 };
 
-        private static byte[] BuildAyBlock(byte selectedRegister)
+        private static byte[] BuildAyBlock(byte selectedRegister, byte peripheralFlags = 0)
         {
             byte[] data = new byte[18];
+            data[0] = peripheralFlags;
             data[1] = selectedRegister;
             for (int register = 0; register < 16; register++)
                 data[register + 2] = (byte)(0x80 + register);

@@ -109,7 +109,8 @@ namespace Derby
 
         public bool SpeakerHigh => speakerHigh;
         public bool SpeakerEdge { get; private set; }
-        private bool IsAyHardwareEnabled => MachineModel == SpectrumMachineModel.Spectrum128K;
+        private bool ayHardwareEnabled = true;
+        private bool IsAyHardwareEnabled => ayHardwareEnabled;
 
         private void HandleAyPortWrite(ushort port, byte value, ulong eventTStates)
         {
@@ -219,6 +220,7 @@ namespace Derby
         public int FrameTStates => frameTStates;
         public int CurrentCpuClockHz => TimingProfile.CpuClockHz;
         public SpectrumMachineModel MachineModel { get; private set; } = SpectrumMachineModel.Spectrum128K;
+        public bool HasAyHardware => ayHardwareEnabled;
         public SpectrumRomSet RomSet { get; }
         public SpectrumRomProfile RomProfile { get; private set; } = null!;
         public bool SupportsRomTapeAcceleration => RomProfile.SupportsAddressBasedTapeServices;
@@ -242,6 +244,7 @@ namespace Derby
         public void Reset(SpectrumMachineModel model)
         {
             MachineModel = model;
+            ayHardwareEnabled = model == SpectrumMachineModel.Spectrum128K;
             PagedRamBank = 0;
             CurrentRomBank = model == SpectrumMachineModel.Spectrum48K ? 1 : 0;
             PagingLocked = model == SpectrumMachineModel.Spectrum48K;
@@ -1333,15 +1336,14 @@ namespace Derby
 
         public void ConfigureFor48kSnapshot(int borderColor, SpectrumMachineModel hardwareModel)
         {
-            int targetFrameTStates = hardwareModel == SpectrumMachineModel.Spectrum128K
-                ? FrameTStates128
-                : FrameTStates48;
-            Configure48kSnapshotCore(borderColor, hardwareModel, targetFrameTStates);
+            Configure48kSnapshotCore(borderColor, SpectrumMachineModel.Spectrum48K, FrameTStates48);
+            ConfigureExternalAyHardware(hardwareModel == SpectrumMachineModel.Spectrum128K);
         }
 
-        public void ConfigureFor48kZ80Snapshot(int borderColor)
+        public void ConfigureFor48kZ80Snapshot(int borderColor, bool compatibleAyEnabled)
         {
-            Configure48kSnapshotCore(borderColor, SpectrumMachineModel.Spectrum48K, FrameTStates128);
+            Configure48kSnapshotCore(borderColor, SpectrumMachineModel.Spectrum48K, FrameTStates48);
+            ConfigureExternalAyHardware(compatibleAyEnabled);
         }
 
         public void ConfigureFor48kTapeLoad(int borderColor)
@@ -1381,9 +1383,10 @@ namespace Derby
 
         private void Configure48kSnapshotCore(int borderColor, SpectrumMachineModel hardwareModel, int targetFrameTStates)
         {
-            // The snapshot file layout can be 48K even when the selected hardware
-            // is 128K, for example 48K-format saves that still use the AY chip.
+            // A 48K-format snapshot has no paging state, so preserve its 48K
+            // timing and memory map. AY availability is configured separately.
             MachineModel = hardwareModel;
+            ayHardwareEnabled = hardwareModel == SpectrumMachineModel.Spectrum128K;
             PagedRamBank = 0;
             ScreenBank = 5;
             CurrentRomBank = 1; // Use the 48 BASIC ROM in your current setup.
@@ -1462,6 +1465,12 @@ namespace Derby
             lastAyRegister = (byte)(selectedRegister & 0x0F);
             ay.SelectRegister(lastAyRegister);
             ayWrites.Clear();
+            frameStartAyState = CaptureAyAudioState();
+        }
+
+        internal void ConfigureExternalAyHardware(bool enabled)
+        {
+            ayHardwareEnabled = enabled || MachineModel == SpectrumMachineModel.Spectrum128K;
             frameStartAyState = CaptureAyAudioState();
         }
 

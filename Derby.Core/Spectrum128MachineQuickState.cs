@@ -14,6 +14,7 @@ namespace Derby
             internal byte[] KeyboardMatrix = null!;
             internal ulong[] KeyboardRowScanCounts = null!;
             internal SpectrumMachineModel Model;
+            internal bool AyHardwareEnabled;
             internal int PagedRamBank;
             internal int CurrentRomBank;
             internal bool PagingLocked;
@@ -73,6 +74,7 @@ namespace Derby
                 KeyboardMatrix = (byte[])keyboardMatrix.Clone(),
                 KeyboardRowScanCounts = (ulong[])keyboardRowScanCounts.Clone(),
                 Model = MachineModel,
+                AyHardwareEnabled = ayHardwareEnabled,
                 PagedRamBank = PagedRamBank,
                 CurrentRomBank = CurrentRomBank,
                 PagingLocked = PagingLocked,
@@ -132,6 +134,7 @@ namespace Derby
             Array.Copy(state.KeyboardRowScanCounts, keyboardRowScanCounts, keyboardRowScanCounts.Length);
 
             MachineModel = state.Model;
+            ayHardwareEnabled = state.AyHardwareEnabled;
             PagedRamBank = state.PagedRamBank;
             CurrentRomBank = state.CurrentRomBank;
             PagingLocked = state.PagingLocked;

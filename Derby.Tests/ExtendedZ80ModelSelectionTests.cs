@@ -12,7 +12,7 @@ namespace Derby.Tests
         [Theory]
         [InlineData(SpectrumMachineModel.Spectrum48K, false)]
         [InlineData(SpectrumMachineModel.Spectrum128K, true)]
-        public void Extended48kSnapshot_UsesExplicitlySelectedHardwareModel(
+        public void Extended48kSnapshot_Uses48kMachineWithSelectedAyCompatibility(
             SpectrumMachineModel selectedModel,
             bool expectsAyAudio)
         {
@@ -29,7 +29,9 @@ namespace Derby.Tests
                 machine.DebugWritePort(0xBFFD, 0x0F);
                 machine.ExecuteTimeSlice(machine.FrameTStates);
 
-                Assert.Equal(selectedModel, machine.MachineModel);
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(expectsAyAudio, machine.HasAyHardware);
                 Assert.Equal(expectsAyAudio, machine.HasAudibleOutput);
                 Assert.True(machine.TryDequeueCompletedAudioFrame(out var frame));
                 Assert.Equal(expectsAyAudio, frame.AyState != null);

@@ -464,15 +464,16 @@ namespace Derby.Tests
         }
 
         [Fact]
-        public void ConfigureFor48kZ80Snapshot_UsesLegacyZ80FrameTiming()
+        public void ConfigureFor48kZ80Snapshot_Uses48kTimingWithCompatibleAy()
         {
             string romFolder = CreateTempRoms();
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.ConfigureFor48kZ80Snapshot(borderColor: 0);
+                machine.ConfigureFor48kZ80Snapshot(borderColor: 0, compatibleAyEnabled: true);
 
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.True(machine.HasAyHardware);
             }
             finally
             {

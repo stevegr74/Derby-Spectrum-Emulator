@@ -364,7 +364,7 @@ Current snapshot status:
 
 - `.sna`
   - 48K file-format loading implemented and verified
-  - 48K-format snapshots can run on the selected 48K or 128K hardware model
+  - 48K-format snapshots retain the authentic 48K memory map and timing; selecting 128K keeps compatible external AY audio available without changing CPU/ULA timing
   - 128K file-format loading restores all RAM banks, paging state, and the explicit program counter
   - standard and duplicate-current-page 128K layouts are supported; TR-DOS snapshots are rejected because no TR-DOS ROM is emulated
   - a converted 128K Renegade snapshot has passed exact representable-state round-trip comparison and an execution smoke test
@@ -376,17 +376,21 @@ Current snapshot status:
   - v2/v3 page-block support implemented
   - 128K paging and RAM-bank restoration supported for applicable v2/v3 snapshots
   - interrupt state and interrupt mode restored from snapshot metadata
-  - 48K-layout v1/v2/v3 snapshots can run on the selected 48K or 128K hardware model
+  - 48K-layout v1/v2/v3 snapshots retain 48K memory and timing; selected 128K mode or the extended-header Melodik flag provides compatible AY audio, while unsupported Fuller routing is rejected
 
 - `.szx`
   - SZX 1.x loading implemented for exact 48K and original 128K machine IDs
   - restores CPU registers and execution state, RAM, frame phase, ULA state, 128K paging, and AY registers
   - accepts compressed or uncompressed RAM pages, arbitrary chunk order, and unknown optional metadata
   - validates the complete snapshot before changing the machine
-  - rejects unsupported machine models, alternate timing, Issue 2 behavior, external 48K AY state, and known unsupported peripheral blocks rather than approximating them
+  - supports 48K Melodik/128-compatible AY state and dormant unpaged Multiface metadata; rejects Fuller AY routing, paged Multiface memory, unsupported machine models, alternate timing, Issue 2 behavior, and other unsupported peripherals rather than approximating them
   - restores the SZX `WZ/MEMPTR` field alongside the documented CPU and execution state
 
 Snapshots can be loaded with `F9` (`.sna`) and `F10` (`.z80` or `.szx`) in the UI.
+
+RZX replay accepts embedded SNA, Z80, and SZX start snapshots. The loader uses
+the last snapshot before recorded input begins and ignores later checkpoint
+snapshots as initial state.
 
 ---
 
@@ -569,7 +573,7 @@ compatibility; completed milestones remain regression baselines.
 ### Milestone 23 - SZX Snapshot Support Complete
 - Added a dedicated SZX 1.x chunk parser with strict bounds checking, complete pre-apply validation, and clear malformed-file diagnostics
 - Restores supported 48K and original 128K CPU registers and execution state, including the undocumented WZ/MEMPTR latch, RAM, paging, frame phase, ULA state, and AY state through existing machine boundaries
-- Accepts compressed and uncompressed RAM pages, arbitrary chunk order, and safely optional unknown metadata while rejecting unsupported machines, timing variants, and known peripheral state
+- Accepts compressed and uncompressed RAM pages, arbitrary chunk order, 48K Melodik AY state, dormant unpaged Multiface metadata, and safely optional unknown metadata while rejecting unsupported machines, timing variants, Fuller AY routing, paged Multiface memory, and other active peripheral state
 - Integrated `.szx` with the shared F10 picker, media-title handling, reset lifecycle, audio/input cleanup, manual harness, and existing machine ownership rules
 
 ### Milestone 24 - On-Screen Keyboard Planned
