@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>Derby</AssemblyName>
+    <RootNamespace>Derby</RootNamespace>
+    <Product>DERBY - ZX Spectrum 48K / 128K / +2A Emulator</Product>
+    <AssemblyTitle>DERBY</AssemblyTitle>
+    <Description>A focused ZX Spectrum 48K, 128K, grey +2, and +2A emulator.</Description>
+    <ApplicationIcon>..\assets\branding\derby.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\assets\branding\derby-mark.png" Link="assets\branding\derby-mark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ROMs\**" Link="ROMs\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Pokes\pokes.json" Link="Pokes\pokes.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Derby.Core\Derby.Core.csproj" />
+  </ItemGroup>
+
+</Project>
