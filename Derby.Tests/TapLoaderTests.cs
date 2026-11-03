@@ -48,7 +48,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
                 TapLoadResult result = TapLoader.Load(machine, tapePath);
 
@@ -91,7 +91,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoadResult result = TapLoader.Load(machine, tapePath);
 
                 Assert.Equal("BASICDEMO", result.AutoStartFileName);
@@ -110,7 +110,7 @@ namespace Derby.Tests
             }
         }
 
-        private static ushort ReadWord(Spectrum128Machine machine, ushort address)
+        private static ushort ReadWord(SpectrumMachine machine, ushort address)
         {
             return (ushort)(machine.PeekMemory(address) | (machine.PeekMemory((ushort)(address + 1)) << 8));
         }
@@ -312,13 +312,13 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.Equal(2, result.ConsumedBlockCount);
                 Assert.Equal((ushort)0xC000, machine.Cpu.Regs.PC);
                 Assert.False(machine.PagingLocked);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
                 Assert.Equal(1, machine.CurrentRomBank);
                 Assert.Equal((byte)0xAA, machine.GetRamBankCopy(3)[0]);
                 Assert.Equal((byte)0xAB, machine.GetRamBankCopy(3)[1]);
@@ -376,16 +376,16 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
@@ -399,7 +399,7 @@ namespace Derby.Tests
                 for (int offset = 0; offset < 8; offset++)
                     machine.PokeMemory((ushort)(line20Start + offset), 0xFF);
 
-                var resolver = (Func<Spectrum128Machine, ushort?>)resolverObject!;
+                var resolver = (Func<SpectrumMachine, ushort?>)resolverObject!;
                 ushort? entryPoint = resolver(machine);
                 Assert.Equal((ushort)0x1234, entryPoint);
             }
@@ -463,16 +463,16 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
@@ -481,7 +481,7 @@ namespace Derby.Tests
                 machine.PokeMemory(23633, 0x34);
                 machine.PokeMemory(23634, 0x12);
 
-                var resolver = (Func<Spectrum128Machine, ushort?>)resolverObject!;
+                var resolver = (Func<SpectrumMachine, ushort?>)resolverObject!;
 
                 ushort basicProgramStart = 23755;
                 for (int offset = 0; offset < basicLoader.Length; offset++)
@@ -549,24 +549,24 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("idle-mounted", Array.Empty<TapeBlock>()));
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!);
                 machine.PokeMemory(23631, 0x00);
                 machine.PokeMemory(23632, 0x00);
                 machine.PokeMemory(23633, 0x34);
@@ -631,25 +631,25 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("idle-mounted", Array.Empty<TapeBlock>()));
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!);
                 machine.PokeMemory(23631, 0x00);
                 machine.PokeMemory(23632, 0x00);
                 machine.PokeMemory(23633, 0x34);
@@ -716,24 +716,24 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("idle-mounted", Array.Empty<TapeBlock>()));
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!);
                 machine.PokeMemory(23631, 0x00);
                 machine.PokeMemory(23632, 0x00);
                 machine.PokeMemory(23633, 0x34);
@@ -757,7 +757,7 @@ namespace Derby.Tests
                 Assert.Equal((ushort)0x0000, machine.Cpu.Regs.PC);
                 Assert.Equal(1, machine.CurrentRomBank);
                 Assert.False(machine.PagingLocked);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
                 Assert.Equal((ushort)0x5CBB, (ushort)(machine.PeekMemory(23633) | (machine.PeekMemory(23634) << 8)));
                 Assert.Equal((ushort)0x0000, (ushort)(machine.PeekMemory(23647) | (machine.PeekMemory(23648) << 8)));
                 Assert.Equal((ushort)0, (ushort)(machine.PeekMemory(23618) | (machine.PeekMemory(23619) << 8)));
@@ -821,18 +821,18 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("idle-mounted", Array.Empty<TapeBlock>()));
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
                 ushort varsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
@@ -847,7 +847,7 @@ namespace Derby.Tests
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!);
                 machine.PokeMemory(23631, 0x00);
                 machine.PokeMemory(23632, 0x00);
                 machine.PokeMemory(23633, 0x34);
@@ -914,18 +914,18 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("idle-mounted", Array.Empty<TapeBlock>()));
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
                 ushort varsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
@@ -941,7 +941,7 @@ namespace Derby.Tests
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!);
                 machine.PokeMemory(23631, 0xB6);
                 machine.PokeMemory(23632, 0x5C);
                 machine.PokeMemory(23633, 0x34);
@@ -991,11 +991,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
                 ushort varsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
                 machine.PokeMemory(varsAddress, 0x61);
@@ -1008,7 +1008,7 @@ namespace Derby.Tests
                 machine.PokeMemory(23641, (byte)((varsAddress + 7) & 0xFF));
                 machine.PokeMemory(23642, (byte)((varsAddress + 7) >> 8));
 
-                Type parserType = typeof(TapLoader).GetNestedType("ExpressionParser", BindingFlags.NonPublic)!;
+                Type parserType = typeof(BasicExpressionParser);
                 ConstructorInfo parserCtor = parserType
                     .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .Single(ctor => ctor.GetParameters().Length == 6);
@@ -1059,11 +1059,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
                 ushort varsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
                 machine.PokeMemory(varsAddress, 0x61);
@@ -1072,7 +1072,7 @@ namespace Derby.Tests
                 machine.PokeMemory(23641, (byte)((varsAddress + 7) & 0xFF));
                 machine.PokeMemory(23642, (byte)((varsAddress + 7) >> 8));
 
-                Type parserType = typeof(TapLoader).GetNestedType("ExpressionParser", BindingFlags.NonPublic)!;
+                Type parserType = typeof(BasicExpressionParser);
                 ConstructorInfo parserCtor = parserType
                     .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .Single(ctor => ctor.GetParameters().Length == 6);
@@ -1123,11 +1123,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 ushort originalVarsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
@@ -1147,7 +1147,7 @@ namespace Derby.Tests
                 machine.PokeMemory(23641, 0xCC);
                 machine.PokeMemory(23642, 0x5C);
 
-                Type parserType = typeof(TapLoader).GetNestedType("ExpressionParser", BindingFlags.NonPublic)!;
+                Type parserType = typeof(BasicExpressionParser);
                 ConstructorInfo parserCtor = parserType
                     .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .Single(ctor => ctor.GetParameters().Length == 6);
@@ -1198,11 +1198,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 ushort originalVarsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
@@ -1218,7 +1218,7 @@ namespace Derby.Tests
                 machine.PokeMemory(23641, 0xCC);
                 machine.PokeMemory(23642, 0x5C);
 
-                Type parserType = typeof(TapLoader).GetNestedType("ExpressionParser", BindingFlags.NonPublic)!;
+                Type parserType = typeof(BasicExpressionParser);
                 ConstructorInfo parserCtor = parserType
                     .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .Single(ctor => ctor.GetParameters().Length == 6);
@@ -1287,19 +1287,19 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("idle-mounted", Array.Empty<TapeBlock>()));
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
@@ -1316,7 +1316,7 @@ namespace Derby.Tests
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)30 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!, requireUsrReturnAddress: true);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!, requireUsrReturnAddress: true);
 
                 machine.PokeMemory(varsAddress, 0x61);
                 machine.PokeMemory((ushort)(varsAddress + 1), 0x00);
@@ -1393,19 +1393,19 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("idle-mounted", Array.Empty<TapeBlock>()));
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
@@ -1422,7 +1422,7 @@ namespace Derby.Tests
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)30 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!, requireUsrReturnAddress: false);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!, requireUsrReturnAddress: false);
 
                 machine.PokeMemory(varsAddress, 0x61);
                 machine.PokeMemory((ushort)(varsAddress + 1), 0x00);
@@ -1499,19 +1499,19 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                MethodInfo variableReader = typeof(TapLoader).GetMethod(
+                MethodInfo variableReader = typeof(BasicBootstrapExecutor).GetMethod(
                     "TryReadMountedContinuationNumericVariable",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 ushort varsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
@@ -1528,7 +1528,7 @@ namespace Derby.Tests
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)30 });
                 Assert.NotNull(resolverObject);
-                machine.SetPendingMountedLoadUsrContinuationResolver((Func<Spectrum128Machine, ushort?>)resolverObject!, requireUsrReturnAddress: false);
+                machine.SetPendingMountedLoadUsrContinuationResolver((Func<SpectrumMachine, ushort?>)resolverObject!, requireUsrReturnAddress: false);
 
                 byte[] updatedVariableArea = new byte[]
                 {
@@ -1613,11 +1613,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 Assert.Equal((ushort)0x5CB6, (ushort)(machine.PeekMemory(23633) | (machine.PeekMemory(23634) << 8)));
@@ -1663,7 +1663,7 @@ namespace Derby.Tests
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, payload });
 
                 ushort variablesEnd = (ushort)(23755 + payload.Length);
@@ -1732,15 +1732,15 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                MethodInfo variableReader = typeof(TapLoader).GetMethod(
+                MethodInfo variableReader = typeof(BasicBootstrapExecutor).GetMethod(
                     "TryReadMountedContinuationNumericVariable",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 ushort varsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
@@ -1804,15 +1804,15 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                MethodInfo variableReader = typeof(TapLoader).GetMethod(
+                MethodInfo variableReader = typeof(BasicBootstrapExecutor).GetMethod(
                     "TryReadMountedContinuationNumericVariable",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 ushort varsAddress = (ushort)(machine.PeekMemory(23627) | (machine.PeekMemory(23628) << 8));
@@ -1932,21 +1932,21 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
 
-                var resolver = (Func<Spectrum128Machine, ushort?>)resolverObject!;
+                var resolver = (Func<SpectrumMachine, ushort?>)resolverObject!;
                 ushort programStart = 23755;
                 machine.PokeMemory((ushort)(programStart + 2), 0xFF);
                 machine.PokeMemory((ushort)(programStart + 3), 0x7F);
@@ -1995,21 +1995,21 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
 
-                var resolver = (Func<Spectrum128Machine, ushort?>)resolverObject!;
+                var resolver = (Func<SpectrumMachine, ushort?>)resolverObject!;
                 ushort programStart = 23755;
                 ushort secondLineStart = (ushort)(programStart + line10.Length);
                 int markerOffsetInLine = Array.IndexOf(line20, (byte)0x0E);
@@ -2041,7 +2041,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 ushort varsAddress = 0x8000;
                 ushort simpleVariableAddress = (ushort)(varsAddress + 19);
                 ushort eLineAddress = (ushort)(simpleVariableAddress + 7);
@@ -2063,7 +2063,7 @@ namespace Derby.Tests
                 machine.PokeMemory(23641, (byte)(eLineAddress & 0xFF));
                 machine.PokeMemory(23642, (byte)(eLineAddress >> 8));
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo preambleMethod = executorType.GetMethod(
                     "ExecuteMountedUsrContinuationPreamble",
                     BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -2104,10 +2104,10 @@ namespace Derby.Tests
                     BuildDataBlock(new byte[] { 0xAA, 0xBB, 0xC9 }),
                     2168, 3223, 667, 735, 855, 1710, 8, 1000);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("code-address-override.tap", new[] { headerBlock, dataBlock }));
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo preambleMethod = executorType.GetMethod(
                     "ExecuteMountedUsrContinuationPreamble",
                     BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -2163,27 +2163,27 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo createResolver = executorType
                     .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Single(method => method.Name == "CreateMountedLoadUsrContinuationResolver" && method.GetParameters().Length == 4);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, basicLoader });
 
                 object? resolverObject = createResolver.Invoke(null, new object[] { machine, (ushort)23755, (ushort)basicLoader.Length, (ushort)10 });
                 Assert.NotNull(resolverObject);
 
-                var resolver = (Func<Spectrum128Machine, ushort?>)resolverObject!;
+                var resolver = (Func<SpectrumMachine, ushort?>)resolverObject!;
                 ushort? firstEntryPoint = resolver(machine);
                 Assert.Equal((ushort)24576, firstEntryPoint);
 
                 object? followOnResolverObject = machine.PendingMountedLoadResolver;
                 Assert.NotNull(followOnResolverObject);
-                var followOnResolver = (Func<Spectrum128Machine, ushort?>)followOnResolverObject!;
+                var followOnResolver = (Func<SpectrumMachine, ushort?>)followOnResolverObject!;
 
                 // Simulate the loaded code reclaiming/overwriting the follow-on BASIC
                 // text before the cached RANDOMIZE USR 0 can be validated.
@@ -2202,7 +2202,7 @@ namespace Derby.Tests
             }
         }
 
-        private static void WriteSpectrumPositiveIntegerFloat(Spectrum128Machine machine, ushort address, int value)
+        private static void WriteSpectrumPositiveIntegerFloat(SpectrumMachine machine, ushort address, int value)
         {
             if (value <= 0)
                 throw new ArgumentOutOfRangeException(nameof(value));

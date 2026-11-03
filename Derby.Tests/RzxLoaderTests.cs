@@ -19,7 +19,7 @@ namespace Derby.Tests
                 byte[] rzx = BuildRzxWithEmbeddedSna(sna, new ushort[] { 1 }, new byte[][] { new byte[] { 0xFE } });
                 File.WriteAllBytes(recordingPath, rzx);
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 RzxLoader.Load(machine, recordingPath);
 
                 Assert.True(machine.HasRzxPlayback);
@@ -49,7 +49,7 @@ namespace Derby.Tests
                     BuildInputBlock([1], [[0xFE]]));
                 File.WriteAllBytes(recordingPath, rzx);
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 RzxLoader.Load(machine, recordingPath);
 
                 Assert.True(machine.HasRzxPlayback);
@@ -80,7 +80,7 @@ namespace Derby.Tests
                     BuildSnapshotBlock("SNA", finalSna));
                 File.WriteAllBytes(recordingPath, rzx);
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 RzxLoader.Load(machine, recordingPath);
 
                 Assert.Equal((byte)0x11, machine.PeekMemory(0x4000));

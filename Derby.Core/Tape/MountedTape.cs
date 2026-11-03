@@ -58,7 +58,7 @@ namespace Derby.Tape
         private TapeState state;
         private int? expectedDataLength;
         private string? pendingHeaderName;
-        private TapLoader.TapHeaderInfo? pendingHeaderInfo;
+        private TapHeaderInfo? pendingHeaderInfo;
 
         private enum TapeState
         {
@@ -811,14 +811,14 @@ namespace Derby.Tape
             playbackCompleted = true;
         }
 
-        private static ushort PeekWord(Spectrum128Machine machine, ushort address)
+        private static ushort PeekWord(SpectrumMachine machine, ushort address)
         {
             byte lo = machine.PeekMemory(address);
             byte hi = machine.PeekMemory((ushort)(address + 1));
             return (ushort)(lo | (hi << 8));
         }
 
-        private static void CompleteTrap(Spectrum128Machine machine, Z80Cpu cpu, bool success, ushort returnAddress)
+        private static void CompleteTrap(SpectrumMachine machine, Z80Cpu cpu, bool success, ushort returnAddress)
         {
             cpu.Regs.SP += 2;
             cpu.Regs.PC = returnAddress;

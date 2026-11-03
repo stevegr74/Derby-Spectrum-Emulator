@@ -67,7 +67,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 AssertTransport(machine, TapeTransportState.NoTape, null);
                 Assert.Equal(TapeTransportTransition.None, machine.LastTapeTransportTransition);
@@ -86,7 +86,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 MountedTape original = CreatePlayingTape("original.tap");
                 MountedTape replacement = CreatePlayingTape("replacement.tap");
                 replacement.ReadEarBit(0);
@@ -115,7 +115,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(CreatePlayingTape("eject.tap"));
                 machine.ToggleTapeTransport();
                 Assert.Equal(TapeTransportTransition.ManualStop, machine.LastTapeTransportTransition);
@@ -139,7 +139,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(CreatePlayingTape("reset.tap"));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
 
@@ -161,7 +161,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new MountedTape(
                     "marker.tzx",
                     new[]
@@ -189,14 +189,14 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 MountedTape capturedTape = CreatePlayingTape("captured.tap");
                 machine.MountTape(capturedTape);
                 machine.DebugReadPort(0x00FE);
                 machine.Cpu.AddTStates(75);
                 machine.DebugReadPort(0x00FE);
                 machine.ToggleTapeTransport();
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
 
                 machine.MountTape(CreatePlayingTape("replacement.tap"));
                 machine.RestoreQuickState(state);
@@ -220,13 +220,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new MountedTape(
                     "ended.tap",
                     new[] { TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 1) },
                     initialBlockIndex: 1));
                 machine.ExecuteTimeSlice(1);
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
 
                 machine.MountTape(CreatePlayingTape("replacement.tap"));
                 machine.RestoreQuickState(state);
@@ -245,7 +245,7 @@ namespace Derby.Tests
             new[] { TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 3) });
 
         private static void AssertTransport(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             TapeTransportState expectedState,
             MountedTape? expectedTape)
         {

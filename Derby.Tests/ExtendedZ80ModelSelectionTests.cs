@@ -19,7 +19,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 byte[] snapshot = BuildExtended48kSnapshot();
 
                 Z80SnapshotLoader.Load(machine, snapshot, selectedModel);
@@ -30,7 +30,7 @@ namespace Derby.Tests
                 machine.ExecuteTimeSlice(machine.FrameTStates);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.Equal(expectsAyAudio, machine.HasAyHardware);
                 Assert.Equal(expectsAyAudio, machine.HasAudibleOutput);
                 Assert.True(machine.TryDequeueCompletedAudioFrame(out var frame));

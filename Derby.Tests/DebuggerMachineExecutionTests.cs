@@ -13,7 +13,7 @@ namespace Derby.Tests
             {
                 File.WriteAllBytes(Path.Combine(romFolder, "128-1.rom"),
                     Enumerable.Repeat((byte)0xA5, 16384).ToArray());
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 byte[] copy = machine.GetRomBankCopy(1);
                 copy[0] = 0;
@@ -33,7 +33,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.SetFrameTimingForDebug(8);
                 ulong initialFetchCount = machine.Cpu.InstructionFetchCount;
                 machine.Cpu.StopBeforeInstruction = cpu => cpu.InstructionFetchCount > initialFetchCount;
@@ -58,7 +58,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var controller = new DebuggerExecutionController();
                 controller.BeginStepInto(machine.Cpu.Regs.PC, machine.Cpu.InstructionFetchCount);
                 machine.Cpu.StopBeforeInstruction = cpu => controller.ShouldStopBeforeInstruction(
@@ -87,7 +87,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var controller = new DebuggerExecutionController();
                 controller.SetBreakpoint(0x0002);
                 controller.BeginRun(machine.Cpu.Regs.PC, machine.Cpu.InstructionFetchCount);
@@ -116,7 +116,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var controller = new DebuggerExecutionController();
                 machine.Cpu.Regs.PC = 0x8000;
                 machine.Cpu.Regs.SP = 0xFF00;
@@ -152,7 +152,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var controller = new DebuggerExecutionController();
                 machine.Cpu.Regs.PC = 0x8005;
                 machine.Cpu.Regs.SP = 0xFEFE;

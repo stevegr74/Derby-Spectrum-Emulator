@@ -9,7 +9,7 @@ namespace Derby.Tests
         public void Consume_ProducesTheSameSampleCountForSplitOrCombinedTStates()
         {
             const uint sampleRate = 44100;
-            const int cpuClockHz = Spectrum128Machine.CpuClockHz128;
+            const int cpuClockHz = SpectrumMachine.CpuClockHz128;
             var splitClock = new TStateSampleClock(sampleRate);
             var combinedClock = new TStateSampleClock(sampleRate);
 
@@ -26,8 +26,8 @@ namespace Derby.Tests
         {
             var clock = new TStateSampleClock(44100);
 
-            Assert.Equal(0, clock.Consume(1, Spectrum128Machine.CpuClockHz128));
-            Assert.Equal(0, clock.Consume(1, Spectrum128Machine.CpuClockHz128));
+            Assert.Equal(0, clock.Consume(1, SpectrumMachine.CpuClockHz128));
+            Assert.Equal(0, clock.Consume(1, SpectrumMachine.CpuClockHz128));
         }
     }
 }

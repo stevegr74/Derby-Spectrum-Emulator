@@ -15,12 +15,12 @@ namespace Derby
         private const int Sna128StandardFileSize = Sna128RamPagesOffset + (5 * RamBankSize);
         private const int Sna128DuplicatePageFileSize = Sna128RamPagesOffset + (6 * RamBankSize);
 
-        public static void Load(Spectrum128Machine machine, string path)
+        public static void Load(SpectrumMachine machine, string path)
         {
             Load(machine, path, SpectrumMachineModel.Spectrum48K);
         }
 
-        public static void Load(Spectrum128Machine machine, string path, SpectrumMachineModel hardwareModel)
+        public static void Load(SpectrumMachine machine, string path, SpectrumMachineModel hardwareModel)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -30,12 +30,12 @@ namespace Derby
             Load(machine, File.ReadAllBytes(path), hardwareModel);
         }
 
-        public static void Load(Spectrum128Machine machine, byte[] data)
+        public static void Load(SpectrumMachine machine, byte[] data)
         {
             Load(machine, data, SpectrumMachineModel.Spectrum48K);
         }
 
-        public static void Load(Spectrum128Machine machine, byte[] data, SpectrumMachineModel hardwareModel)
+        public static void Load(SpectrumMachine machine, byte[] data, SpectrumMachineModel hardwareModel)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -58,12 +58,12 @@ namespace Derby
             }
         }
 
-        public static void LoadSna48k(Spectrum128Machine machine, string path)
+        public static void LoadSna48k(SpectrumMachine machine, string path)
         {
             LoadSna48k(machine, path, SpectrumMachineModel.Spectrum48K);
         }
 
-        public static void LoadSna48k(Spectrum128Machine machine, string path, SpectrumMachineModel hardwareModel)
+        public static void LoadSna48k(SpectrumMachine machine, string path, SpectrumMachineModel hardwareModel)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -73,12 +73,12 @@ namespace Derby
             LoadSna48k(machine, File.ReadAllBytes(path), hardwareModel);
         }
 
-        public static void LoadSna48k(Spectrum128Machine machine, byte[] data)
+        public static void LoadSna48k(SpectrumMachine machine, byte[] data)
         {
             LoadSna48k(machine, data, SpectrumMachineModel.Spectrum48K);
         }
 
-        public static void LoadSna48k(Spectrum128Machine machine, byte[] data, SpectrumMachineModel hardwareModel)
+        public static void LoadSna48k(SpectrumMachine machine, byte[] data, SpectrumMachineModel hardwareModel)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -108,10 +108,10 @@ namespace Derby
             regs.SP += 2;
 
             FinalizeLoad(machine, data);
-            machine.SetSnapshotResumeFramePhase(Spectrum128Machine.Default48kSnapshotResumeFramePhase);
+            machine.SetSnapshotResumeFramePhase(SpectrumMachine.Default48kSnapshotResumeFramePhase);
         }
 
-        public static void LoadSna128k(Spectrum128Machine machine, byte[] data)
+        public static void LoadSna128k(SpectrumMachine machine, byte[] data)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -180,7 +180,7 @@ namespace Derby
         }
 
         private static void LoadBank(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             byte[] data,
             int sourceOffset,
             int bank,
@@ -192,7 +192,7 @@ namespace Derby
             loadedBanks[bank] = true;
         }
 
-        private static void FinalizeLoad(Spectrum128Machine machine, byte[] data)
+        private static void FinalizeLoad(SpectrumMachine machine, byte[] data)
         {
             bool iff2 = (data[19] & 0x04) != 0;
             machine.Cpu.RestoreInterruptState(

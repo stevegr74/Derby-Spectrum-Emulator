@@ -142,7 +142,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.PokeMemory(0x8000, 0x11);
                 machine.PokeRamBank(7, 0x0123, 0x22);
                 PokeWrite[] writes =
@@ -182,7 +182,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.PokeMemory(0x8000, 0x11);
                 PokeApplication application = PokeApplicationService.Apply(
                     machine,
@@ -205,7 +205,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Assert.Throws<ArgumentOutOfRangeException>(() =>
                     PokeApplicationService.Apply(machine, [PokeWrite.Mapped(0x3FFF, 1)]));
                 Assert.Throws<ArgumentException>(() =>

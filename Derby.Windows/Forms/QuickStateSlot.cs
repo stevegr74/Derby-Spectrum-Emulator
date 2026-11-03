@@ -5,7 +5,7 @@ namespace Derby
     internal sealed class QuickStateSlot : IDisposable
     {
         public QuickStateSlot(
-            Spectrum128Machine.QuickState state,
+            SpectrumMachine.QuickState state,
             byte[] persistentState,
             SpectrumRomSet romSet,
             string? mediaDisplayName,
@@ -37,7 +37,7 @@ namespace Derby
             CapturedAtUtc = capturedAtUtc;
         }
 
-        public Spectrum128Machine.QuickState? State { get; }
+        public SpectrumMachine.QuickState? State { get; }
         public byte[] PersistentState { get; }
         public SpectrumRomSet RomSet { get; }
         public string? MediaDisplayName { get; }

@@ -13,7 +13,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.SetAudioFrameCaptureEnabled(false);
 
                 machine.ExecuteTimeSlice(machine.FrameTStates / 2);
@@ -39,11 +39,11 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.SetAudioFrameCaptureEnabled(false);
                 machine.ExecuteTimeSlice(machine.FrameTStates / 2);
                 machine.SetAudioFrameCaptureEnabled(true);
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
 
                 machine.ExecuteTimeSlice(machine.FrameTStates / 2);
                 Assert.False(machine.TryDequeueCompletedAudioFrame(out _));
@@ -62,8 +62,8 @@ namespace Derby.Tests
         }
 
         [Theory]
-        [InlineData(Spectrum128Machine.FrameTStates48, Spectrum128Machine.CpuClockHz48)]
-        [InlineData(Spectrum128Machine.FrameTStates128, Spectrum128Machine.CpuClockHz128)]
+        [InlineData(SpectrumMachine.FrameTStates48, SpectrumMachine.CpuClockHz48)]
+        [InlineData(SpectrumMachine.FrameTStates128, SpectrumMachine.CpuClockHz128)]
         public void SampleClock_HasNoCumulativeDriftAcrossTenMinutes(int frameTStates, int cpuClockHz)
         {
             const uint sampleRate = 44100;

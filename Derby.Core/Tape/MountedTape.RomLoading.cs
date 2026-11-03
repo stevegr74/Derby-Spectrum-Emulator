@@ -6,7 +6,7 @@ namespace Derby.Tape
 {
     public sealed partial class MountedTape
     {
-        public bool TryHandleRomLoadTrap(Spectrum128Machine machine, Z80Cpu cpu)
+        public bool TryHandleRomLoadTrap(SpectrumMachine machine, Z80Cpu cpu)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -110,7 +110,7 @@ namespace Derby.Tape
 
                 if (state == TapeState.ExpectHeader && IsHeaderBlock(block))
                 {
-                    TapLoader.TapHeaderInfo header = TapLoader.ParseHeaderInfo(block);
+                    TapHeaderInfo header = TapLoader.ParseHeaderInfo(block);
                     if (!TapLoader.IsSupportedRomHeaderType(header.Type))
                         return false;
                 }
@@ -292,7 +292,7 @@ namespace Derby.Tape
         }
 
         private static void RelocateActiveStackIfLoadWouldOverlap(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             Z80Cpu cpu,
             ushort loadAddress,
             ushort loadLength)
@@ -339,7 +339,7 @@ namespace Derby.Tape
         }
 
         private static ushort GetRomTrapReturnAddress(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             Z80Cpu cpu,
             bool isSyncLoopTrap,
             bool hasUnstructuredStandardRomLoadContext)
@@ -365,7 +365,7 @@ namespace Derby.Tape
         }
 
         public BootstrapTapeLoadResult TryConsumeBootstrapLoad(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort? codeLoadAddress = null)
         {
             if (machine == null)
@@ -378,17 +378,17 @@ namespace Derby.Tape
                    !blocks[nextBlockIndex].IsLoadableRomBlock &&
                    blocks[nextBlockIndex].Kind != TapeBlockKind.StopTape)
             {
-                consumedTStates += TapLoader.EstimateTapeBlockDurationTStates(blocks[nextBlockIndex]);
+                consumedTStates += TapeBlockTiming.EstimateDuration(blocks[nextBlockIndex]);
                 AdvanceBlockState(blocks[nextBlockIndex]);
             }
 
             if (nextBlockIndex >= blocks.Count)
                 return BootstrapTapeLoadResult.None;
 
-            TapLoader.TapHeaderInfo? header = null;
+            TapHeaderInfo? header = null;
             if (IsHeaderBlock(blocks[nextBlockIndex]))
             {
-                consumedTStates += TapLoader.EstimateTapeBlockDurationTStates(blocks[nextBlockIndex]);
+                consumedTStates += TapeBlockTiming.EstimateDuration(blocks[nextBlockIndex]);
                 header = TapLoader.ParseHeaderInfo(blocks[nextBlockIndex]);
                 AdvanceBlockState(blocks[nextBlockIndex]);
                 SyncEarPlaybackToNextBlock(blocks[nextBlockIndex - 1].PauseAfterBlockMs);
@@ -397,7 +397,7 @@ namespace Derby.Tape
                        !blocks[nextBlockIndex].IsLoadableRomBlock &&
                        blocks[nextBlockIndex].Kind != TapeBlockKind.StopTape)
                 {
-                    consumedTStates += TapLoader.EstimateTapeBlockDurationTStates(blocks[nextBlockIndex]);
+                    consumedTStates += TapeBlockTiming.EstimateDuration(blocks[nextBlockIndex]);
                     AdvanceBlockState(blocks[nextBlockIndex]);
                 }
             }
@@ -440,7 +440,7 @@ namespace Derby.Tape
                 }
             }
 
-                consumedTStates += TapLoader.EstimateTapeBlockDurationBeforeTrailingPauseTStates(dataBlock);
+                consumedTStates += TapeBlockTiming.EstimateDurationBeforeTrailingPause(dataBlock);
                 AdvanceBlockState(dataBlock);
                 SyncEarPlaybackToNextBlock(dataBlock.PauseAfterBlockMs);
                 TapLoader.AdvanceBootstrapTapeTime(machine, consumedTStates);
@@ -469,7 +469,7 @@ namespace Derby.Tape
 
             if (IsHeaderBlock(block))
             {
-                TapLoader.TapHeaderInfo header = TapLoader.ParseHeaderInfo(block);
+                TapHeaderInfo header = TapLoader.ParseHeaderInfo(block);
                 expectedDataLength = header.DataLength;
                 pendingHeaderName = header.FileName;
                 pendingHeaderInfo = header;
@@ -605,7 +605,7 @@ namespace Derby.Tape
             return index;
         }
 
-        private bool TryHandleRomByteStreamTrap(Spectrum128Machine machine, Z80Cpu cpu, bool isSyncLoopTrap)
+        private bool TryHandleRomByteStreamTrap(SpectrumMachine machine, Z80Cpu cpu, bool isSyncLoopTrap)
         {
             int blockIndex = GetActiveByteStreamTrapBlockIndex();
             if (blockIndex < 0)
@@ -736,7 +736,7 @@ namespace Derby.Tape
             return true;
         }
 
-        private void ApplyByteStreamRecordSideEffects(Spectrum128Machine machine, byte recordFlag, byte[] payload, bool applyBasicProgramSideEffects)
+        private void ApplyByteStreamRecordSideEffects(SpectrumMachine machine, byte recordFlag, byte[] payload, bool applyBasicProgramSideEffects)
         {
             if (recordFlag == HeaderFlag && payload.Length == HeaderPayloadLength)
             {
@@ -758,7 +758,7 @@ namespace Derby.Tape
 
                 if (IsHeaderBlock(syntheticHeader))
                 {
-                    TapLoader.TapHeaderInfo header = TapLoader.ParseHeaderInfo(syntheticHeader);
+                    TapHeaderInfo header = TapLoader.ParseHeaderInfo(syntheticHeader);
                     if (TapLoader.IsSupportedRomHeaderType(header.Type))
                     {
                         expectedDataLength = header.DataLength;

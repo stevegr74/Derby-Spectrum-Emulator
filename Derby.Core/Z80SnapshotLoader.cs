@@ -14,29 +14,29 @@ namespace Derby
         private const byte MelodikAyFlag = 0x04;
         private const byte FullerBoxAyFlags = 0x44;
 
-        public static void Load(Spectrum128Machine machine, string path)
+        public static void Load(SpectrumMachine machine, string path)
         {
             ValidateLoadArguments(machine, path);
             Load(machine, File.ReadAllBytes(path), hardwareModel: null);
         }
 
-        public static void Load(Spectrum128Machine machine, string path, SpectrumMachineModel hardwareModel)
+        public static void Load(SpectrumMachine machine, string path, SpectrumMachineModel hardwareModel)
         {
             ValidateLoadArguments(machine, path);
             Load(machine, File.ReadAllBytes(path), hardwareModel);
         }
 
-        public static void Load(Spectrum128Machine machine, byte[] data)
+        public static void Load(SpectrumMachine machine, byte[] data)
         {
             Load(machine, data, hardwareModel: null);
         }
 
-        public static void Load(Spectrum128Machine machine, byte[] data, SpectrumMachineModel hardwareModel)
+        public static void Load(SpectrumMachine machine, byte[] data, SpectrumMachineModel hardwareModel)
         {
             Load(machine, data, (SpectrumMachineModel?)hardwareModel);
         }
 
-        private static void Load(Spectrum128Machine machine, byte[] data, SpectrumMachineModel? hardwareModel)
+        private static void Load(SpectrumMachine machine, byte[] data, SpectrumMachineModel? hardwareModel)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -55,7 +55,7 @@ namespace Derby
             LoadV2OrV3(machine, data, hardwareModel);
         }
 
-        public static void LoadZ80v1(Spectrum128Machine machine, string path)
+        public static void LoadZ80v1(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -73,7 +73,7 @@ namespace Derby
             LoadV1(machine, data, programCounter, SpectrumMachineModel.Spectrum48K);
         }
 
-        private static void LoadV1(Spectrum128Machine machine, byte[] data, ushort programCounter, SpectrumMachineModel hardwareModel)
+        private static void LoadV1(SpectrumMachine machine, byte[] data, ushort programCounter, SpectrumMachineModel hardwareModel)
         {
             machine.Reset(hardwareModel);
             machine.ConfigureFor48kSnapshot((NormalizeFlagsByte(data[12]) >> 1) & 0x07, hardwareModel);
@@ -93,7 +93,7 @@ namespace Derby
         }
 
         private static void LoadV2OrV3(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             byte[] data,
             SpectrumMachineModel? hardwareModel)
         {
@@ -152,7 +152,7 @@ namespace Derby
         }
 
         private static void ConfigureForEmbedded48kSnapshot(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             int borderColor,
             byte hardwareFlags)
         {
@@ -161,7 +161,7 @@ namespace Derby
                 compatibleAyEnabled: (hardwareFlags & MelodikAyFlag) != 0);
         }
 
-        private static void RestoreAyState(Spectrum128Machine machine, byte[] data, int additionalHeaderOffset)
+        private static void RestoreAyState(SpectrumMachine machine, byte[] data, int additionalHeaderOffset)
         {
             byte selectedRegister = data[additionalHeaderOffset + 6];
             if (selectedRegister > 15)
@@ -172,7 +172,7 @@ namespace Derby
             machine.RestoreSnapshotAyState(selectedRegister, registers);
         }
 
-        private static void ValidateLoadArguments(Spectrum128Machine machine, string path)
+        private static void ValidateLoadArguments(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -206,7 +206,7 @@ namespace Derby
             regs.IX = ReadWord(data, 25);
         }
 
-        private static void Load48kPageBlocks(Spectrum128Machine machine, byte[] data, int offset)
+        private static void Load48kPageBlocks(SpectrumMachine machine, byte[] data, int offset)
         {
             byte[]? page4 = null;
             byte[]? page5 = null;
@@ -234,7 +234,7 @@ namespace Derby
             machine.Load48kSnapshotRam(Join48kPages(page8, page4, page5));
         }
 
-        private static void Load128kPageBlocks(Spectrum128Machine machine, byte[] data, int offset)
+        private static void Load128kPageBlocks(SpectrumMachine machine, byte[] data, int offset)
         {
             bool[] loadedBanks = new bool[8];
 
@@ -338,7 +338,7 @@ namespace Derby
             return false;
         }
 
-        private static void FinalizeLoad(Spectrum128Machine machine, bool iff1, bool iff2, int interruptMode)
+        private static void FinalizeLoad(SpectrumMachine machine, bool iff1, bool iff2, int interruptMode)
         {
             machine.Cpu.RestoreInterruptState(iff1, iff2, interruptMode);
             machine.Cpu.ClearSnapshotExecutionState();

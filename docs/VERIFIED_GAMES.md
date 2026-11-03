@@ -11,7 +11,7 @@ that every level, control path, or hardware edge case has been tested.
 | Status | Title / release | Format | Verified checkpoint and notes |
 | :---: | --- | --- | --- |
 | 🟢 | APB (Hit Squad) | `.tzx` | ROM-driven protected loading reaches the ownership prompt and advances to the complete APB title screen |
-| 🟢 | Arkanoid (Imagine) | `.tzx` | Protected loading completes and gameplay runs; Milestone 17 beam-aware rendering eliminates the previously observed ship flicker; sound behavior and timing compare closely with JSspeccy, although JSspeccy has a slightly warmer timbre |
+| 🟢 | Arkanoid (Imagine) | `.tzx` | Protected loading completes and gameplay runs without the previously observed ship flicker; sound behavior and timing compare closely with JSspeccy, although JSspeccy has a slightly warmer timbre |
 | 🟢 | Arkanoid (Hit Squad) | `.tzx` | LOAD capability gating falls back to the real-ROM protected path; loading reaches gameplay and beam-aware rendering eliminates the previously observed ship flicker |
 | 🟢 | Back to Skool (Alternative and Microsphere original) | `.tzx` | Both releases complete native ROM loading, end the tape cleanly, and reach their active demonstration screens |
 | 🟢 | Batman | `.tzx` | Chained BASIC and protected loading complete; game runs |
@@ -95,11 +95,11 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Candy | `CANDY.Z80` | Snapshot reaches the illustrated title screen and remains stable |
 | 🟢 | Captain America Defies the Doom Tube | `.z80` | Snapshot reaches the complete title screen and remains stable |
 | 🟢 | Cauldron / Cauldron II | `.sna`, `.z80` | Both snapshots reach their control menus and remain stable |
-| 🟢 | CD Player | `cdplayer.sna` | Snapshot loads and runs responsively with good audio after the Milestone 16 timing changes |
+| 🟢 | CD Player | `cdplayer.sna` | Snapshot loads and runs responsively with good audio |
 | 🟢 | Chase HQ | `chasehq.z80` | Snapshot reaches the options prompt and remains stable |
 | 🟢 | Cliff Hanger | `.sna` | Snapshot reaches the control-selection menu and waits for deliberate input; an unassigned Kempston interface remains neutral |
 | 🟢 | Contact Sam Cruise | `.sna` | Snapshot reaches active gameplay and remains stable |
-| 🟢 | Cybernoid: The Fighting Machine | `.sna`, `Cybernoid_The_Fighting_Machine_1988_Hewson_Consultants_a_128K.z80` | Both snapshots reach the title/control screen; the 128K Z80 remains responsive with good AY audio after the Milestone 16 timing changes |
+| 🟢 | Cybernoid: The Fighting Machine | `.sna`, `Cybernoid_The_Fighting_Machine_1988_Hewson_Consultants_a_128K.z80` | Both snapshots reach the title/control screen; the 128K Z80 remains responsive with good AY audio |
 | 🟢 | Donkey Kong | `DONKKONG.Z80` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Elite | `Elite.sna`, `Elite128.z80` | Both snapshots reach the commander prompt and remain stable |
 | 🟢 | Exolon | `.sna`, `.szx`, `.z80` | All three snapshot forms load and reach the title/control screen; the SNA and Z80 run with 128K audio |

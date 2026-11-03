@@ -9,7 +9,7 @@ namespace Derby.Tape
         private const int PreloadedLoadableReplayTimingDivisor = 1;
 
         internal static TapeExecutionResult Execute(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             TapeLoadPlan plan,

@@ -2,19 +2,17 @@ using System;
 using System.Collections.Generic;
 namespace Derby.Tape
 {
-    public static partial class TapLoader
+    internal sealed class BasicExpressionParser
     {
-        private sealed class ExpressionParser
-        {
-            private readonly Spectrum128Machine machine;
+        private readonly SpectrumMachine machine;
             private readonly Dictionary<string, int> variables;
             private readonly List<string> tokens;
             private readonly bool requireVariableResolution;
             private readonly int endIndex;
             private int index;
 
-            public ExpressionParser(
-                Spectrum128Machine machine,
+            public BasicExpressionParser(
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 List<string> tokens,
                 int startIndex,
@@ -129,7 +127,7 @@ namespace Derby.Tape
                 if (variables.TryGetValue(token, out int variableValue))
                     return variableValue;
 
-                if (TryReadMountedContinuationNumericVariable(machine, token, out int liveVariableValue))
+                if (BasicBootstrapExecutor.TryReadMountedContinuationNumericVariable(machine, token, out int liveVariableValue))
                     return liveVariableValue;
 
                 // Spectrum BASIC treats an unread numeric variable as zero until it
@@ -141,7 +139,5 @@ namespace Derby.Tape
 
                 return 0;
             }
-        }
-
     }
 }

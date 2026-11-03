@@ -12,7 +12,7 @@ namespace Derby
         private const byte SnapshotBlockId = 0x30;
         private const byte InputRecordingBlockId = 0x80;
 
-        public static void Load(Spectrum128Machine machine, string path)
+        public static void Load(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -127,7 +127,7 @@ namespace Derby
             return frames;
         }
 
-        private static void LoadEmbeddedSnapshot(Spectrum128Machine machine, string extension, byte[] snapshotData)
+        private static void LoadEmbeddedSnapshot(SpectrumMachine machine, string extension, byte[] snapshotData)
         {
             if (extension.Equals("SNA", StringComparison.OrdinalIgnoreCase))
             {

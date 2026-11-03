@@ -26,7 +26,7 @@ namespace Derby.Tests
                     ("Z80R", BuildCpuBlock(frameCycles: 123, flags: 0x06)),
                     RamBlock(2, 0x20, compressed: false));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 SzxSnapshotLoader.Load(machine, snapshot);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
@@ -72,7 +72,7 @@ namespace Derby.Tests
                 for (int bank = 7; bank >= 0; bank--)
                     chunks.Add(RamBlock(bank, (byte)(0x40 + bank), compressed: true));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 SzxSnapshotLoader.Load(machine, BuildSnapshot(2, chunks.ToArray()));
 
                 Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
@@ -85,7 +85,7 @@ namespace Derby.Tests
                 for (int bank = 0; bank < 8; bank++)
                     Assert.Equal((byte)(0x40 + bank), machine.GetRamBankCopy(bank)[0]);
 
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
                 Assert.Equal(7, state.AyState.SelectedRegister);
                 byte[] registers = state.AyState.GetRegistersCopy();
                 for (int register = 0; register < registers.Length; register++)
@@ -115,11 +115,11 @@ namespace Derby.Tests
                     RamBlock(2, 0x20, compressed: false),
                     RamBlock(0, 0x30, compressed: false));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 SzxSnapshotLoader.Load(machine, snapshot);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.True(machine.HasAyHardware);
                 Assert.Equal((byte)7, machine.Ay.CurrentRegister);
                 Assert.Equal((byte)0x87, machine.Ay.ReadRegister(7));
@@ -128,7 +128,7 @@ namespace Derby.Tests
                 machine.DebugWritePort(0xBFFD, 0x0F);
                 Assert.Equal((byte)0x0F, machine.Ay.ReadRegister(8));
 
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
                 Assert.False(machine.HasAyHardware);
                 machine.RestoreQuickState(state);
@@ -155,7 +155,7 @@ namespace Derby.Tests
                     RamBlock(2, 0, compressed: false),
                     RamBlock(0, 0, compressed: false));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 NotSupportedException error = Assert.Throws<NotSupportedException>(
                     () => SzxSnapshotLoader.Load(machine, snapshot));
 
@@ -185,7 +185,7 @@ namespace Derby.Tests
                     RamBlock(2, 0, compressed: false),
                     RamBlock(0, 0, compressed: false));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 SzxSnapshotLoader.Load(machine, snapshot);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
@@ -214,7 +214,7 @@ namespace Derby.Tests
                     RamBlock(2, 0, compressed: false),
                     RamBlock(0, 0, compressed: false));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 NotSupportedException error = Assert.Throws<NotSupportedException>(
                     () => SzxSnapshotLoader.Load(machine, snapshot));
 
@@ -243,7 +243,7 @@ namespace Derby.Tests
                     RamBlock(2, 0, compressed: false),
                     RamBlock(0, 0, compressed: false));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 InvalidOperationException error = Assert.Throws<InvalidOperationException>(
                     () => SzxSnapshotLoader.Load(machine, snapshot));
 
@@ -275,7 +275,7 @@ namespace Derby.Tests
                     RamBlock(2, 0, compressed: false),
                     RamBlock(0, 0, compressed: false));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 SzxSnapshotLoader.Load(machine, snapshot);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
@@ -294,7 +294,7 @@ namespace Derby.Tests
             {
                 byte[] snapshot = BuildSnapshot(1, ("Z80R", BuildCpuBlock(0, 0)));
                 Array.Resize(ref snapshot, snapshot.Length - 1);
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Cpu.Regs.PC = 0xBEEF;
 
                 InvalidOperationException error = Assert.Throws<InvalidOperationException>(
@@ -317,7 +317,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 NotSupportedException error = Assert.Throws<NotSupportedException>(
                     () => SzxSnapshotLoader.Load(machine, BuildSnapshot(machineId)));
                 Assert.Contains(expectedMessage, error.Message, StringComparison.OrdinalIgnoreCase);
@@ -335,7 +335,7 @@ namespace Derby.Tests
             try
             {
                 byte[] snapshot = BuildSnapshot(1, ("USPE", new byte[] { 0 }));
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 NotSupportedException error = Assert.Throws<NotSupportedException>(
                     () => SzxSnapshotLoader.Load(machine, snapshot));
@@ -359,7 +359,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 InvalidOperationException missing = Assert.Throws<InvalidOperationException>(
                     () => SzxSnapshotLoader.Load(machine, BuildSnapshot(1, ("SPCR", BuildSpectrumBlock(0, 0, 0)))));
                 Assert.Contains("Z80R", missing.Message, StringComparison.Ordinal);
@@ -393,12 +393,12 @@ namespace Derby.Tests
                     RamBlock(5, 0x11, compressed: false),
                     RamBlock(2, 0x22, compressed: false),
                     RamBlock(0, 0x33, compressed: false));
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 SzxSnapshotLoader.Load(machine, snapshot);
 
                 Assert.True(machine.Cpu.InterruptPending);
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
                 Assert.Equal(machine.Cpu.TStates + 7UL, state.InterruptPulseEndTStates);
             }
             finally
@@ -415,16 +415,16 @@ namespace Derby.Tests
             {
                 byte[] snapshot = BuildSnapshot(
                     1,
-                    ("Z80R", BuildCpuBlock(frameCycles: Spectrum128Machine.FrameTStates48 + 19, flags: 0)),
+                    ("Z80R", BuildCpuBlock(frameCycles: SpectrumMachine.FrameTStates48 + 19, flags: 0)),
                     ("SPCR", BuildSpectrumBlock(0, 0, 0)),
                     RamBlock(5, 0, compressed: false),
                     RamBlock(2, 0, compressed: false),
                     RamBlock(0, 0, compressed: false));
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 SzxSnapshotLoader.Load(machine, snapshot);
 
-                Assert.Equal(19UL, machine.Cpu.TStates % (ulong)Spectrum128Machine.FrameTStates48);
+                Assert.Equal(19UL, machine.Cpu.TStates % (ulong)SpectrumMachine.FrameTStates48);
             }
             finally
             {
@@ -440,12 +440,12 @@ namespace Derby.Tests
             {
                 byte[] snapshot = BuildSnapshot(
                     1,
-                    ("Z80R", BuildCpuBlock(frameCycles: Spectrum128Machine.FrameTStates48 + 256, flags: 0)),
+                    ("Z80R", BuildCpuBlock(frameCycles: SpectrumMachine.FrameTStates48 + 256, flags: 0)),
                     ("SPCR", BuildSpectrumBlock(0, 0, 0)),
                     RamBlock(5, 0, compressed: false),
                     RamBlock(2, 0, compressed: false),
                     RamBlock(0, 0, compressed: false));
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 InvalidOperationException error = Assert.Throws<InvalidOperationException>(
                     () => SzxSnapshotLoader.Load(machine, snapshot));
@@ -471,7 +471,7 @@ namespace Derby.Tests
                     RamBlock(5, 0x00, compressed: false),
                     RamBlock(2, 0x00, compressed: false),
                     RamBlock(0, 0x00, compressed: false));
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 SzxSnapshotLoader.Load(machine, snapshot);
 
@@ -501,7 +501,7 @@ namespace Derby.Tests
             {
                 byte[] spectrum = BuildSpectrumBlock(0, 0, 0);
                 spectrum[6] = 1;
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 InvalidOperationException error = Assert.Throws<InvalidOperationException>(
                     () => SzxSnapshotLoader.Load(machine, BuildSnapshot(1, ("SPCR", spectrum))));

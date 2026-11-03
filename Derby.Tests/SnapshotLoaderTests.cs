@@ -61,7 +61,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 SnapshotLoader.LoadSna48k(machine, snapshotPath);
 
                 Assert.Equal((byte)0x3F, machine.Cpu.Regs.I);
@@ -110,11 +110,11 @@ namespace Derby.Tests
                 data[27 + 0x8001] = 0x12; // PC = 0x1234
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 SnapshotLoader.LoadSna48k(machine, snapshotPath);
 
                 Assert.Equal(
-                    (ulong)Spectrum128Machine.Default48kSnapshotResumeFramePhase,
+                    (ulong)SpectrumMachine.Default48kSnapshotResumeFramePhase,
                     machine.Cpu.TStates);
             }
             finally
@@ -130,7 +130,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "playing.tap",
                     new[] { Tape.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
@@ -159,7 +159,7 @@ namespace Derby.Tests
                 data[27 + 0x8000] = 0x34;
                 data[27 + 0x8001] = 0x12;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 SnapshotLoader.LoadSna48k(machine, data);
 
                 Assert.True(machine.Cpu.IFF1);
@@ -187,7 +187,7 @@ namespace Derby.Tests
                 data[27 + 0x8001] = 0x12;
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 SnapshotLoader.LoadSna48k(machine, snapshotPath);
 
                 Assert.False(machine.Cpu.IFF1);
@@ -213,10 +213,10 @@ namespace Derby.Tests
                 data[27 + 0x8001] = 0x12;
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 SnapshotLoader.LoadSna48k(machine, snapshotPath);
 
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
             }
             finally
             {
@@ -231,7 +231,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 SnapshotLoader.LoadSna48k(
                     machine,
@@ -246,7 +246,7 @@ namespace Derby.Tests
                 machine.ExecuteTimeSlice(machine.FrameTStates);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.True(machine.HasAyHardware);
                 Assert.Equal((byte)0b0011_1110, machine.Ay.ReadRegister(7));
                 Assert.True(machine.HasAudibleOutput);
@@ -270,7 +270,7 @@ namespace Derby.Tests
             {
                 File.WriteAllBytes(snapshotPath, new byte[123]);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 Assert.Throws<InvalidOperationException>(() =>
                     SnapshotLoader.LoadSna48k(machine, snapshotPath));
@@ -300,7 +300,7 @@ namespace Derby.Tests
                 data[25] = 0x02;
                 data[26] = 0x06;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "playing.tap",
                     new[] { Tape.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
@@ -308,7 +308,7 @@ namespace Derby.Tests
                 SnapshotLoader.Load(machine, data, SpectrumMachineModel.Spectrum48K);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
                 Assert.Equal((ushort)0x5678, machine.Cpu.Regs.PC);
                 Assert.Equal((ushort)0x1234, machine.Cpu.Regs.SP);
                 Assert.Equal((byte)0x3F, machine.Cpu.Regs.I);
@@ -349,7 +349,7 @@ namespace Derby.Tests
             try
             {
                 byte[] data = CreateSna128((byte)pagedBank);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 SnapshotLoader.Load(machine, data);
 
@@ -373,7 +373,7 @@ namespace Derby.Tests
             {
                 byte[] data = CreateSna128(last7ffd: 3);
                 Array.Resize(ref data, 147487);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
                     SnapshotLoader.LoadSna128k(machine, data));
@@ -395,7 +395,7 @@ namespace Derby.Tests
             {
                 byte[] data = CreateSna128(last7ffd: 3);
                 data[49182] = 1;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 NotSupportedException exception = Assert.Throws<NotSupportedException>(() =>
                     SnapshotLoader.LoadSna128k(machine, data));

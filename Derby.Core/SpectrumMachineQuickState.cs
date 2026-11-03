@@ -4,7 +4,7 @@ using Derby.Z80;
 
 namespace Derby
 {
-    public sealed partial class Spectrum128Machine
+    public sealed partial class SpectrumMachine
     {
         public sealed class QuickState
         {
@@ -82,9 +82,9 @@ namespace Derby
                 ScreenBank = ScreenBank,
                 BorderColor = BorderColor,
                 FrameCount = FrameCount,
-                Last7ffdValue = last7ffdValue,
-                Last1ffdValue = last1ffdValue,
-                Uses48kMemoryMap = uses48kMemoryMap,
+                Last7ffdValue = memoryPaging.Last7ffdValue,
+                Last1ffdValue = memoryPaging.Last1ffdValue,
+                Uses48kMemoryMap = memoryPaging.Uses48KMemoryMap,
                 FrameTStates = frameTStates,
                 LastAyRegister = lastAyRegister,
                 SpeakerHigh = speakerHigh,
@@ -143,9 +143,9 @@ namespace Derby
             ScreenBank = state.ScreenBank;
             BorderColor = state.BorderColor;
             FrameCount = state.FrameCount;
-            last7ffdValue = state.Last7ffdValue;
-            last1ffdValue = state.Last1ffdValue;
-            uses48kMemoryMap = state.Uses48kMemoryMap;
+            memoryPaging.Last7ffdValue = state.Last7ffdValue;
+            memoryPaging.Last1ffdValue = state.Last1ffdValue;
+            memoryPaging.Uses48KMemoryMap = state.Uses48kMemoryMap;
             frameTStates = state.FrameTStates;
             lastAyRegister = state.LastAyRegister;
             speakerHigh = state.SpeakerHigh;

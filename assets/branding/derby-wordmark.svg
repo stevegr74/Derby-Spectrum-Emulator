@@ -4,7 +4,7 @@
   <rect width="960" height="220" rx="24" fill="#1e2d31"/>
   <g fill="#f6f6f2" font-family="Consolas, monospace" font-weight="700">
     <text x="48" y="138" font-size="112" letter-spacing="12">DERBY</text>
-    <text x="54" y="182" font-size="22" letter-spacing="5" fill="#5fe1c3">ZX SPECTRUM 48K / 128K EMULATOR</text>
+    <text x="54" y="182" font-size="22" letter-spacing="4" fill="#5fe1c3">ZX SPECTRUM 48K / 128K / +2A EMULATOR</text>
   </g>
   <path d="M48 34h520" stroke="#5fe1c3" stroke-width="8"/>
   <path d="M590 34h85M693 34h85M796 34h116" stroke="#087965" stroke-width="8"/>

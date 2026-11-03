@@ -11,11 +11,11 @@ namespace Derby.Tests
         {
             var generator = new BeeperSampleGenerator(44100);
             var frame = new AudioFrame(
-                Spectrum128Machine.FrameTStates128,
-                Spectrum128Machine.CpuClockHz128,
+                SpectrumMachine.FrameTStates128,
+                SpectrumMachine.CpuClockHz128,
                 false,
                 true,
-                new[] { new BeeperEvent(Spectrum128Machine.FrameTStates128 - 1, true) });
+                new[] { new BeeperEvent(SpectrumMachine.FrameTStates128 - 1, true) });
 
             short[] samples = generator.GenerateFrameSamples(frame);
 
@@ -28,8 +28,8 @@ namespace Derby.Tests
         {
             var generator = new BeeperSampleGenerator(44100);
             var frame = new AudioFrame(
-                Spectrum128Machine.FrameTStates128,
-                Spectrum128Machine.CpuClockHz128,
+                SpectrumMachine.FrameTStates128,
+                SpectrumMachine.CpuClockHz128,
                 true,
                 true,
                 Array.Empty<BeeperEvent>());

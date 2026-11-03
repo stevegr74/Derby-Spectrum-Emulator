@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using static Derby.Tape.SpectrumRomWorkspace;
 
 namespace Derby.Tape
 {
     public static partial class TapLoader
     {
         internal static TapBootstrapResult StartNativeRomTapeLoader(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             int nonRomTimingDivisor,
@@ -31,7 +32,7 @@ namespace Derby.Tape
         }
 
         private static TapBootstrapResult StartNative48kRomTapeLoader(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             int nonRomTimingDivisor,
@@ -89,7 +90,7 @@ namespace Derby.Tape
             return new TapBootstrapResult(blocks.Count, 0, displayName, autoStartFileName);
         }
 
-        private static void PressRomKey(Spectrum128Machine machine, int row, int bit)
+        private static void PressRomKey(SpectrumMachine machine, int row, int bit)
         {
             machine.SetKey(row, bit, true);
             ExecuteRomInputFrames(machine, 4);
@@ -98,7 +99,7 @@ namespace Derby.Tape
         }
 
         private static void PressRomKeyChord(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             (int Row, int Bit) first,
             (int Row, int Bit) second)
         {
@@ -110,7 +111,7 @@ namespace Derby.Tape
             ExecuteRomInputFrames(machine, 4);
         }
 
-        private static void ExecuteRomInputFrames(Spectrum128Machine machine, int frameCount)
+        private static void ExecuteRomInputFrames(SpectrumMachine machine, int frameCount)
         {
             for (int frame = 0; frame < frameCount; frame++)
                 machine.ExecuteTimeSlice(machine.FrameTStates);

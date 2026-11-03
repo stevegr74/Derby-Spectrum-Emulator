@@ -25,11 +25,11 @@ namespace Derby.Tests
             });
 
             var frame = new AudioFrame(
-                Spectrum128Machine.FrameTStates128,
-                Spectrum128Machine.CpuClockHz128,
+                SpectrumMachine.FrameTStates128,
+                SpectrumMachine.CpuClockHz128,
                 false,
                 true,
-                new[] { new BeeperEvent(Spectrum128Machine.FrameTStates128 / 2, true) },
+                new[] { new BeeperEvent(SpectrumMachine.FrameTStates128 / 2, true) },
                 ayState);
 
             pipeline.SubmitFrame(frame);
@@ -46,8 +46,8 @@ namespace Derby.Tests
             using var pipeline = new AudioPipeline(output);
 
             var frame = new AudioFrame(
-                Spectrum128Machine.FrameTStates48,
-                Spectrum128Machine.CpuClockHz48,
+                SpectrumMachine.FrameTStates48,
+                SpectrumMachine.CpuClockHz48,
                 false,
                 false,
                 Array.Empty<BeeperEvent>());
@@ -68,11 +68,11 @@ namespace Derby.Tests
             using var pipeline = new AudioPipeline(output);
 
             var frame = new AudioFrame(
-                Spectrum128Machine.FrameTStates48,
-                Spectrum128Machine.CpuClockHz48,
+                SpectrumMachine.FrameTStates48,
+                SpectrumMachine.CpuClockHz48,
                 false,
                 true,
-                new[] { new BeeperEvent(Spectrum128Machine.FrameTStates48 / 2, true) });
+                new[] { new BeeperEvent(SpectrumMachine.FrameTStates48 / 2, true) });
 
             pipeline.SubmitFrame(frame);
 
@@ -91,7 +91,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Assert.False(machine.HasAudibleOutput);
 
                 machine.Ay.SelectRegister(7);

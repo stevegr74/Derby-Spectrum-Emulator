@@ -2,8 +2,8 @@ namespace Derby
 {
     public sealed class UlaFrame
     {
-        internal const int CellsPerLine = Spectrum128Machine.ActiveDisplayWidth / 8;
-        internal const int CellCount = CellsPerLine * Spectrum128Machine.ActiveDisplayHeight;
+        internal const int CellsPerLine = SpectrumMachine.ActiveDisplayWidth / 8;
+        internal const int CellCount = CellsPerLine * SpectrumMachine.ActiveDisplayHeight;
 
         private readonly byte[] bitmapBytes;
         private readonly byte[] attributeBytes;

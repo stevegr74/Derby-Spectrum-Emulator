@@ -14,7 +14,7 @@ namespace Derby.Tests
             try
             {
                 SpectrumRomSet romSet = SpectrumRomSet.Bundled128K(System.IO.Path.Combine(AppContext.BaseDirectory, "ROMs"));
-                var machine = new Spectrum128Machine(romSet);
+                var machine = new SpectrumMachine(romSet);
                 machine.Cpu.Regs.PC = 0x8123;
                 machine.PokeRamBank(7, 0x1234, 0xA5);
                 machine.ForceApply7ffdValue(0x0F);
@@ -47,7 +47,7 @@ namespace Derby.Tests
                 Assert.Equal("Archive Test.tzx", restoredSlot.MediaDisplayName);
                 Assert.Equal(romSet.Name, restoredSlot.RomSet.Name);
                 Assert.Equal(new Size(160, 120), restoredSlot.Thumbnail.Size);
-                var restoredMachine = new Spectrum128Machine(romSet);
+                var restoredMachine = new SpectrumMachine(romSet);
                 restoredMachine.RestorePersistentState(restoredSlot.PersistentState);
                 Assert.Equal((ushort)0x8123, restoredMachine.Cpu.Regs.PC);
                 Assert.Equal(0xA5, restoredMachine.PeekRamBank(7, 0x1234));

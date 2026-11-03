@@ -37,7 +37,7 @@ namespace Derby.Tests
                 byte[] data = BuildV1Snapshot(ram, compressed: false);
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, snapshotPath);
 
                 Assert.Equal((byte)0x12, machine.Cpu.Regs.A);
@@ -69,7 +69,7 @@ namespace Derby.Tests
                 Assert.Equal((byte)0x42, machine.PeekMemory(0x4000));
                 Assert.Equal((byte)0x99, machine.PeekMemory(0x8000));
                 Assert.Equal((byte)0x55, machine.PeekMemory(0xC000));
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.False(machine.HasAyHardware);
             }
             finally
@@ -101,7 +101,7 @@ namespace Derby.Tests
                 byte[] data = BuildV1Snapshot(ram, compressed: true);
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, snapshotPath);
 
                 Assert.Equal((byte)0x00, machine.PeekMemory(0x4000));
@@ -124,7 +124,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "playing.tap",
                     new[] { Tape.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
@@ -150,7 +150,7 @@ namespace Derby.Tests
                 byte[] ram = new byte[Ram48Size];
                 byte[] data = BuildV1Snapshot(ram, compressed: false);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, data, SpectrumMachineModel.Spectrum128K);
 
                 machine.DebugWritePort(0xFFFD, 0x07);
@@ -161,7 +161,7 @@ namespace Derby.Tests
                 machine.ExecuteTimeSlice(machine.FrameTStates);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.True(machine.HasAyHardware);
                 Assert.True(machine.HasAudibleOutput);
                 Assert.True(machine.TryDequeueCompletedAudioFrame(out var frame));
@@ -183,14 +183,14 @@ namespace Derby.Tests
                 byte[] ram = new byte[Ram48Size];
                 byte[] data = BuildV1Snapshot(ram, compressed: false);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, data, SpectrumMachineModel.Spectrum48K);
 
                 machine.DebugWritePort(0xFFFD, 0x07);
                 machine.DebugWritePort(0xBFFD, 0x0F);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.False(machine.HasAudibleOutput);
             }
             finally
@@ -226,7 +226,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, snapshotPath);
 
                 Assert.Equal((ushort)0x3456, machine.Cpu.Regs.PC);
@@ -239,7 +239,7 @@ namespace Derby.Tests
                 Assert.Equal(5, machine.BorderColor);
                 Assert.True(machine.PagingLocked);
                 Assert.Equal(1, machine.CurrentRomBank);
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.False(machine.HasAyHardware);
             }
             finally
@@ -266,7 +266,7 @@ namespace Derby.Tests
                 data[38] = 7;
                 data[39 + 7] = 0x3E;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, data);
 
                 Assert.True(machine.HasAyHardware);
@@ -295,7 +295,7 @@ namespace Derby.Tests
                     (5, CreateFilledBank(0x33)));
                 data[37] = 0x44;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 NotSupportedException error = Assert.Throws<NotSupportedException>(
                     () => Z80SnapshotLoader.Load(machine, data));
 
@@ -330,7 +330,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, snapshotPath);
 
                 Assert.Equal(0UL, machine.Cpu.TStates);
@@ -367,7 +367,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, snapshotPath);
 
                 Assert.Equal((ushort)0x3456, machine.Cpu.Regs.PC);
@@ -422,7 +422,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 Z80SnapshotLoader.Load(machine, snapshotPath);
 
                 Assert.Equal((ushort)0x3456, machine.Cpu.Regs.PC);
@@ -465,7 +465,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(snapshotPath, data);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 Assert.Throws<InvalidOperationException>(() =>
                     Z80SnapshotLoader.Load(machine, snapshotPath));

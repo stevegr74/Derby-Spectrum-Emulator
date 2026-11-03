@@ -11,7 +11,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var controller = new SpectrumKeyboardInputController();
 
                 controller.HandleHostKeyEvent(
@@ -46,7 +46,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var controller = new SpectrumKeyboardInputController();
 
                 SetHostKey(controller, machine, Keys.ShiftKey, true, 0);
@@ -70,7 +70,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var controller = new SpectrumKeyboardInputController();
 
                 SetHostKey(controller, machine, Keys.Oemcomma, true, 0);
@@ -85,7 +85,7 @@ namespace Derby.Tests
 
         private static void SetHostKey(
             SpectrumKeyboardInputController controller,
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             Keys key,
             bool isDown,
             ulong tStates)

@@ -23,7 +23,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapMountResult result = TapLoader.Mount(machine, tapePath);
 
                 Assert.Equal(2, result.TotalBlockCount);
@@ -55,7 +55,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "final-ear",
                     new TapeBlock[]
@@ -98,7 +98,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "pause-boundary",
                     new TapeBlock[]
@@ -146,7 +146,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "pause-termination",
                     new TapeBlock[]
@@ -193,7 +193,7 @@ namespace Derby.Tests
                         2168, 3223, 667, 735, 855, 1710, 8, 2000),
                     TapeBlock.CreatePureTone(100, 1)
                 };
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 MethodInfo bootstrap = typeof(TapLoader).GetMethod(
                     "BootstrapTapeBlocksAndMountRemaining",
@@ -227,7 +227,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 byte[] markerHeader = BuildHeaderBlock(
                     type: 42,
                     fileName: "TYPE42",
@@ -316,7 +316,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape(
                     "streaming-mounted",
                     new[]
@@ -329,7 +329,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = machine.RomProfile.UsrReturnAddress;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -371,7 +371,7 @@ namespace Derby.Tests
 
                 bool use128kMode = (bool)requires128k.Invoke(
                     null,
-                    new object[] { new Spectrum128Machine(tempFolder), blocks })!;
+                    new object[] { new SpectrumMachine(tempFolder), blocks })!;
 
                 Assert.True(use128kMode);
             }
@@ -388,7 +388,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "protected-eof",
                     new TapeBlock[]
@@ -422,7 +422,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "terminal-silence",
                     new TapeBlock[]
@@ -481,7 +481,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "completed-protected-stream",
                     new TapeBlock[]
@@ -518,7 +518,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 byte[] markerHeader = BuildHeaderBlock(
                     type: 42,
                     fileName: "TYPE42",
@@ -568,7 +568,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "protected-byte-stream",
                     new TapeBlock[]
@@ -605,7 +605,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "raw-byte-stream",
                     new TapeBlock[]
@@ -649,7 +649,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "alt-af-raw-byte-stream",
                     new TapeBlock[]
@@ -691,7 +691,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "unstructured-standard-sync",
                     new TapeBlock[]
@@ -740,7 +740,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "direct-rom-loader",
                     new TapeBlock[]
@@ -790,7 +790,7 @@ namespace Derby.Tests
                 TapeBlock followingBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x99, 0x88, 0x77, 0x66, 0x55 }),
                     2168, 3223, 667, 735, 855, 1710, 8, 1000);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "active-standard-block",
                     new[] { activeBlock, followingBlock },
@@ -846,7 +846,7 @@ namespace Derby.Tests
                 TapeBlock followingBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x99 }, flag: 0xAA),
                     2168, 60000, 667, 735, 855, 1710, 8, 1000);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "completed-standard-block",
                     new[] { completedBlock, followingBlock },
@@ -938,7 +938,7 @@ namespace Derby.Tests
                 TapeBlock followingBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x99, 0x88, 0x77 }, flag: 0x03),
                     2168, 3223, 667, 735, 855, 1710, 8, 1000);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "active-flag-mismatch",
                     new[] { activeBlock, followingBlock },
@@ -990,7 +990,7 @@ namespace Derby.Tests
                 TapeBlock block = TapeBlock.CreateData(
                     BuildDataBlock(expectedPayload, flag: 0x01),
                     2168, 3223, 667, 735, 855, 1710, 8, 1000);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "nonstandard-flag",
                     new[] { block },
@@ -1033,7 +1033,7 @@ namespace Derby.Tests
                 TapeBlock block = TapeBlock.CreateData(
                     BuildDataBlock(expectedPayload, flag: 0x02),
                     2168, 3223, 667, 735, 855, 1710, 8, 1000);
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "alternate-carry",
                     new[] { block },
@@ -1093,7 +1093,7 @@ namespace Derby.Tests
                     BindingFlags.NonPublic | BindingFlags.Static)!;
                 object header = parseHeaderInfo.Invoke(null, new object[] { headerBlock })!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "structured-basic-return",
                     new[] { headerBlock, dataBlock },
@@ -1157,7 +1157,7 @@ namespace Derby.Tests
                     BindingFlags.NonPublic | BindingFlags.Static)!;
                 object header = parseHeaderInfo.Invoke(null, new object[] { headerBlock })!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "protected-structured-basic",
                     new[] { headerBlock, dataBlock },
@@ -1218,7 +1218,7 @@ namespace Derby.Tests
                     BindingFlags.NonPublic | BindingFlags.Static)!;
                 object header = parseHeaderInfo.Invoke(null, new object[] { headerBlock })!;
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "unsupported-autostart-basic",
                     new[] { headerBlock, dataBlock },
@@ -1269,7 +1269,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "stale-rom-trap-cursor",
                     new TapeBlock[]
@@ -1315,7 +1315,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.Mount(machine, tapePath);
 
                 machine.PokeMemory(0x9000, 0x3F);
@@ -1360,7 +1360,7 @@ namespace Derby.Tests
                     BuildDataBlock(basicProgram));
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.Mount(machine, tapePath);
 
                 machine.PokeMemory(0x9000, 0x3F);
@@ -1418,7 +1418,7 @@ namespace Derby.Tests
                     8,
                     1000);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape("raw-standard.tap", new[] { rawStream }));
                 machine.SetPendingMountedLoadUsrContinuationResolver(_ => 0x8000, requireUsrReturnAddress: true);
 
@@ -1463,7 +1463,7 @@ namespace Derby.Tests
                     8,
                     1000);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape(
                     "native-rom.tap",
                     new[] { rawStream },
@@ -1503,7 +1503,7 @@ namespace Derby.Tests
                     2168, 3223, 667, 735, 855, 1710, 8, 1000);
                 TapeBlock remainder = TapeBlock.CreatePureTone(2168, 32);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape("bootstrap.tap", new[] { headerBlock, dataBlock, remainder });
 
                 BootstrapTapeLoadResult result = tape.TryConsumeBootstrapLoad(machine);
@@ -1540,7 +1540,7 @@ namespace Derby.Tests
                     BuildDataBlock(basicProgram),
                     2168, 3223, 667, 735, 855, 1710, 8, 1000);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape("final-bootstrap.tap", new[] { headerBlock, dataBlock });
                 machine.MountTape(tape);
 
@@ -1571,7 +1571,7 @@ namespace Derby.Tests
             {
                 File.WriteAllBytes(tapePath, BuildTap(BuildDataBlock(new byte[] { 1, 2, 3, 4 })));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 Assert.Throws<InvalidOperationException>(() => TapLoader.Load(machine, tapePath));
             }
@@ -1597,7 +1597,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 MountedTape mountedTape = Assert.IsType<MountedTape>(machine.MountedTape);
@@ -1630,7 +1630,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.Mount(machine, tapePath);
 
                 machine.PokeMemory(0x9000, 0x3F);
@@ -1694,7 +1694,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.Mount(machine, tapePath);
 
                 machine.PokeMemory(0x9000, 0x3F);
@@ -1747,7 +1747,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal(6, result.TotalBlockCount);
@@ -1822,7 +1822,7 @@ namespace Derby.Tests
                     BuildDataBlock(code));
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.Mount(machine, tapePath);
                 machine.SetPendingMountedLoadUsrContinuation(0x9000);
 
@@ -1851,7 +1851,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "protected-remainder",
                     new[]
@@ -1905,7 +1905,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "protected-remainder",
                     new[]
@@ -1958,7 +1958,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "protected-remainder",
                     new[]
@@ -2002,7 +2002,7 @@ namespace Derby.Tests
             try
             {
                 byte[] rawBasicImage = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF };
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "ram-basic-load",
                     new[]
@@ -2055,7 +2055,7 @@ namespace Derby.Tests
             try
             {
                 byte[] basicProgram = new byte[] { 0x0A, 0x00, 0x02, 0x00, 0xF7, 0x0D };
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "rom-basic-load",
                     new[]

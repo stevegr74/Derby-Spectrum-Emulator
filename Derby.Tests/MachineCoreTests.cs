@@ -23,7 +23,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.SetKey(0, 0, true);
 
                 byte portValue = machine.DebugReadPort(0xFEFE);
@@ -41,7 +41,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 ulong row0Before = machine.GetKeyboardRowScanCount(0);
                 ulong row1Before = machine.GetKeyboardRowScanCount(1);
@@ -116,7 +116,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 const ushort varsAddress = 0x5FAA;
                 const ushort editLineAddress = varsAddress + 6;
                 const ushort shrunkenEditLineAddress = 0x5CCC;
@@ -137,7 +137,7 @@ namespace Derby.Tests
                 WriteWord(machine, 23641, shrunkenEditLineAddress);
                 machine.RefreshPendingMountedLoadInterpreterContext();
 
-                MethodInfo readVariableMethod = typeof(Tape.TapLoader).GetMethod(
+                MethodInfo readVariableMethod = typeof(Tape.BasicBootstrapExecutor).GetMethod(
                     "TryReadLiveBasicNumericVariable",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
                 object?[] args = new object?[] { machine, "a", 0 };
@@ -159,7 +159,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 const ushort varsAddress = 0x5FC0;
                 const ushort editLineAddress = varsAddress + 6;
 
@@ -177,7 +177,7 @@ namespace Derby.Tests
                 for (ushort address = varsAddress; address < editLineAddress; address++)
                     machine.PokeMemory(address, 0x00);
 
-                MethodInfo readVariableMethod = typeof(Tape.TapLoader).GetMethod(
+                MethodInfo readVariableMethod = typeof(Tape.BasicBootstrapExecutor).GetMethod(
                     "TryReadLiveBasicNumericVariable",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
                 object?[] args = new object?[] { machine, "a", 0 };
@@ -199,7 +199,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 ulong row0Before = machine.GetKeyboardRowScanCount(0);
                 ulong row1Before = machine.GetKeyboardRowScanCount(1);
@@ -217,7 +217,7 @@ namespace Derby.Tests
             }
         }
 
-        private static void WriteWord(Spectrum128Machine machine, ushort address, ushort value)
+        private static void WriteWord(SpectrumMachine machine, ushort address, ushort value)
         {
             machine.PokeMemory(address, (byte)(value & 0xFF));
             machine.PokeMemory((ushort)(address + 1), (byte)(value >> 8));
@@ -229,7 +229,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.DebugWritePort(0x7FFD, 0x18);
 
                 Assert.Equal(0, machine.PagedRamBank);
@@ -248,7 +248,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.DebugWritePort(0x7FFD, 0x20 | 0x03);
                 machine.DebugWritePort(0x7FFD, 0x10 | 0x08 | 0x07);
 
@@ -269,7 +269,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Assert.False(machine.FlashPhase);
 
@@ -298,14 +298,14 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 ulong before = machine.Cpu.TStates;
 
                 machine.ExecuteFrame();
 
                 ulong after = machine.Cpu.TStates;
 
-                Assert.InRange(after - before, (ulong)Spectrum128Machine.FrameTStates128, (ulong)Spectrum128Machine.FrameTStates128 + 32UL);
+                Assert.InRange(after - before, (ulong)SpectrumMachine.FrameTStates128, (ulong)SpectrumMachine.FrameTStates128 + 32UL);
             }
             finally
             {
@@ -319,10 +319,10 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
-                int firstSlice = Spectrum128Machine.FrameTStates128 / 3;
-                int secondSlice = Spectrum128Machine.FrameTStates128 - firstSlice;
+                int firstSlice = SpectrumMachine.FrameTStates128 / 3;
+                int secondSlice = SpectrumMachine.FrameTStates128 - firstSlice;
 
                 Assert.Equal(0, machine.ExecuteTimeSlice(firstSlice));
                 Assert.Equal(0, machine.FrameCount);
@@ -343,13 +343,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
-                int completedFrames = machine.ExecuteTimeSlice(Spectrum128Machine.FrameTStates128, out int executedTStates);
+                int completedFrames = machine.ExecuteTimeSlice(SpectrumMachine.FrameTStates128, out int executedTStates);
 
                 Assert.Equal(1, completedFrames);
                 Assert.Equal(1, machine.FrameCount);
-                Assert.True(executedTStates >= Spectrum128Machine.FrameTStates128);
+                Assert.True(executedTStates >= SpectrumMachine.FrameTStates128);
                 Assert.True(machine.TryDequeueCompletedAudioFrame(out _));
             }
             finally
@@ -364,10 +364,10 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.SetAudioFrameCaptureEnabled(false);
 
-                Assert.Equal(1, machine.ExecuteTimeSlice(Spectrum128Machine.FrameTStates128));
+                Assert.Equal(1, machine.ExecuteTimeSlice(SpectrumMachine.FrameTStates128));
                 Assert.Equal(1, machine.FrameCount);
                 Assert.False(machine.TryDequeueCompletedAudioFrame(out _));
             }
@@ -383,13 +383,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.SetAudioFrameCaptureEnabled(false);
-                machine.ExecuteTimeSlice(Spectrum128Machine.FrameTStates128);
+                machine.ExecuteTimeSlice(SpectrumMachine.FrameTStates128);
                 Assert.False(machine.TryDequeueCompletedAudioFrame(out _));
 
                 machine.SetAudioFrameCaptureEnabled(true);
-                Assert.Equal(1, machine.ExecuteTimeSlice(Spectrum128Machine.FrameTStates128));
+                Assert.Equal(1, machine.ExecuteTimeSlice(SpectrumMachine.FrameTStates128));
                 Assert.True(machine.TryDequeueCompletedAudioFrame(out _));
             }
             finally
@@ -404,7 +404,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 ulong before = machine.Cpu.TStates;
 
                 int completedFrames = machine.ExecuteTimeSlice(1, out int executedTStates);
@@ -425,19 +425,19 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 ulong before = machine.Cpu.TStates;
                 int totalExecutedTStates = 0;
                 int safety = 0;
 
-                while (machine.FrameCount < 1 && safety++ < Spectrum128Machine.FrameTStates128)
+                while (machine.FrameCount < 1 && safety++ < SpectrumMachine.FrameTStates128)
                 {
                     machine.ExecuteTimeSlice(1, out int executedTStates);
                     totalExecutedTStates += executedTStates;
                 }
 
                 Assert.Equal(1, machine.FrameCount);
-                Assert.True(totalExecutedTStates >= Spectrum128Machine.FrameTStates128);
+                Assert.True(totalExecutedTStates >= SpectrumMachine.FrameTStates128);
                 Assert.Equal((int)(machine.Cpu.TStates - before), totalExecutedTStates);
             }
             finally
@@ -452,10 +452,10 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
 
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
             }
             finally
             {
@@ -469,10 +469,10 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kZ80Snapshot(borderColor: 0, compatibleAyEnabled: true);
 
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
                 Assert.True(machine.HasAyHardware);
             }
             finally
@@ -487,7 +487,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
 
                 Assert.Equal(0UL, machine.Cpu.TStates);
@@ -504,7 +504,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 ulong before = machine.Cpu.TStates;
 
@@ -512,7 +512,7 @@ namespace Derby.Tests
 
                 ulong after = machine.Cpu.TStates;
 
-                Assert.InRange(after - before, (ulong)Spectrum128Machine.FrameTStates48, (ulong)Spectrum128Machine.FrameTStates48 + 32UL);
+                Assert.InRange(after - before, (ulong)SpectrumMachine.FrameTStates48, (ulong)SpectrumMachine.FrameTStates48 + 32UL);
             }
             finally
             {
@@ -526,14 +526,14 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
 
                 machine.ExecuteFrame();
                 ulong elapsed = machine.Cpu.TStates;
                 var frame = machine.DrainAudioFrame();
 
-                Assert.InRange(elapsed, (ulong)Spectrum128Machine.FrameTStates48, (ulong)Spectrum128Machine.FrameTStates48 + 32UL);
+                Assert.InRange(elapsed, (ulong)SpectrumMachine.FrameTStates48, (ulong)SpectrumMachine.FrameTStates48 + 32UL);
                 Assert.Equal((int)elapsed, frame.FrameTStates);
             }
             finally
@@ -548,7 +548,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Cpu.RestoreInterruptState(iff1: true, iff2: true, interruptMode: 1);
                 machine.Cpu.ClearRecentTrace();
 
@@ -569,7 +569,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Cpu.RestoreInterruptState(iff1: true, iff2: true, interruptMode: 1);
                 machine.SetInitialInterruptDelay(512);
                 machine.Cpu.ClearRecentTrace();
@@ -586,8 +586,8 @@ namespace Derby.Tests
                 ulong secondAcceptTStates = ExtractFirstInterruptAcceptTStates(secondFrameEvents);
                 Assert.InRange(
                     secondAcceptTStates - firstAcceptTStates,
-                    (ulong)Spectrum128Machine.FrameTStates128,
-                    (ulong)Spectrum128Machine.FrameTStates128 + 4UL);
+                    (ulong)SpectrumMachine.FrameTStates128,
+                    (ulong)SpectrumMachine.FrameTStates128 + 4UL);
             }
             finally
             {
@@ -601,7 +601,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.Cpu.RestoreInterruptState(iff1: true, iff2: true, interruptMode: 1);
                 machine.SetSnapshotInitialInterruptDelay(32);
@@ -619,8 +619,8 @@ namespace Derby.Tests
                 ulong secondAcceptTStates = ExtractFirstInterruptAcceptTStates(secondFrameEvents);
                 Assert.InRange(
                     secondAcceptTStates - firstAcceptTStates,
-                    (ulong)(Spectrum128Machine.FrameTStates48 - 32),
-                    (ulong)(Spectrum128Machine.FrameTStates48 - 28));
+                    (ulong)(SpectrumMachine.FrameTStates48 - 32),
+                    (ulong)(SpectrumMachine.FrameTStates48 - 28));
 
                 machine.Cpu.RestoreInterruptState(iff1: true, iff2: true, interruptMode: 1);
                 machine.Cpu.ClearRecentTrace();
@@ -629,8 +629,8 @@ namespace Derby.Tests
                 ulong thirdAcceptTStates = ExtractFirstInterruptAcceptTStates(thirdFrameEvents);
                 Assert.InRange(
                     thirdAcceptTStates - secondAcceptTStates,
-                    (ulong)Spectrum128Machine.FrameTStates48,
-                    (ulong)Spectrum128Machine.FrameTStates48 + 4UL);
+                    (ulong)SpectrumMachine.FrameTStates48,
+                    (ulong)SpectrumMachine.FrameTStates48 + 4UL);
             }
             finally
             {
@@ -644,12 +644,12 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
-                machine.SetSnapshotResumeFramePhase(Spectrum128Machine.Default48kSnapshotResumeFramePhase);
+                machine.SetSnapshotResumeFramePhase(SpectrumMachine.Default48kSnapshotResumeFramePhase);
 
                 Assert.Equal(
-                    (ulong)Spectrum128Machine.Default48kSnapshotResumeFramePhase,
+                    (ulong)SpectrumMachine.Default48kSnapshotResumeFramePhase,
                     machine.Cpu.TStates);
 
                 ulong before = machine.Cpu.TStates;
@@ -659,7 +659,7 @@ namespace Derby.Tests
 
                 string[] events = machine.Cpu.GetRecentInterruptEventsSnapshot();
                 ulong firstAcceptTStates = ExtractFirstInterruptAcceptTStates(events);
-                ulong expectedDelay = (ulong)(Spectrum128Machine.FrameTStates48 - Spectrum128Machine.Default48kSnapshotResumeFramePhase);
+                ulong expectedDelay = (ulong)(SpectrumMachine.FrameTStates48 - SpectrumMachine.Default48kSnapshotResumeFramePhase);
                 Assert.InRange(firstAcceptTStates - before, expectedDelay, expectedDelay + 4UL);
             }
             finally
@@ -674,7 +674,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 machine.DebugWritePort(0xFFFD, 0x07);
                 machine.DebugWritePort(0xBFFD, 0xAB);
@@ -694,7 +694,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 machine.DebugWritePort(0xFFFD, 0x1F);
                 machine.DebugWritePort(0xBFFD, 0x66);
@@ -714,7 +714,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.Set48kFloatingBusTimingAdjustments(displayStartAdjustTStates: 0, sampleAdjustTStates: 0);
 
@@ -738,7 +738,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 for (int i = 0; i < 10; i++)
                     machine.ExecuteFrame();
@@ -757,7 +757,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 machine.Cpu.WritePort!(0x00FE, 0x00);
                 Assert.False(machine.SpeakerHigh);
@@ -779,7 +779,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 machine.Cpu.WritePort!(0x00FE, 0x10);
                 Assert.True(machine.SpeakerHigh);
@@ -805,7 +805,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "low-ear",
                     new[]
@@ -834,7 +834,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "pause-progress",
                     new[]
@@ -865,13 +865,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
                 machine.Cpu.Regs.PC = 0x2D2B;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -896,7 +896,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "active-mounted",
                     new[]
@@ -907,7 +907,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = 0x15FE;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -928,7 +928,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "paused-mounted",
                     new[]
@@ -940,7 +940,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = 0x15FE;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -961,7 +961,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "paused-before-unstructured-standard",
                     new[]
@@ -973,7 +973,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = 0x15FE;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -994,7 +994,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "paused-before-custom",
                     new[]
@@ -1006,7 +1006,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = 0x15FE;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1028,7 +1028,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape(
                     "idle-mounted",
                     Array.Empty<Tape.TapeBlock>()));
@@ -1036,7 +1036,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = 0x1600;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1058,13 +1058,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadBasicResume(40, 3);
                 machine.SetPendingMountedLoadUsrContinuation(0xFFFF);
                 machine.Cpu.Regs.PC = 0x2D2B;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1091,13 +1091,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x5CBB);
                 machine.Cpu.Regs.PC = 0x5E87;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1119,13 +1119,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x5CBB);
                 machine.Cpu.Regs.PC = 0x10A8;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1147,13 +1147,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuationResolver(_ => 0x8000, requireUsrReturnAddress: true);
                 machine.Cpu.Regs.PC = 0x1600;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1174,13 +1174,13 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuationResolver(_ => 0x8000, requireUsrReturnAddress: true);
                 machine.Cpu.Regs.PC = 0x2D2B;
                 machine.Cpu.Regs.SP = 0xFF00;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1202,7 +1202,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 SetWord(machine, 23633, 0x5CB6);
                 SetWord(machine, 23643, 0x5CCC);
@@ -1228,7 +1228,7 @@ namespace Derby.Tests
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.Cpu.Regs.PC = 0x2D2B;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1257,7 +1257,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 SetWord(machine, 23627, 0x5FAA);
                 SetWord(machine, 23635, 0x5CCB);
@@ -1291,7 +1291,7 @@ namespace Derby.Tests
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.Cpu.Regs.PC = 0x2D2B;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1324,7 +1324,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 SetWord(machine, 23627, 0x5FAA);
                 SetWord(machine, 23635, 0x5CCB);
@@ -1359,7 +1359,7 @@ namespace Derby.Tests
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.Cpu.Regs.PC = 0x2D2B;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1389,7 +1389,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor128kTapeLoad(borderColor: 3);
                 machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x0000);
@@ -1407,7 +1407,7 @@ namespace Derby.Tests
                 machine.Cpu.AdvanceTStates(1234);
                 machine.Cpu.Regs.PC = 0x2D2B;
 
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1431,7 +1431,7 @@ namespace Derby.Tests
                 Assert.False(machine.PagingLocked);
                 Assert.Equal(0, machine.PagedRamBank);
                 Assert.Equal(5, machine.ScreenBank);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
                 Assert.Equal((ushort)0x5CBB, ReadWord(machine, 23633));
                 Assert.Equal((ushort)0, ReadWord(machine, 23618));
                 Assert.Equal((byte)0, machine.PeekMemory(23620));
@@ -1447,7 +1447,7 @@ namespace Derby.Tests
             }
         }
 
-        private static void SetCpuTStates(Spectrum128Machine machine, ulong value)
+        private static void SetCpuTStates(SpectrumMachine machine, ulong value)
         {
             PropertyInfo? property = typeof(Z80.Z80Cpu).GetProperty(
                 nameof(Z80.Z80Cpu.TStates),
@@ -1460,13 +1460,13 @@ namespace Derby.Tests
             setter.Invoke(machine.Cpu, new object[] { value });
         }
 
-        private static void SetWord(Spectrum128Machine machine, ushort address, ushort value)
+        private static void SetWord(SpectrumMachine machine, ushort address, ushort value)
         {
             machine.PokeMemory(address, (byte)(value & 0xFF));
             machine.PokeMemory((ushort)(address + 1), (byte)(value >> 8));
         }
 
-        private static ushort ReadWord(Spectrum128Machine machine, ushort address)
+        private static ushort ReadWord(SpectrumMachine machine, ushort address)
         {
             return (ushort)(machine.PeekMemory(address) | (machine.PeekMemory((ushort)(address + 1)) << 8));
         }

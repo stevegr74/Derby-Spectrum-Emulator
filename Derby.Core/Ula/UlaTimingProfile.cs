@@ -4,8 +4,8 @@ namespace Derby
     {
         public static readonly UlaTimingProfile Spectrum48K = new UlaTimingProfile(
             SpectrumMachineModel.Spectrum48K,
-            frameTStates: Spectrum128Machine.FrameTStates48,
-            cpuClockHz: Spectrum128Machine.CpuClockHz48,
+            frameTStates: SpectrumMachine.FrameTStates48,
+            cpuClockHz: SpectrumMachine.CpuClockHz48,
             lineTStates: 224,
             contentionStartTState: 14335,
             displayFetchStartTState: 14338,
@@ -14,8 +14,8 @@ namespace Derby
 
         public static readonly UlaTimingProfile Spectrum128K = new UlaTimingProfile(
             SpectrumMachineModel.Spectrum128K,
-            frameTStates: Spectrum128Machine.FrameTStates128,
-            cpuClockHz: Spectrum128Machine.CpuClockHz128,
+            frameTStates: SpectrumMachine.FrameTStates128,
+            cpuClockHz: SpectrumMachine.CpuClockHz128,
             lineTStates: 228,
             contentionStartTState: 14361,
             displayFetchStartTState: 14364,
@@ -50,8 +50,8 @@ namespace Derby
         public int DisplayFetchStartTState { get; }
         public int VisibleDisplayStartTState { get; }
         public int BorderLatchLeadTStates { get; }
-        public int DisplayLineCount => Spectrum128Machine.ActiveDisplayHeight;
-        public int DisplayFetchTStatesPerLine => Spectrum128Machine.ActiveDisplayWidth / 2;
+        public int DisplayLineCount => SpectrumMachine.ActiveDisplayHeight;
+        public int DisplayFetchTStatesPerLine => SpectrumMachine.ActiveDisplayWidth / 2;
 
         public static UlaTimingProfile ForModel(SpectrumMachineModel model) =>
             model == SpectrumMachineModel.Spectrum48K ? Spectrum48K : Spectrum128K;

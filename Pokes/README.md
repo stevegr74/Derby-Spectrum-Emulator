@@ -29,10 +29,10 @@ target twice.
 
 The shipped catalogue combines exact-image definitions with conservative
 filename-suggested additions awaiting local release validation. The Ocean 128K
-RoboCop infinite-lives entry has been verified during gameplay. The entries are
-published
-[World of Spectrum Hackers Anonymous](https://worldofspectrum.org/hackersanon/)
-pokes. Target layouts for exact-image entries were checked against the local
+RoboCop infinite-lives entry has been verified during gameplay. The catalogue is
+based on entries published by
+[World of Spectrum Hackers Anonymous](https://worldofspectrum.org/hackersanon/).
+Target layouts for exact-image entries were checked against the local
 snapshot checksums recorded in `pokes.json`; filename-suggested entries exclude
 variable-value, unknown-purpose, untested, and unresolved edition-specific
 patches. Individual gameplay results should still be confirmed progressively.

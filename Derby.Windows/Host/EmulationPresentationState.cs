@@ -19,7 +19,7 @@ namespace Derby
             }
         }
 
-        public void Publish(Spectrum128Machine machine)
+        public void Publish(SpectrumMachine machine)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
