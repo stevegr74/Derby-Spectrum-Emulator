@@ -37,7 +37,11 @@ namespace Derby.Tests
                         .OrderBy(label => label.Name)
                         .ToArray();
                     Assert.Equal(4, memoryBlocks.Length);
-                    Assert.True(memoryBlocks.All(block => block.Visible));
+                    Assert.True(
+                        PumpMessagesUntil(
+                            () => memoryBlocks.All(block => block.Visible),
+                            TimeSpan.FromSeconds(5)),
+                        "The memory-map controls did not become visible after layout completed.");
                     Assert.InRange(memoryBlocks.Max(block => block.Width) - memoryBlocks.Min(block => block.Width), 0, 2);
                     Assert.Contains("LISTING 8000H | PC 8000H | 128K", summary.Text);
                     Assert.Equal(["0000 ROM 1", "4000 RAM 5", "8000 RAM 2", "C000 RAM 7"], memoryBlocks.Select(block => block.Text));
@@ -526,6 +530,19 @@ namespace Derby.Tests
             addressBox.Text = address;
             go.PerformClick();
             Application.DoEvents();
+        }
+
+        private static bool PumpMessagesUntil(Func<bool> condition, TimeSpan timeout)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            while (!condition() && stopwatch.Elapsed < timeout)
+            {
+                Application.DoEvents();
+                Thread.Sleep(10);
+            }
+
+            Application.DoEvents();
+            return condition();
         }
 
         private static IEnumerable<Control> Descendants(Control parent)
