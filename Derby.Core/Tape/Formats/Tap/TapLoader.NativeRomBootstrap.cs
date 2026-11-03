@@ -5,7 +5,7 @@ namespace Derby.Tape
 {
     public static partial class TapLoader
     {
-        private static TapBootstrapResult StartNativeRomTapeLoader(
+        internal static TapBootstrapResult StartNativeRomTapeLoader(
             Spectrum128Machine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,

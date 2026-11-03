@@ -26,9 +26,6 @@ namespace Derby.Tape
         private const ushort OneBitPulseLengthTStates = 1710;
         private const int TStatesPerMillisecond48k = 3500;
         private const int DefaultTapeAutoStartInitialInterruptDelay = 32;
-        private const int ProtectedLiveTapeTimingDivisor = 8;
-        private const int ProtectedLiveChainTapeTimingDivisor = 64;
-        private const int PreloadedLoadableReplayTimingDivisor = 1;
         private const int RomInitializationFrameLimit = 150;
 
         private const ushort BasicProgramStart = 23755;
@@ -75,7 +72,7 @@ namespace Derby.Tape
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
             byte[] fileData = File.ReadAllBytes(path);
-            IReadOnlyList<TapeBlock> blocks = ParseBlocks(fileData);
+            IReadOnlyList<TapeBlock> blocks = TapFileParser.Parse(fileData);
             if (blocks.Count == 0)
                 throw new InvalidOperationException("The .tap file does not contain any blocks.");
 
@@ -129,7 +126,7 @@ namespace Derby.Tape
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
             byte[] fileData = File.ReadAllBytes(path);
-            IReadOnlyList<TapeBlock> blocks = ParseBlocks(fileData);
+            IReadOnlyList<TapeBlock> blocks = TapFileParser.Parse(fileData);
             if (blocks.Count == 0)
                 throw new InvalidOperationException("The .tap file does not contain any blocks.");
 
@@ -147,11 +144,11 @@ namespace Derby.Tape
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
             byte[] fileData = File.ReadAllBytes(path);
-            IReadOnlyList<TapeBlock> blocks = ParseBlocks(fileData);
+            IReadOnlyList<TapeBlock> blocks = TapFileParser.Parse(fileData);
             string displayName = Path.GetFileName(path);
             TapeLoadPlan plan = CreateExecutionPlan(machine, blocks);
 
-            return ExecutePlan(machine, displayName, blocks, plan);
+            return TapeExecutionEngine.Execute(machine, displayName, blocks, plan);
         }
 
         public static TapBootstrapResult LoadAllStandardBlocksAndAutoStart(Spectrum128Machine machine, string path)
@@ -162,7 +159,7 @@ namespace Derby.Tape
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
             byte[] fileData = File.ReadAllBytes(path);
-            IReadOnlyList<TapeBlock> blocks = ParseBlocks(fileData);
+            IReadOnlyList<TapeBlock> blocks = TapFileParser.Parse(fileData);
             return LoadAllStandardTapeBlocksAndAutoStart(
                 machine,
                 Path.GetFileName(path),
@@ -180,7 +177,7 @@ namespace Derby.Tape
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
             byte[] fileData = File.ReadAllBytes(path);
-            IReadOnlyList<TapeBlock> blocks = ParseBlocks(fileData);
+            IReadOnlyList<TapeBlock> blocks = TapFileParser.Parse(fileData);
             return BootstrapTapeBlocksAndMountRemaining(machine, Path.GetFileName(path), blocks);
         }
 
@@ -439,186 +436,10 @@ namespace Derby.Tape
             IReadOnlyList<TapeBlock> blocks,
             TapeLoadPlan plan,
             bool initialEarLevelHigh = true)
-        {
-            int nonRomTimingDivisor = GetProtectedLiveTapeTimingDivisor(plan.Strategy, blocks);
-            int loadableTimingDivisor = GetPreloadedLoadableReplayTimingDivisor(plan.Strategy);
-            switch (plan.Strategy)
-            {
-                case TapeLoadStrategy.FullFakeLoad:
-                {
-                    TapBootstrapResult result = LoadAllStandardTapeBlocksAndAutoStart(
-                        machine,
-                        displayName,
-                        blocks,
-                        skipCustomHeaderForEarPlayback: false,
-                        remountPlaybackRemainder: FindFirstCustomHeaderBlockIndex(blocks) >= 0,
-                        stopBeforeFirstCustomHeader: false,
-                        loadableTimingDivisor: loadableTimingDivisor,
-                        initialEarLevelHigh: initialEarLevelHigh);
-                    return new TapeExecutionResult(
-                        TapeLoadStrategy.FullFakeLoad,
-                        plan.ReasonCode,
-                        plan.Reason,
-                        result.TotalBlockCount,
-                        result.ConsumedBlockCount,
-                        result.DisplayName,
-                        result.AutoStartFileName);
-                }
-
-                case TapeLoadStrategy.LeadingStandardChainFakeLoad:
-                {
-                    TapBootstrapResult result = LoadLeadingStandardBasicChainAndMountRemaining(
-                        machine,
-                        displayName,
-                        blocks,
-                        skipCustomHeaderForEarPlayback: false,
-                        nonRomTimingDivisor: nonRomTimingDivisor,
-                        loadableTimingDivisor: loadableTimingDivisor,
-                        initialEarLevelHigh: initialEarLevelHigh);
-                    return new TapeExecutionResult(
-                        TapeLoadStrategy.LeadingStandardChainFakeLoad,
-                        plan.ReasonCode,
-                        plan.Reason,
-                        result.TotalBlockCount,
-                        result.ConsumedBlockCount,
-                        result.DisplayName,
-                        result.AutoStartFileName);
-                }
-
-                case TapeLoadStrategy.RomBootstrapMounted:
-                {
-                    bool requiresNativeRomLoader =
-                        plan.ReasonCode is TapeLoadPlanReason.InconsistentStandardBasicPair or
-                            TapeLoadPlanReason.NonCanonicalBasicProgram;
-                    bool requiresNative128Basic =
-                        machine.MachineModel == SpectrumMachineModel.Spectrum128K &&
-                        !ReferenceEquals(machine.RomProfile, SpectrumRomProfile.SyntheticTest) &&
-                        (plan.ReasonCode == TapeLoadPlanReason.UnsupportedStandardBootstrapControlFlow ||
-                         (plan.ReasonCode == TapeLoadPlanReason.UnsupportedMixedBootstrapControlFlow &&
-                          Requires128kTapeLoadModeForStandardTape(machine, blocks)));
-                    TapBootstrapResult result = requiresNativeRomLoader
-                        ? StartNativeRomTapeLoader(
-                            machine,
-                            displayName,
-                            blocks,
-                            nonRomTimingDivisor,
-                            loadableTimingDivisor,
-                            initialEarLevelHigh)
-                        : requiresNative128Basic
-                        ? StartNative128kRomTapeLoader(
-                            machine,
-                            displayName,
-                            blocks,
-                            nonRomTimingDivisor,
-                            loadableTimingDivisor,
-                            initialEarLevelHigh)
-                        : LoadLeadingBasicProgramAndMountRemainingForRomAutoStart(
-                            machine,
-                            displayName,
-                            blocks,
-                            skipCustomHeaderForEarPlayback: false,
-                            nonRomTimingDivisor: nonRomTimingDivisor,
-                            loadableTimingDivisor: loadableTimingDivisor,
-                            initialEarLevelHigh: initialEarLevelHigh,
-                            allowRomLoadTraps: plan.ReasonCode != TapeLoadPlanReason.UnrepresentableMountedContinuation);
-                    return new TapeExecutionResult(
-                        TapeLoadStrategy.RomBootstrapMounted,
-                        plan.ReasonCode,
-                        plan.Reason,
-                        result.TotalBlockCount,
-                        result.ConsumedBlockCount,
-                        result.DisplayName,
-                        result.AutoStartFileName);
-                }
-
-                case TapeLoadStrategy.BootstrapHybrid:
-                {
-                    TapBootstrapResult result = BootstrapTapeBlocksAndMountRemaining(
-                        machine,
-                        displayName,
-                        blocks,
-                        skipCustomHeaderForEarPlayback: false,
-                        nonRomTimingDivisor: nonRomTimingDivisor,
-                        loadableTimingDivisor: loadableTimingDivisor,
-                        initialEarLevelHigh: initialEarLevelHigh);
-                    return new TapeExecutionResult(
-                        TapeLoadStrategy.BootstrapHybrid,
-                        plan.ReasonCode,
-                        plan.Reason,
-                        result.TotalBlockCount,
-                        result.ConsumedBlockCount,
-                        result.DisplayName,
-                        result.AutoStartFileName);
-                }
-
-                default:
-                {
-                    bool use128kMode = Use128kTapeLoadMode(machine);
-                    InitializeMachineForFakeTapeLoad(machine, use128kMode);
-                    var tape = new MountedTape(
-                        displayName,
-                        blocks,
-                        nonRomTimingDivisor: nonRomTimingDivisor,
-                        loadableTimingDivisor: loadableTimingDivisor,
-                        initialEarLevelHigh: initialEarLevelHigh);
-                    machine.MountTape(tape);
-                    LogMountedTape(tape, blocks);
-                    return new TapeExecutionResult(
-                        TapeLoadStrategy.MountedRealtime,
-                        plan.ReasonCode,
-                        plan.Reason,
-                        blocks.Count,
-                        0,
-                        displayName,
-                        null);
-                }
-            }
-        }
+            => TapeExecutionEngine.Execute(machine, displayName, blocks, plan, initialEarLevelHigh);
 
         private static int GetProtectedLiveTapeTimingDivisor(TapeLoadStrategy strategy, IReadOnlyList<TapeBlock> blocks)
-        {
-            if (strategy == TapeLoadStrategy.FullFakeLoad || blocks.Count == 0)
-                return 1;
-
-            if (ContainsElectricallyDecodedProtectedStream(blocks))
-                return 1;
-
-            int protectedTimingDivisor = strategy == TapeLoadStrategy.LeadingStandardChainFakeLoad
-                ? ProtectedLiveChainTapeTimingDivisor
-                : ProtectedLiveTapeTimingDivisor;
-
-            foreach (TapeBlock block in blocks)
-            {
-                if (!block.CanUseRomLoadTrap && block.Kind != TapeBlockKind.Metadata)
-                    return protectedTimingDivisor;
-            }
-
-            return 1;
-        }
-
-        private static int GetPreloadedLoadableReplayTimingDivisor(TapeLoadStrategy strategy)
-        {
-            return strategy switch
-            {
-                TapeLoadStrategy.FullFakeLoad => PreloadedLoadableReplayTimingDivisor,
-                TapeLoadStrategy.LeadingStandardChainFakeLoad => PreloadedLoadableReplayTimingDivisor,
-                _ => 1
-            };
-        }
-
-        private static bool ContainsElectricallyDecodedProtectedStream(IReadOnlyList<TapeBlock> blocks)
-        {
-            foreach (TapeBlock block in blocks)
-            {
-                if (block.CanUseRomLoadTrap)
-                    continue;
-
-                if (block.Kind == TapeBlockKind.Data || block.Kind == TapeBlockKind.DirectRecording)
-                    return true;
-            }
-
-            return false;
-        }
+            => TapeExecutionEngine.GetProtectedLiveTapeTimingDivisor(strategy, blocks);
 
         internal static TapBootstrapResult LoadAllStandardTapeBlocksAndAutoStart(
             Spectrum128Machine machine,
@@ -1188,7 +1009,7 @@ namespace Derby.Tape
                 requireUsrReturnAddressBetweenSteps: false) != null;
         }
 
-        private static TapBootstrapResult LoadLeadingStandardBasicChainAndMountRemaining(
+        internal static TapBootstrapResult LoadLeadingStandardBasicChainAndMountRemaining(
             Spectrum128Machine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
@@ -1574,7 +1395,7 @@ namespace Derby.Tape
             return new TapBootstrapResult(blocks.Count, consumedBlockCount, displayName, header.FileName);
         }
 
-        private static bool Requires128kTapeLoadModeForStandardTape(
+        internal static bool Requires128kTapeLoadModeForStandardTape(
             Spectrum128Machine machine,
             IReadOnlyList<TapeBlock> blocks)
         {
@@ -1611,7 +1432,7 @@ namespace Derby.Tape
 
             // Protected streams can contain their own machine-mode probe after a
             // generic BASIC USR handoff, so keep the native 128K configuration.
-            return ContainsElectricallyDecodedProtectedStream(blocks);
+            return TapeExecutionEngine.ContainsElectricallyDecodedProtectedStream(blocks);
         }
 
         internal static bool Use128kTapeLoadMode(Spectrum128Machine machine)
@@ -1689,7 +1510,7 @@ namespace Derby.Tape
             machine.ClearKeyboard();
         }
 
-        private static TapBootstrapResult StartNative128kRomTapeLoader(
+        internal static TapBootstrapResult StartNative128kRomTapeLoader(
             Spectrum128Machine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
@@ -1771,7 +1592,7 @@ namespace Derby.Tape
                 autoStartFileName);
         }
 
-        private static int FindFirstCustomHeaderBlockIndex(IReadOnlyList<TapeBlock> blocks)
+        internal static int FindFirstCustomHeaderBlockIndex(IReadOnlyList<TapeBlock> blocks)
         {
             for (int i = 0; i < blocks.Count; i++)
             {
@@ -1820,7 +1641,7 @@ namespace Derby.Tape
             machine.SetSnapshotResumeFramePhase(currentPhase);
         }
 
-        private static void LogMountedTape(MountedTape tape, IReadOnlyList<TapeBlock> blocks)
+        internal static void LogMountedTape(MountedTape tape, IReadOnlyList<TapeBlock> blocks)
         {
             Console.WriteLine($"[TAP] Mounted '{tape.DisplayName}' with {blocks.Count} blocks.");
             for (int i = 0; i < blocks.Count; i++)
@@ -2072,16 +1893,6 @@ namespace Derby.Tape
             ushort parameter2 = ReadWord(block.Payload, 15);
 
             return new TapHeaderInfo(type, fileName, dataLength, parameter1, parameter2);
-        }
-
-        private static void ValidateChecksum(byte[] data, int offset, int length)
-        {
-            byte xor = 0;
-            for (int i = 0; i < length; i++)
-                xor ^= data[offset + i];
-
-            if (xor != 0)
-                throw new InvalidOperationException("Tape block checksum mismatch.");
         }
 
         private static ushort ReadWord(byte[] data, int offset)
