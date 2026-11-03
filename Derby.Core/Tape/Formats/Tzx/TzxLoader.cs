@@ -19,7 +19,7 @@ namespace Derby.Tape
         private const byte HeaderFlag = 0x00;
         private const int CpuClockHz48 = 3500000;
 
-        public static TapMountResult Mount(Spectrum128Machine machine, string path)
+        public static TapMountResult Mount(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -39,7 +39,7 @@ namespace Derby.Tape
             return new TapMountResult(blocks.Count, Path.GetFileName(path));
         }
 
-        public static TapeExecutionResult LoadWithPolicy(Spectrum128Machine machine, string path)
+        public static TapeExecutionResult LoadWithPolicy(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -57,7 +57,7 @@ namespace Derby.Tape
                 initialEarLevelHigh: UsesStandardRomSignalStart(blocks));
         }
 
-        public static TapBootstrapResult BootstrapBasicProgramAndMountRemaining(Spectrum128Machine machine, string path)
+        public static TapBootstrapResult BootstrapBasicProgramAndMountRemaining(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -73,7 +73,7 @@ namespace Derby.Tape
                 initialEarLevelHigh: false);
         }
 
-        public static TapBootstrapResult LoadAllStandardBlocksAndAutoStart(Spectrum128Machine machine, string path)
+        public static TapBootstrapResult LoadAllStandardBlocksAndAutoStart(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -194,7 +194,7 @@ namespace Derby.Tape
                     continue;
 
                 TapeBlock dataBlock = normalized[dataIndex];
-                TapLoader.TapHeaderInfo header = TapLoader.ParseHeaderInfo(headerBlock);
+                TapHeaderInfo header = TapLoader.ParseHeaderInfo(headerBlock);
                 int logicalByteCount = header.DataLength + 2;
                 if (!CanUseLogicalRomRecordPrefix(dataBlock, expectedFlag: 0xFF, logicalByteCount))
                     continue;

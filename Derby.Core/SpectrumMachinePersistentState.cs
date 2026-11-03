@@ -4,7 +4,7 @@ using Derby.Z80;
 
 namespace Derby
 {
-    public sealed partial class Spectrum128Machine
+    public sealed partial class SpectrumMachine
     {
         private const int PersistentStateVersion = 1;
         private static readonly byte[] PersistentStateMagic = Encoding.ASCII.GetBytes("DRBQST");

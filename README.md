@@ -128,9 +128,10 @@ Derby/
 |   |-- Audio/                  AY, beeper, and emulated sample timing
 |   |-- Debugging/              instruction-boundary execution control
 |   |-- Input/                  Spectrum joystick interfaces and state
+|   |-- Memory/                 model-specific paging state and address-slot mapping
 |   |-- Pokes/                  poke validation, matching, apply, and restore
-|   |-- Tape/                   transport, shared load-plan execution, bootstrap, and continuation
-|   |   `-- Formats/            format-specific TAP and TZX parsers/loaders
+|   |-- Tape/                   transport, block timing, load planning, execution, and continuation
+|   |   `-- Formats/            TAP/TZX parsers plus the isolated BASIC bootstrap engine
 |   |-- Ula/                    timing profiles and beam-aware raster capture
 |   `-- Z80/                    CPU execution and instruction decoding
 |
@@ -154,6 +155,8 @@ Derby/
 |-- docs/                        user, design, compatibility, and engineering guides
 |-- ROMs/                        verified bundled ROM images and provenance
 |-- test-assets/                 checked-in test programs and fixtures
+|-- .editorconfig                repository formatting conventions
+|-- Directory.Build.props        shared warnings-as-errors build policy
 `-- README.md                    project overview, status, and roadmap
 ```
 
@@ -162,9 +165,12 @@ audio-device dependency. The `net10.0-windows` frontend consumes Core for
 emulation state and produces Windows-specific video and audio output. The
 compliance runner, `Derby.Tests`, and manual harness depend only
 on Core. Windows presentation, debugger UI, and host behavior are covered by
-`Derby.Windows.Tests`. `MainForm` coordinates host actions while focused video
-components own transient tape and Quick State feedback, including their timing,
-layout, and drawing rules.
+`Derby.Windows.Tests`. `MainForm` coordinates host actions while
+`EmulationSession` owns the machine, synchronization root, background loop, and
+audio-pipeline lifetime. Focused video components own transient tape and Quick
+State feedback, including their timing, layout, and drawing rules. Core paging
+state/address mapping, tape-block timing, ROM workspace definitions, and BASIC
+bootstrap execution live outside the machine and TAP entry-point types.
 
 ---
 

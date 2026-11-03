@@ -41,7 +41,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(model);
                 ulong[] expectedDelays = { 6, 5, 4, 3, 2, 1, 0, 0 };
 
@@ -74,7 +74,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(model);
 
                 AssertMemoryFetchDuration(machine, contentionStartTState - 1, 4UL);
@@ -98,7 +98,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.PokeMemory(0x4000, 0x00); // NOP
                 machine.Cpu.Regs.PC = 0x4000;
@@ -125,7 +125,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(model);
                 machine.PokeMemory(0x4000, 0x3E); // LD A,n
                 machine.PokeMemory(0x4001, 0x55);
@@ -154,7 +154,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(model);
                 machine.PokeMemory(0x4000, 0xCB);
                 machine.PokeMemory(0x4001, 0x00); // RLC B
@@ -186,7 +186,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor128kSnapshot(last7ffdValue: pagedBank, borderColor: 0);
                 machine.PokeMemory(0xC000, 0x00); // NOP in the active paged bank
                 machine.Cpu.Regs.PC = 0xC000;
@@ -209,7 +209,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ExecuteTimeSlice(1);
                 machine.DebugWritePort(0x00FE, 0x02);
                 machine.ExecuteFrame();
@@ -232,7 +232,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.SetDebugEventCaptureEnabled(true);
                 machine.PokeMemory(0x8000, 0xD3);
@@ -265,7 +265,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.SetDebugEventCaptureEnabled(true);
                 machine.PokeMemory(0x8000, 0xD3);
@@ -292,7 +292,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor128kSnapshot(last7ffdValue: 0, borderColor: 0);
                 machine.DebugWritePort(0xFFFD, 0x00);
                 machine.PokeMemory(0x8000, 0xED);
@@ -326,7 +326,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.PokeMemory(0x8000, 0xED);
                 machine.PokeMemory(0x8001, 0x78); // IN A,(C)
@@ -355,7 +355,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor128kSnapshot(last7ffdValue: 0, borderColor: 0);
                 machine.PokeMemory(0x8000, 0xED);
                 machine.PokeMemory(0x8001, 0x78); // IN A,(C)
@@ -380,7 +380,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.SetDebugEventCaptureEnabled(true);
                 machine.PokeMemory(0x8000, 0xED);
@@ -418,7 +418,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor128kSnapshot(last7ffdValue: pagedBank, borderColor: 0);
                 machine.PokeMemory(0x8000, 0xED);
                 machine.PokeMemory(0x8001, 0x78); // IN A,(C)
@@ -451,7 +451,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 byte[] ram = new byte[48 * 1024];
                 ram[0x0000] = 0xA0;
@@ -483,7 +483,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 byte[] bank = new byte[16 * 1024];
                 bank[0x0000] = 0xC0;
                 bank[0x0001] = 0xC1;
@@ -509,7 +509,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(model);
                 UlaTimingProfile timing = UlaTimingProfile.ForModel(model);
 
@@ -532,7 +532,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 byte[] bank = new byte[16 * 1024];
                 bank[0x0100] = 0x11; // Bitmap line 1, column 0.
                 bank[0x0020] = 0x88; // Bitmap line 8, column 0.
@@ -563,7 +563,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 byte[] bank = new byte[16 * 1024];
                 bank[0] = expected;
                 machine.LoadRamBank(screenBank, bank);
@@ -584,7 +584,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 byte[] screenBank = new byte[16 * 1024];
                 screenBank[0] = 0x55;
                 machine.LoadRamBank(5, screenBank);
@@ -608,7 +608,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor128kSnapshot(last7ffdValue: 0, borderColor: 0);
                 machine.DebugWritePort(0xFFFD, 0x0A);
                 machine.DebugWritePort(0xBFFD, 0x6C);
@@ -633,7 +633,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 byte[] ram = new byte[48 * 1024];
                 ram[0] = 0x48;
@@ -654,7 +654,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.PokeMemory(0x8000, 0x7E); // LD A,(HL)
                 machine.PokeMemory(0x4000, 0xA5);
@@ -681,7 +681,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.ConfigureFor48kSnapshot(borderColor: 0);
                 machine.Cpu.Regs.PC = 0x8000;
                 machine.PokeMemory(0x8000, 0x00);
@@ -701,7 +701,7 @@ namespace Derby.Tests
 
                 Assert.Equal(516UL, firstAcceptTStates);
                 Assert.Equal(
-                    513UL + (ulong)Spectrum128Machine.FrameTStates48,
+                    513UL + (ulong)SpectrumMachine.FrameTStates48,
                     secondAcceptTStates);
             }
             finally
@@ -753,7 +753,7 @@ namespace Derby.Tests
         }
 
         private static void AssertMemoryFetchDuration(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             int framePhase,
             ulong expectedDuration)
         {

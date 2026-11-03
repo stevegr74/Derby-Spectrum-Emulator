@@ -143,9 +143,7 @@ namespace Derby.Tests
                     SpectrumRomSet selected = (SpectrumRomSet)type
                         .GetField("selectedRomSet", BindingFlags.Instance | BindingFlags.NonPublic)!
                         .GetValue(form)!;
-                    Spectrum128Machine machine = (Spectrum128Machine)type
-                        .GetField("machine", BindingFlags.Instance | BindingFlags.NonPublic)!
-                        .GetValue(form)!;
+                    SpectrumMachine machine = form.MachineForTesting;
                     Assert.Equal(SpectrumMemoryPagingModel.Plus2APlus3, selected.PagingModel);
                     Assert.Equal(SpectrumMemoryPagingModel.Plus2APlus3, machine.MemoryPagingModel);
                     Assert.True(restored);
@@ -207,10 +205,7 @@ namespace Derby.Tests
                         "AcquireEmulationPauseLease",
                         BindingFlags.Instance | BindingFlags.NonPublic)!;
                     using var pauseLease = (IDisposable)acquirePauseMethod.Invoke(form, null)!;
-                    FieldInfo machineField = typeof(MainForm).GetField(
-                        "machine",
-                        BindingFlags.Instance | BindingFlags.NonPublic)!;
-                    var machine = (Spectrum128Machine)machineField.GetValue(form)!;
+                    SpectrumMachine machine = form.MachineForTesting;
                     machine.Reset(SpectrumMachineModel.Spectrum48K);
                     machine.Cpu.Regs.PC = 0x8123;
                     machine.PokeMemory(0x9000, 0x5A);
@@ -221,7 +216,7 @@ namespace Derby.Tests
                         BindingFlags.Instance | BindingFlags.NonPublic)!;
                     var result = (Tape.TapMountResult)replaceMethod.Invoke(form, [tapePath])!;
 
-                    Assert.Same(machine, machineField.GetValue(form));
+                    Assert.Same(machine, form.MachineForTesting);
                     Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
                     Assert.Equal((ushort)0x8123, machine.Cpu.Regs.PC);
                     Assert.Equal((byte)0x5A, machine.PeekMemory(0x9000));

@@ -31,7 +31,7 @@ namespace Derby
             "SNEF", "SNER", "PLTT", "ZMMC"
         };
 
-        public static void Load(Spectrum128Machine machine, string path)
+        public static void Load(SpectrumMachine machine, string path)
         {
             ArgumentNullException.ThrowIfNull(machine);
             if (string.IsNullOrWhiteSpace(path))
@@ -40,7 +40,7 @@ namespace Derby
             Load(machine, File.ReadAllBytes(path));
         }
 
-        public static void Load(Spectrum128Machine machine, byte[] data)
+        public static void Load(SpectrumMachine machine, byte[] data)
         {
             ArgumentNullException.ThrowIfNull(machine);
             ArgumentNullException.ThrowIfNull(data);
@@ -159,8 +159,8 @@ namespace Derby
                 throw new InvalidOperationException("128K SZX snapshot is missing the required AY block.");
 
             int frameTStates = model == SpectrumMachineModel.Spectrum48K
-                ? Spectrum128Machine.FrameTStates48
-                : Spectrum128Machine.FrameTStates128;
+                ? SpectrumMachine.FrameTStates48
+                : SpectrumMachine.FrameTStates128;
             if (cpu.FrameCycles >= frameTStates + MaxFrameInstructionOverrunTStates)
             {
                 throw new InvalidOperationException(
@@ -388,7 +388,7 @@ namespace Derby
             }
         }
 
-        private static void Apply(Spectrum128Machine machine, ParsedSnapshot snapshot)
+        private static void Apply(SpectrumMachine machine, ParsedSnapshot snapshot)
         {
             machine.Reset(snapshot.Model);
 

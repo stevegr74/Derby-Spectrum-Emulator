@@ -12,20 +12,20 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
 
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
 
                 machine.Reset();
 
                 Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
             }
             finally
             {
@@ -39,7 +39,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
 
                 machine.DebugWritePort(0xFFFD, 0x07);
@@ -61,7 +61,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
                 machine.Ay.SelectRegister(7);
                 machine.Ay.WriteRegister(0b0011_1110);

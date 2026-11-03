@@ -1,7 +1,5 @@
 # DERBY User Guide
 
-## User Guide
-
 **Windows edition**  
 **Covers:** 48K, 128K, grey +2, and +2A operation, snapshots, tape images, Quick State, controllers, pokes, and debugging
 
@@ -27,14 +25,14 @@ This manual describes the emulator as it operates today. It begins with normal l
 - [Chapter 12 - Troubleshooting](#chapter-12---troubleshooting)
 - [Appendix A - Current Limitations](#appendix-a---current-limitations)
 
-# Chapter 1 - Getting Started
+## Chapter 1 - Getting Started
 
 The emulator models original Spectrum 48K hardware, original 128K/grey +2
 hardware, and +2A four-ROM paging. The chosen model affects ROM behaviour,
 memory, timing, sound, and how some games divide their tape content. Select the
 intended model before mounting a tape.
 
-## Requirements
+### Requirements
 
 - Windows with the .NET 10 desktop runtime, or the .NET 10 SDK when running from source.
 - The bundled production ROM files in the `ROMs` directory:
@@ -53,7 +51,7 @@ dotnet run --project Derby.Windows
 
 The emulator starts as a Spectrum 128K in `2x Enhanced` display mode and shows the 128K ROM menu.
 
-## Machine Profiles
+### Machine Profiles
 
 Right-click the display and open **F3 - Machine** to choose:
 
@@ -68,18 +66,18 @@ loaded media. Custom ROM loading is not exposed. +3 disk operation is not yet
 available because it additionally requires a disk controller, drive, and media
 model.
 
-## First Use
+### First Use
 
 1. Press `F1` to open the built-in control reference.
 2. Press `F9`, `F10`, or `F11` depending on the media type you want to load.
 3. Use the PC keyboard as the Spectrum keyboard, or configure a USB controller from the right-click menu.
 4. Right-click the display whenever you prefer menus to function keys.
 
-# Chapter 2 - Main Controls
+## Chapter 2 - Main Controls
 
 The main window keeps permanent controls out of the Spectrum picture. Every command is available through a function key or the right-click menu.
 
-## Built-in Help
+### Built-in Help
 
 Press `F1` to open the quick-reference window. Emulation pauses while it is open. Choose a category on the left, then use `F1`, `Escape`, or **Close** to return.
 
@@ -109,9 +107,9 @@ The context menu presents assigned function-key actions in order, followed by jo
 
 *Figure 2.2. The complete menu mirrors the function-key order and keeps unavailable actions visible but disabled.*
 
-# Chapter 3 - Display And Status
+## Chapter 3 - Display And Status
 
-## Display Size
+### Display Size
 
 `F4` cycles these fixed output sizes:
 
@@ -121,15 +119,15 @@ The context menu presents assigned function-key actions in order, followed by jo
 
 The enhanced modes use pixel-art scaling rather than smoothing the image as an ordinary photograph.
 
-## Status Overlay
+### Status Overlay
 
 Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, the active 48K/128K timing family, tape state, and display mode appear on separate right-aligned lines, moving below full tape feedback when necessary. The diagnostics can remain hidden during normal play.
 
-## Window Title
+### Window Title
 
 When media is loaded, its filename appears in the window title. Tape transport state is deliberately kept in the on-screen badge and optional status overlay rather than permanently expanding the title.
 
-## Tape Badge
+### Tape Badge
 
 Tape state changes appear at the top left of the emulated display:
 
@@ -138,11 +136,11 @@ Tape state changes appear at the top left of the emulated display:
 - Paused, stopped, or ended indications disappear after approximately five seconds.
 - Replacing tape media with a snapshot or recording clears the old tape indication immediately.
 
-# Chapter 4 - Keyboard Input
+## Chapter 4 - Keyboard Input
 
 The Windows frontend captures physical key messages before normal menu/control preprocessing and passes them to the emulated keyboard matrix on the emulation thread.
 
-## Direct Keys
+### Direct Keys
 
 - Letters and numbers map to the corresponding Spectrum keys.
 - `Enter` and `Space` map directly.
@@ -153,17 +151,17 @@ The Windows frontend captures physical key messages before normal menu/control p
 
 Shared Spectrum chords track each physical host key independently. Releasing one PC key will not incorrectly release a Spectrum modifier still owned by another held key.
 
-## Focus
+### Focus
 
 Click the emulator display if a game is not receiving input after another dialog was used. Help, file choosers, Poke Manager, and the debugger deliberately pause or redirect keyboard focus while open.
 
-# Chapter 5 - Snapshots And Recordings
+## Chapter 5 - Snapshots And Recordings
 
 Snapshots resume a stored machine state immediately; RZX recordings add deterministic recorded input. Loading any of these replaces the active program and clears old tape transport and badge state.
 
 Loading new media resets tape transport and any tape badge left by the previous title.
 
-## SNA Snapshots
+### SNA Snapshots
 
 Press `F9` and choose a `.sna` file.
 
@@ -175,7 +173,7 @@ Supported SNA state includes:
 
 TR-DOS snapshots are rejected because the emulator does not provide a TR-DOS ROM. A 48K-format snapshot always retains the 48K memory map and timing. When 128K mode is selected, compatible external AY audio remains available without applying 128K CPU or ULA timing.
 
-## Z80 Snapshots
+### Z80 Snapshots
 
 Press `F10` and choose a `.z80` file.
 
@@ -184,7 +182,7 @@ paging and RAM-bank state. A 48K-layout snapshot keeps 48K memory and timing.
 Selecting 128K mode provides compatible AY audio, while model-less extended
 snapshots follow their Melodik metadata. Fuller AY port routing is rejected.
 
-## SZX Snapshots
+### SZX Snapshots
 
 Press `F10` and choose an `.szx` file.
 
@@ -205,11 +203,11 @@ memory, another Spectrum model, alternate timing, Issue 2 behavior, or another
 unsupported peripheral is rejected with an explanatory message rather than
 loaded inaccurately.
 
-## RZX Recordings
+### RZX Recordings
 
 Press `F10` and choose an `.rzx` recording. Embedded SNA, Z80, and SZX start snapshots are supported; when a recording contains later checkpoint snapshots, the last snapshot before recorded input begins is used as the initial state. Recorded input has priority over live joystick port input so replay remains deterministic. Quick State also preserves the replay position.
 
-# Chapter 6 - Tape Images And Multi-load Games
+## Chapter 6 - Tape Images And Multi-load Games
 
 Tape images reproduce a loading process rather than a finished machine state. The emulator accelerates only the loader paths it can represent safely and falls back to ROM/pulse loading for ambiguous or protected sequences.
 
@@ -220,7 +218,7 @@ For a multi-side release, wait until the game asks for the other side and press
 resetting CPU, RAM, paging, or the running game. The same action is available
 from the right-click menu and is disabled until a tape is mounted.
 
-## Automatic Loading
+### Automatic Loading
 
 The emulator selects a loading strategy from the tape structure:
 
@@ -231,7 +229,7 @@ The emulator selects a loading strategy from the tape structure:
 
 This selection is generic. It does not depend on game filenames or title-specific hashes.
 
-## 128K And 48K Behavior
+### 128K And 48K Behavior
 
 Many games use different loading behavior by model:
 
@@ -241,13 +239,13 @@ Many games use different loading behavior by model:
 
 Use `F3` before mounting the tape when you want to test the other machine model. Switching model resets the machine.
 
-## Manual Tape Control
+### Manual Tape Control
 
 Use `F5` to stop or resume the mounted tape without ejecting it. Resume only when the game asks for more tape input.
 
 The emulator also handles supported TZX pauses, stop markers, tape end, and detected loader handoffs automatically. A stopped tape remains mounted and can be resumed.
 
-## If A Multi-load Fails
+### If A Multi-load Fails
 
 1. Confirm the correct 48K/128K model was selected before mounting.
 2. Wait for the game to request the next section.
@@ -255,7 +253,7 @@ The emulator also handles supported TZX pauses, stop markers, tape end, and dete
 4. Press `F5` once to resume if the mounted tape did not start automatically.
 5. If the game immediately errors, do not repeatedly toggle transport; record the displayed error and media filename for diagnosis.
 
-# Chapter 7 - Quick State
+## Chapter 7 - Quick State
 
 Press `F7` to open the paused Quick State Manager. It provides eight persistent
 slots in a compact two-column window with no scrolling.
@@ -293,13 +291,13 @@ exact tape pulse/EAR, loader-continuation, and replay position.
 
 Live host details such as a controller connection are not stored as emulated machine state. Audio and input adapters are cleaned up when a state is restored.
 
-# Chapter 8 - USB Joysticks
+## Chapter 8 - USB Joysticks
 
 Right-click the display and open **Joystick**. Controller 1 and Controller 2
 have separate status and selection submenus. Choose **Configure both
 controllers...** for the full mapping window.
 
-## Device Selection
+### Device Selection
 
 - **Off:** disconnect that controller channel from the emulated machine.
 - **Automatic:** use the first available USB controller not claimed by the other channel.
@@ -309,7 +307,7 @@ Automatic channels claim different devices. A named device is not silently
 replaced if it disappears, and unavailable input becomes neutral so no direction
 or Fire remains stuck.
 
-## Spectrum Interface
+### Spectrum Interface
 
 Choose **Joystick > Configure both controllers...** and select the interface
 expected by the game for each enabled channel:
@@ -335,7 +333,7 @@ than saving an ambiguous setup.
 
 The game must be configured for the same interface. For example, choosing Sinclair in the emulator will not operate a game menu configured for Kempston.
 
-## Mapping
+### Mapping
 
 The configuration dialog lets you choose:
 
@@ -352,7 +350,7 @@ retained as Controller 1 and Controller 2 starts disabled.
 
 The default mapping is axes 1/2 as displayed by the UI, hat 1 where available, button 1, and a 25% dead zone. Device hardware may expose different counts or ordering, so use the preview rather than relying on labels alone.
 
-# Chapter 9 - Poke Manager
+## Chapter 9 - Poke Manager
 
 Right-click the display and choose **Poke Manager...**. Emulation pauses while the manager is open.
 
@@ -360,7 +358,7 @@ Right-click the display and choose **Poke Manager...**. Emulation pauses while t
 
 *Figure 9.1. The Library tab combines matching, selection, preview, guarded application, and restoration in one paused workflow.*
 
-## Library Tab
+### Library Tab
 
 The shipped library is loaded from `Pokes/pokes.json`.
 
@@ -373,7 +371,7 @@ The shipped library is loaded from `Pokes/pokes.json`.
 
 An exact SHA-256 match is authoritative for that media image. A filename alias is only a discovery suggestion and is labelled accordingly. If nothing matches, the manager stays on **Choose a game...** rather than selecting an unrelated title.
 
-## One-off Tab
+### One-off Tab
 
 Use this for a temporary manual write:
 
@@ -386,13 +384,13 @@ Use this for a temporary manual write:
 
 Mapped addresses refer to the CPU-visible 64K address space. Physical-bank addresses refer to offsets in a selected 16K RAM bank. Do not substitute one for the other.
 
-## Restore Last
+### Restore Last
 
 The manager keeps a session-local restoration stack. **Restore Last** restores the previous bytes only if the running program has not changed an applied byte since the poke. Refusing restoration is intentional protection against overwriting newer game state.
 
 The initial library provides one-time writes. Continuously frozen values and conditional trainers are not currently supported.
 
-# Chapter 10 - Debugger And Disassembler
+## Chapter 10 - Debugger And Disassembler
 
 Press `F6` to open the debugger. The emulator pauses safely at an instruction boundary and presents an immutable capture.
 
@@ -400,7 +398,7 @@ Press `F6` to open the debugger. The emulator pauses safely at an instruction bo
 
 *Figure 10.1. The debugger combines execution controls, paging, grouped CPU state, disassembly, references, memory inspection, and breakpoints.*
 
-## Workspace
+### Workspace
 
 The debugger includes:
 
@@ -413,7 +411,7 @@ The debugger includes:
 
 Values changed since the previous stopped capture are highlighted in yellow. Active flags use a soft teal highlight.
 
-## Execution
+### Execution
 
 | Control | Shortcut | Action |
 | --- | --- | --- |
@@ -426,7 +424,7 @@ Values changed since the previous stopped capture are highlighted in yellow. Act
 
 The listing remains frozen while execution runs. It refreshes only after execution stops safely.
 
-## Navigation
+### Navigation
 
 - Arrow keys move through listing rows.
 - `Enter` follows a direct branch or call target.
@@ -437,11 +435,11 @@ The listing remains frozen while execution runs. It refreshes only after executi
 - Clicking PC or a stack value navigates the mapped listing.
 - Clicking other address-valued registers opens the Memory tab.
 
-## Search
+### Search
 
 Use `Ctrl+F` to focus search and `F3` to find the next match. Search can locate an address, byte sequence, or mnemonic text in the current capture and selected memory view.
 
-## Memory Views
+### Memory Views
 
 The **Memory View** selector distinguishes:
 
@@ -456,11 +454,11 @@ summary retains the selected 48K, 128K, grey +2, or +2A profile name. Selecting
 a physical ROM or RAM view highlights a paging block only when that bank is
 actually present in the captured logical map.
 
-## Memory Inspector
+### Memory Inspector
 
 Open the **Memory** tab to inspect hexadecimal and ASCII bytes without changing the disassembly view. Sources include mapped memory and physical banks. Register, stack, listing, and direct-reference navigation can take you to relevant bytes.
 
-## Labels And Classification
+### Labels And Classification
 
 Use `Ctrl+L` or right-click the listing to:
 
@@ -471,66 +469,66 @@ Use `Ctrl+L` or right-click the listing to:
 
 Labels and classifications are scoped by media/model and persist between sessions. Confirmed data is shown/exported as `DB`, excluded from mnemonic search, and not recursively interpreted as code. Following an unlabeled direct branch or call can create an automatic label.
 
-## Cross-references
+### Cross-references
 
 The **References** tab lists conservative incoming and outgoing references for direct calls/jumps and absolute data reads/writes. Indirect accesses and arbitrary bytes are deliberately not guessed as code.
 
-## Copy And Export
+### Copy And Export
 
 - `Ctrl+C` copies selected rows with capture metadata.
 - `Ctrl+Shift+C` copies every displayed row.
 - `Ctrl+E` exports the selected view: 64K for mapped memory or 16K for a physical bank.
 
-# Chapter 11 - Diagnostics
+## Chapter 11 - Diagnostics
 
 Press `F12` to write a machine diagnostic dump. Use this when reporting a reproducible emulation problem; note the game/media filename, machine model, point reached, and visible error.
 
 The optional `F2` overlay is useful for checking FPS, model, display, and tape state before collecting a dump.
 
-# Chapter 12 - Troubleshooting
+## Chapter 12 - Troubleshooting
 
-## A Tape Mounts But Nothing Appears
+### A Tape Mounts But Nothing Appears
 
 - Some protected loaders remain black for a while during real-time pulse playback.
 - Confirm the tape badge says it is playing.
 - Confirm the correct machine model was selected before mounting.
 - Avoid pressing keys unless the loader or game requests one.
 
-## A Game Requests More Tape
+### A Game Requests More Tape
 
 Press `F5` once. If loading fails immediately, capture the exact error rather than repeatedly stopping and starting the tape.
 
-## A Game Loads With The Wrong Controls
+### A Game Loads With The Wrong Controls
 
 - Check the game’s own selected control scheme.
 - Match it to Kempston, Cursor, or Interface II in Joystick Configuration.
 - Use the live preview to confirm directions and Fire.
 
-## Keys Do Not Reach The Game
+### Keys Do Not Reach The Game
 
 - Close or move focus away from Help, Poke Manager, debugger, or a file chooser.
 - Click the emulator display.
 - Confirm a joystick interface is not being mistaken for keyboard controls in the game menu.
 
-## Sound Is Missing Or Distorted
+### Sound Is Missing Or Distorted
 
 - Verify whether the title is running in 48K or 128K mode; 128K AY music may not exist in a 48K version.
 - Let accelerated tape loading finish before judging audio.
 - Capture the media name, model, and exact point where sound differs.
 
-## A Snapshot Is Rejected
+### A Snapshot Is Rejected
 
 - Confirm its extension matches the selected loader.
 - Non-standard/truncated SNA files and unsupported TR-DOS state are rejected rather than guessed.
 - SZX files for unsupported Spectrum models, timing variants, or peripheral hardware are rejected rather than approximated.
 
-## Pokes Are Not Automatically Matched
+### Pokes Are Not Automatically Matched
 
 - The loaded file may differ from the library’s exact checksum.
 - A filename suggestion is not proof that addresses match.
 - Use a validated library entry or enter a one-off poke only when you know the correct address space and value.
 
-# Appendix A - Current Limitations
+## Appendix A - Current Limitations
 
 - SZX support currently targets exact 48K and original 128K machine state; peripheral-bearing snapshots and other Spectrum models are not yet supported.
 - +3 floppy-controller, drive, and disk-image support is not yet implemented; select +2A for the shared four-ROM and paging environment.

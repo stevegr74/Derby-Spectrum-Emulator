@@ -42,9 +42,9 @@ namespace Derby
         private const int PresentationFramesPerSecond = 50;
         private static readonly long PresentationIntervalTicks =
             System.Diagnostics.Stopwatch.Frequency / PresentationFramesPerSecond;
-        private readonly Bitmap screenBitmap = new Bitmap(Spectrum128Machine.ScreenWidth, Spectrum128Machine.ScreenHeight, PixelFormat.Format32bppArgb);
-        private readonly Bitmap enhanced2xBitmap = new Bitmap(Spectrum128Machine.ScreenWidth * 2, Spectrum128Machine.ScreenHeight * 2, PixelFormat.Format32bppArgb);
-        private readonly Bitmap enhanced3xBitmap = new Bitmap(Spectrum128Machine.ScreenWidth * 3, Spectrum128Machine.ScreenHeight * 3, PixelFormat.Format32bppArgb);
+        private readonly Bitmap screenBitmap = new Bitmap(SpectrumMachine.ScreenWidth, SpectrumMachine.ScreenHeight, PixelFormat.Format32bppArgb);
+        private readonly Bitmap enhanced2xBitmap = new Bitmap(SpectrumMachine.ScreenWidth * 2, SpectrumMachine.ScreenHeight * 2, PixelFormat.Format32bppArgb);
+        private readonly Bitmap enhanced3xBitmap = new Bitmap(SpectrumMachine.ScreenWidth * 3, SpectrumMachine.ScreenHeight * 3, PixelFormat.Format32bppArgb);
         private readonly SpectrumFrameBuffer presentationFrameBuffer = new SpectrumFrameBuffer();
         private readonly System.Windows.Forms.Timer frameTimer = new System.Windows.Forms.Timer { Interval = 1 };
         private readonly PictureBox screenBox = new PictureBox
@@ -73,8 +73,20 @@ namespace Derby
         private SpectrumRomSet bundledPlus2RomSet = null!;
         private SpectrumRomSet bundledPlus2ARomSet = null!;
         private SpectrumRomSet selectedRomSet = null!;
-        private Spectrum128Machine machine;
-        private readonly object machineLock = new();
+        private readonly EmulationSession emulationSession;
+        private SpectrumMachine machine
+        {
+            get => emulationSession.Machine;
+            set => emulationSession.Machine = value;
+        }
+        private object machineLock => emulationSession.MachineSyncRoot;
+        private EmulationLoopController emulationLoop => emulationSession.Loop;
+        private AudioPipeline audioPipeline
+        {
+            get => emulationSession.AudioPipeline;
+            set => emulationSession.AudioPipeline = value;
+        }
+        internal SpectrumMachine MachineForTesting => emulationSession.Machine;
         private readonly object inputStateLock = new();
         private readonly object audioPipelineLock = new();
         private readonly Queue<SpectrumHostKeyEvent> pendingSpectrumHostKeyEvents = new();
@@ -88,12 +100,10 @@ namespace Derby
         private long nextJoystickDeviceRefreshTicks;
         private IReadOnlyList<HostJoystickDevice> polledJoystickDevices = Array.Empty<HostJoystickDevice>();
         private SpectrumKeyboardMessageFilter? keyboardMessageFilter;
-        private readonly EmulationLoopController emulationLoop = new();
         private readonly DebuggerExecutionController debuggerExecutionController = new();
         private int debuggerStopNotificationQueued;
         private Exception? emulationLoopFailure;
         private string? emulationLoopFailureReportPath;
-        private AudioPipeline audioPipeline;
         private ulong inputEmulatedTStates;
         private readonly object inputDiagnosticsLock = new();
         private StreamWriter? inputDiagnosticsWriter;
@@ -149,13 +159,12 @@ namespace Derby
             bundledPlus2RomSet = SpectrumRomSet.BundledPlus2(romFolder);
             bundledPlus2ARomSet = SpectrumRomSet.BundledPlus2A(romFolder);
             selectedRomSet = bundled128RomSet;
-            machine = CreateConfiguredMachine();
+            emulationSession = new EmulationSession(CreateConfiguredMachine(), CreateAudioPipeline());
             joystickSettings = joystickSettingsStore.Load();
             joystickInputController = new HostJoystickInputController(joystickSource);
             InitializeDisplayModeSelector();
             ApplyDisplayMode(SpectrumDisplayMode.Enhanced2x);
 
-            audioPipeline = CreateAudioPipeline();
             InitializeKeyboard();
             InitializeInputDiagnostics();
             InitializePerformanceDiagnostics();
@@ -585,9 +594,9 @@ namespace Derby
             return "128K";
         }
 
-        private Spectrum128Machine CreateConfiguredMachine()
+        private SpectrumMachine CreateConfiguredMachine()
         {
-            var configuredMachine = new Spectrum128Machine(selectedRomSet);
+            var configuredMachine = new SpectrumMachine(selectedRomSet);
             if (selectedMachineModel != configuredMachine.MachineModel)
                 configuredMachine.Reset(selectedMachineModel);
             configuredMachine.SetScreenWriteDiagnosticsEnabled(LogFrameDiagnostics);
@@ -666,7 +675,7 @@ namespace Derby
                     double executeSliceMilliseconds = 0;
                     double audioSubmitMilliseconds = 0;
                     bool presentedFrame = false;
-                    Spectrum128Machine activeMachine = machine;
+                    SpectrumMachine activeMachine = machine;
                     long now = frameClock.ElapsedTicks;
                 long elapsedTicks = now - lastSchedulerTicks;
                 if (elapsedTicks < 0)
@@ -882,7 +891,7 @@ namespace Derby
                 PublishPresentationState(machine);
         }
 
-        private void PublishPresentationState(Spectrum128Machine sourceMachine)
+        private void PublishPresentationState(SpectrumMachine sourceMachine)
         {
             presentationState.Publish(sourceMachine);
         }
@@ -1114,7 +1123,7 @@ namespace Derby
                 tapeTransportOverlay.IsFullOverlayVisible(nowTicks));
         }
 
-        private int GetEmulationSpeedMultiplier(Spectrum128Machine activeMachine)
+        private int GetEmulationSpeedMultiplier(SpectrumMachine activeMachine)
         {
             if (!IsTurboTapeLoadActive(activeMachine))
                 return 1;
@@ -1129,19 +1138,19 @@ namespace Derby
             return Math.Min(currentTurboTapeLoadFactor, ceiling);
         }
 
-        private bool ShouldSuppressAudioSubmissionDuringTurboTapeLoad(Spectrum128Machine activeMachine)
+        private bool ShouldSuppressAudioSubmissionDuringTurboTapeLoad(SpectrumMachine activeMachine)
         {
             return IsTurboTapeLoadActive(activeMachine);
         }
 
-        private bool IsTurboTapeLoadActive(Spectrum128Machine activeMachine)
+        private bool IsTurboTapeLoadActive(SpectrumMachine activeMachine)
         {
             return tapeTurboPlaybackPolicy.IsTurboPlaybackAllowed(
                 activeMachine.MountedTape?.IsActivelyStreamingEarSignal == true,
                 activeMachine.HasAudibleOutput);
         }
 
-        private void UpdateTurboTapeLoadFactor(Spectrum128Machine activeMachine, long tickStartTicks, long tickEndTicks)
+        private void UpdateTurboTapeLoadFactor(SpectrumMachine activeMachine, long tickStartTicks, long tickEndTicks)
         {
             if (!IsTurboTapeLoadActive(activeMachine))
             {
@@ -1173,7 +1182,6 @@ namespace Derby
                     Application.RemoveMessageFilter(keyboardMessageFilter);
                     keyboardMessageFilter = null;
                 }
-                emulationLoop.Dispose();
                 joystickSource.Dispose();
                 lock (inputDiagnosticsLock)
                 {
@@ -1186,7 +1194,7 @@ namespace Derby
                     performanceDiagnosticsWriter = null;
                 }
                 lock (audioPipelineLock)
-                    audioPipeline.Dispose();
+                    emulationSession.Dispose();
                 screenBitmap.Dispose();
                 enhanced2xBitmap.Dispose();
                 enhanced3xBitmap.Dispose();

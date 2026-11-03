@@ -20,7 +20,7 @@ namespace Derby
         private QuickStateSlot SaveQuickStateSlot(int index)
         {
             ValidateQuickStateSlotIndex(index);
-            Spectrum128Machine.QuickState state;
+            SpectrumMachine.QuickState state;
             byte[] persistentState;
             lock (machineLock)
             {

@@ -3,7 +3,7 @@ namespace Derby.Pokes
     public static class PokeApplicationService
     {
         public static IReadOnlyList<PokeWritePreview> Preview(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<PokeWrite> writes)
         {
             ArgumentNullException.ThrowIfNull(machine);
@@ -12,7 +12,7 @@ namespace Derby.Pokes
         }
 
         public static PokeApplication Apply(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<PokeWrite> writes)
         {
             IReadOnlyList<PokeWritePreview> preview = Preview(machine, writes);
@@ -36,7 +36,7 @@ namespace Derby.Pokes
         }
 
         public static bool TryRestore(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             PokeApplication application,
             out string error)
         {
@@ -59,7 +59,7 @@ namespace Derby.Pokes
             return true;
         }
 
-        private static void ValidateWrites(Spectrum128Machine machine, IReadOnlyList<PokeWrite> writes)
+        private static void ValidateWrites(SpectrumMachine machine, IReadOnlyList<PokeWrite> writes)
         {
             ArgumentNullException.ThrowIfNull(writes);
             if (writes.Count == 0)
@@ -74,7 +74,7 @@ namespace Derby.Pokes
             }
         }
 
-        private static void ValidateWrite(Spectrum128Machine machine, PokeWrite write)
+        private static void ValidateWrite(SpectrumMachine machine, PokeWrite write)
         {
             if (write.Space == PokeMemorySpace.Mapped)
             {
@@ -89,12 +89,12 @@ namespace Derby.Pokes
                 throw new InvalidOperationException($"RAM bank {write.Bank} is not part of the 48K model's physical memory map.");
         }
 
-        private static byte Read(Spectrum128Machine machine, PokeWrite write) =>
+        private static byte Read(SpectrumMachine machine, PokeWrite write) =>
             write.Space == PokeMemorySpace.Mapped
                 ? machine.PeekMemory(write.Address)
                 : machine.PeekRamBank(write.Bank, write.Address);
 
-        private static void Write(Spectrum128Machine machine, PokeWrite write, byte value)
+        private static void Write(SpectrumMachine machine, PokeWrite write, byte value)
         {
             if (write.Space == PokeMemorySpace.Mapped)
                 machine.PokeMemory(write.Address, value);

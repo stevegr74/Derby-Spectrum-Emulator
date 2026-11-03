@@ -12,7 +12,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 machine.PokeMemory(0x4000, 0x01);
                 machine.PokeMemory(0x5B00, 0x02);

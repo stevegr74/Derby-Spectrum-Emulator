@@ -16,8 +16,8 @@ namespace Derby
             0xFF00FF00, 0xFF00FFFF, 0xFFFFFF00, 0xFFFFFFFF
         };
 
-        public const int Width = Spectrum128Machine.ScreenWidth;
-        public const int Height = Spectrum128Machine.ScreenHeight;
+        public const int Width = SpectrumMachine.ScreenWidth;
+        public const int Height = SpectrumMachine.ScreenHeight;
 
         private readonly uint[] pixels = new uint[Width * Height];
 
@@ -25,7 +25,7 @@ namespace Derby
 
         public void Render(byte[] screenRam, int borderColor, bool flashPhase)
         {
-            Render(screenRam, new BorderFrame(Spectrum128Machine.FrameTStates128, borderColor, Array.Empty<BorderEvent>()), flashPhase);
+            Render(screenRam, new BorderFrame(SpectrumMachine.FrameTStates128, borderColor, Array.Empty<BorderEvent>()), flashPhase);
         }
 
         public void Render(byte[] screenRam, BorderFrame borderFrame, bool flashPhase)
@@ -39,13 +39,13 @@ namespace Derby
 
             RenderBorder(borderFrame);
 
-            for (int y = 0; y < Spectrum128Machine.ActiveDisplayHeight; y++)
+            for (int y = 0; y < SpectrumMachine.ActiveDisplayHeight; y++)
             {
-                int rowOffset = (y + Spectrum128Machine.BorderTopHeight) * Width + Spectrum128Machine.BorderLeftWidth;
+                int rowOffset = (y + SpectrumMachine.BorderTopHeight) * Width + SpectrumMachine.BorderLeftWidth;
                 int charRow = y >> 3;
                 int charLine = y & 7;
 
-                for (int x = 0; x < Spectrum128Machine.ActiveDisplayWidth; x += 8)
+                for (int x = 0; x < SpectrumMachine.ActiveDisplayWidth; x += 8)
                 {
                     int column = x >> 3;
                     int pixelOffset = ((charRow & 0x18) << 8) |
@@ -69,9 +69,9 @@ namespace Derby
 
             RenderBorder(ulaFrame.BorderFrame);
 
-            for (int y = 0; y < Spectrum128Machine.ActiveDisplayHeight; y++)
+            for (int y = 0; y < SpectrumMachine.ActiveDisplayHeight; y++)
             {
-                int rowOffset = (y + Spectrum128Machine.BorderTopHeight) * Width + Spectrum128Machine.BorderLeftWidth;
+                int rowOffset = (y + SpectrumMachine.BorderTopHeight) * Width + SpectrumMachine.BorderLeftWidth;
                 for (int column = 0; column < UlaFrame.CellsPerLine; column++)
                 {
                     byte pixelByte = ulaFrame.GetBitmapByte(y, column);
@@ -106,8 +106,8 @@ namespace Derby
         {
             UlaTimingProfile timing = UlaTimingProfile.ForFrameLength(borderFrame.FrameTStates);
             int firstVisibleTState = timing.VisibleDisplayStartTState -
-                                     (Spectrum128Machine.BorderTopHeight * timing.LineTStates) -
-                                     (Spectrum128Machine.BorderLeftWidth / 2);
+                                     (SpectrumMachine.BorderTopHeight * timing.LineTStates) -
+                                     (SpectrumMachine.BorderLeftWidth / 2);
             int eventIndex = 0;
             int color = borderFrame.InitialColor;
             IReadOnlyList<BorderEvent> events = borderFrame.Events;

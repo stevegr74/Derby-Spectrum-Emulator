@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Derby.Z80;
+using static Derby.Tape.SpectrumRomWorkspace;
 namespace Derby.Tape
 {
-    public static partial class TapLoader
+    internal sealed partial class BasicBootstrapExecutor
     {
-        private sealed partial class BasicBootstrapExecutor
-        {
-            public static Func<Spectrum128Machine, ushort?>? CreateMountedLoadUsrContinuationResolver(
-                Spectrum128Machine machine,
+            public static Func<SpectrumMachine, ushort?>? CreateMountedLoadUsrContinuationResolver(
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -23,8 +22,8 @@ namespace Derby.Tape
                     requireUsrReturnAddressBetweenSteps: true);
             }
 
-            public static Func<Spectrum128Machine, ushort?>? CreateMountedLoadUsrContinuationResolver(
-                Spectrum128Machine machine,
+            public static Func<SpectrumMachine, ushort?>? CreateMountedLoadUsrContinuationResolver(
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine,
@@ -69,8 +68,8 @@ namespace Derby.Tape
                     requireUsrReturnAddressBetweenSteps);
             }
 
-            public static Func<Spectrum128Machine, ushort?>? CreateMountedLoadRomBasicContinuationResolver(
-                Spectrum128Machine machine,
+            public static Func<SpectrumMachine, ushort?>? CreateMountedLoadRomBasicContinuationResolver(
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -130,7 +129,7 @@ namespace Derby.Tape
             }
 
             private static bool TryBuildMountedUsrContinuationSteps(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine,
@@ -211,7 +210,7 @@ namespace Derby.Tape
             }
 
             private static bool TryBuildInitialMountedUsrContinuationStep(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine,
@@ -270,7 +269,7 @@ namespace Derby.Tape
             }
 
             private static bool TryBuildInitialRomBasicResumeStep(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine,
@@ -315,10 +314,10 @@ namespace Derby.Tape
                 return false;
             }
 
-            private static Func<Spectrum128Machine, ushort?> CreateMountedUsrBasicResumeResolver(
+            private static Func<SpectrumMachine, ushort?> CreateMountedUsrBasicResumeResolver(
                 MountedUsrContinuationStep step,
-                Func<Spectrum128Machine, ushort?>? followOnResolver = null,
-                Func<Spectrum128Machine, bool>? canResume = null)
+                Func<SpectrumMachine, ushort?>? followOnResolver = null,
+                Func<SpectrumMachine, bool>? canResume = null)
             {
                 return currentMachine =>
                 {
@@ -345,7 +344,7 @@ namespace Derby.Tape
                 };
             }
 
-            private static Func<Spectrum128Machine, ushort?> CreateMountedUsrContinuationResolver(
+            private static Func<SpectrumMachine, ushort?> CreateMountedUsrContinuationResolver(
                 IReadOnlyList<MountedUsrContinuationStep> steps,
                 int stepIndex,
                 Dictionary<string, int> variables,
@@ -546,7 +545,7 @@ namespace Derby.Tape
             }
 
             private static bool? ShouldUseRomBasicResumeForMountedUsrStep(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 ushort programStart,
                 ushort programLength,
@@ -588,7 +587,7 @@ namespace Derby.Tape
             }
 
             private static bool ShouldForceRomBasicResumeForLiveConditionalMountedUsrStep(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 ushort programStart,
                 ushort programLength,
@@ -609,7 +608,7 @@ namespace Derby.Tape
             }
 
             private static bool ShouldPreferRomBasicResumeForLiveMountedUsrStep(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 MountedUsrContinuationStep step,
                 IReadOnlyList<string> expressionTokens)
@@ -621,7 +620,7 @@ namespace Derby.Tape
             }
 
             private static bool CanEvaluateLiveMountedUsrStepDirectly(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 MountedUsrContinuationStep step,
                 IReadOnlyList<string> expressionTokens)
@@ -636,7 +635,7 @@ namespace Derby.Tape
             }
 
             private static bool ShouldPreserveLiveInterpreterStateForDirectMountedUsrStep(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 MountedUsrContinuationStep step)
@@ -689,7 +688,7 @@ namespace Derby.Tape
             }
 
             private static bool CanEvaluateMountedUsrPreambleDirectly(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 IReadOnlyList<string[]> preambleStatements)
             {
@@ -783,7 +782,7 @@ namespace Derby.Tape
             }
 
             private static bool CanEvaluateMountedUsrContinuationIfConditionDirectly(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 IReadOnlyList<string> clause)
             {
@@ -807,7 +806,7 @@ namespace Derby.Tape
             }
 
             private static bool CanEvaluateMountedUsrExpressionDirectly(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 IReadOnlyList<string> expressionTokens)
             {
@@ -831,7 +830,7 @@ namespace Derby.Tape
                     if (variables.ContainsKey(token))
                         continue;
 
-                    if (TryReadMountedContinuationNumericVariable(machine, token, out _))
+                    if (TryReadMountedContinuationNumericVariableForMountedContinuation(machine, token, out _))
                         continue;
 
                     // Spectrum BASIC numeric variables read as zero until assigned.
@@ -893,7 +892,7 @@ namespace Derby.Tape
             }
 
             private static ushort? EvaluateMountedUsrContinuationExpression(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 ushort programStart,
                 ushort programLength,
@@ -918,7 +917,7 @@ namespace Derby.Tape
             }
 
             private static bool TryEvaluateMountedUsrExpression(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 IReadOnlyList<string> expressionTokens,
                 out ushort? value)
@@ -929,7 +928,7 @@ namespace Derby.Tape
 
                 try
                 {
-                    var parser = new ExpressionParser(
+                    var parser = new BasicExpressionParser(
                         machine,
                         variables,
                         expressionTokens.ToList(),
@@ -950,7 +949,7 @@ namespace Derby.Tape
             }
 
             private static bool TryRefreshMountedUsrExpressionTokens(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 MountedUsrContinuationStep step,
@@ -988,7 +987,7 @@ namespace Derby.Tape
             }
 
             private static bool TryRefreshMountedUsrExpressionTokensFromLiveLine(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 MountedUsrContinuationStep step,
                 out string[]? expressionTokens)
             {
@@ -1022,7 +1021,7 @@ namespace Derby.Tape
             }
 
             private static bool TryParseLiveBasicLine(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort lineDataAddress,
                 ushort expectedLineNumber,
                 out BasicLine? line)
@@ -1053,7 +1052,7 @@ namespace Derby.Tape
             }
 
             private static void UpdateMountedUsrContinuationRomResumeContext(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 MountedUsrContinuationStep step,
                 bool suppressCursorOverride = false)
             {
@@ -1070,7 +1069,7 @@ namespace Derby.Tape
             }
 
             private static void UpdateMountedUsrContinuationDirectUsrContext(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 MountedUsrContinuationStep step,
                 bool preserveLiveInterpreterState)
             {
@@ -1094,7 +1093,7 @@ namespace Derby.Tape
             }
 
             private static MountedUsrContinuationPreambleResult ExecuteMountedUsrContinuationPreamble(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 IReadOnlyList<string[]> preambleStatements)
             {
@@ -1113,7 +1112,7 @@ namespace Derby.Tape
                                 throw new InvalidOperationException("Malformed LET statement in mounted USR continuation.");
 
                             string variableName = clause[1];
-                            var parser = new ExpressionParser(
+                            var parser = new BasicExpressionParser(
                                 machine,
                                 variables,
                                 new List<string>(clause),
@@ -1146,7 +1145,7 @@ namespace Derby.Tape
                         {
                             if (clause.Length > 1)
                             {
-                                var parser = new ExpressionParser(
+                                var parser = new BasicExpressionParser(
                                     machine,
                                     variables,
                                     new List<string>(clause),
@@ -1177,14 +1176,14 @@ namespace Derby.Tape
                             if (commaIndex <= 1 || commaIndex >= clause.Length - 1)
                                 throw new InvalidOperationException("Malformed POKE statement in mounted USR continuation.");
 
-                            var addressParser = new ExpressionParser(
+                            var addressParser = new BasicExpressionParser(
                                 machine,
                                 variables,
                                 new List<string>(clause),
                                 1,
                                 commaIndex - 1,
                                 requireVariableResolution: true);
-                            var valueParser = new ExpressionParser(
+                            var valueParser = new BasicExpressionParser(
                                 machine,
                                 variables,
                                 new List<string>(clause),
@@ -1208,7 +1207,7 @@ namespace Derby.Tape
             }
 
             private static ushort? EvaluateMountedCodeLoadAddress(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 IReadOnlyList<string> clause)
             {
@@ -1225,7 +1224,7 @@ namespace Derby.Tape
                 if (codeIndex < 0 || codeIndex + 1 >= clause.Count)
                     return null;
 
-                var parser = new ExpressionParser(
+                var parser = new BasicExpressionParser(
                     machine,
                     variables,
                     new List<string>(clause),
@@ -1236,7 +1235,7 @@ namespace Derby.Tape
             }
 
             private static bool EvaluateMountedUsrContinuationIfCondition(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 IReadOnlyList<string> clause)
             {
@@ -1253,14 +1252,14 @@ namespace Derby.Tape
                 if (equalsIndex <= 1 || equalsIndex >= clause.Count - 1)
                     throw new InvalidOperationException("Malformed IF statement in mounted USR continuation.");
 
-                var leftParser = new ExpressionParser(
+                var leftParser = new BasicExpressionParser(
                     machine,
                     variables,
                     new List<string>(clause),
                     1,
                     equalsIndex - 1,
                     requireVariableResolution: true);
-                var rightParser = new ExpressionParser(
+                var rightParser = new BasicExpressionParser(
                     machine,
                     variables,
                     new List<string>(clause),
@@ -1270,13 +1269,13 @@ namespace Derby.Tape
                 return leftParser.Parse() == rightParser.Parse();
             }
 
-            private static void ApplyMountedContinuationDisplaySideEffects(Spectrum128Machine machine)
+            private static void ApplyMountedContinuationDisplaySideEffects(SpectrumMachine machine)
             {
                 machine.PokeMemory(FlagsSystemVariableAddress, (byte)(machine.PeekMemory(FlagsSystemVariableAddress) | 0x20));
                 machine.PokeMemory(TvFlagSystemVariableAddress, (byte)(machine.PeekMemory(TvFlagSystemVariableAddress) | 0x20));
             }
 
-            private static void ApplyMountedContinuationClear(Spectrum128Machine machine, int clearAddress)
+            private static void ApplyMountedContinuationClear(SpectrumMachine machine, int clearAddress)
             {
                 ushort top = ClampClearTopAddress(clearAddress);
                 WriteWord(machine, RamTopAddress, top);
@@ -1294,7 +1293,7 @@ namespace Derby.Tape
             }
 
             private static void TryUpdateMountedUsrContinuationBasicVariable(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 string variableName,
                 int value)
             {
@@ -1319,7 +1318,7 @@ namespace Derby.Tape
                     if (header == 0x80)
                         return;
 
-                    int entryLength = GetBasicVariableEntryLength(machine, current, eLineAddress);
+                    int entryLength = GetMountedBasicVariableEntryLength(machine, current, eLineAddress);
                     if (entryLength <= 0 || current + entryLength > eLineAddress)
                         return;
 
@@ -1333,8 +1332,8 @@ namespace Derby.Tape
                 }
             }
 
-            private static int GetBasicVariableEntryLength(
-                Spectrum128Machine machine,
+            private static int GetMountedBasicVariableEntryLength(
+                SpectrumMachine machine,
                 ushort address,
                 ushort eLineAddress)
             {
@@ -1394,7 +1393,7 @@ namespace Derby.Tape
             }
 
             private static void WriteSpectrumSmallInteger(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort address,
                 int value)
             {
@@ -1409,19 +1408,19 @@ namespace Derby.Tape
                 machine.PokeMemory((ushort)(address + 4), 0x00);
             }
 
-            private static bool TryReadMountedContinuationNumericVariable(
-                Spectrum128Machine machine,
+            private static bool TryReadMountedContinuationNumericVariableForMountedContinuation(
+                SpectrumMachine machine,
                 string variableName,
                 out int value)
             {
-                if (TryReadLiveBasicNumericVariable(machine, variableName, out value))
+                if (TryReadLiveBasicNumericVariableForMountedContinuation(machine, variableName, out value))
                     return true;
 
                 return TryReadPreservedMountedLoadBasicNumericVariable(machine, variableName, out value);
             }
 
-            private static bool TryReadLiveBasicNumericVariable(
-                Spectrum128Machine machine,
+            private static bool TryReadLiveBasicNumericVariableForMountedContinuation(
+                SpectrumMachine machine,
                 string variableName,
                 out int value)
             {
@@ -1444,13 +1443,13 @@ namespace Derby.Tape
                     if (header == 0x80)
                         return false;
 
-                    int entryLength = GetBasicVariableEntryLength(machine, current, eLineAddress);
+                    int entryLength = GetMountedBasicVariableEntryLength(machine, current, eLineAddress);
                     if (entryLength <= 0 || current + entryLength > eLineAddress)
                         return false;
 
                     if ((header & 0xE0) == 0x60 && header == targetHeader)
                     {
-                        return TryReadSpectrumSmallInteger(machine, (ushort)(current + 1), out value);
+                        return TryReadMountedSpectrumSmallInteger(machine, (ushort)(current + 1), out value);
                     }
 
                     current = (ushort)(current + entryLength);
@@ -1460,7 +1459,7 @@ namespace Derby.Tape
             }
 
             private static bool TryReadPreservedMountedLoadBasicNumericVariable(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 string variableName,
                 out int value)
             {
@@ -1486,13 +1485,13 @@ namespace Derby.Tape
                     if (header == 0x80)
                         return false;
 
-                    int entryLength = GetBasicVariableEntryLength(data, index);
+                    int entryLength = GetMountedBasicVariableEntryLength(data, index);
                     if (entryLength <= 0 || index + entryLength > data.Length)
                         return false;
 
                     if ((header & 0xE0) == 0x60 && header == targetHeader)
                     {
-                        return TryReadSpectrumSmallInteger(data, index + 1, out value);
+                        return TryReadMountedSpectrumSmallInteger(data, index + 1, out value);
                     }
 
                     index += entryLength;
@@ -1501,8 +1500,8 @@ namespace Derby.Tape
                 return false;
             }
 
-            private static bool TryReadSpectrumSmallInteger(
-                Spectrum128Machine machine,
+            private static bool TryReadMountedSpectrumSmallInteger(
+                SpectrumMachine machine,
                 ushort address,
                 out int value)
             {
@@ -1512,10 +1511,10 @@ namespace Derby.Tape
                 byte low = machine.PeekMemory((ushort)(address + 2));
                 byte high = machine.PeekMemory((ushort)(address + 3));
                 byte trailing = machine.PeekMemory((ushort)(address + 4));
-                return TryDecodeSpectrumNumericValue(exponent, sign, low, high, trailing, out value);
+                return TryDecodeMountedSpectrumNumericValue(exponent, sign, low, high, trailing, out value);
             }
 
-            private static bool TryReadSpectrumSmallInteger(
+            private static bool TryReadMountedSpectrumSmallInteger(
                 byte[] data,
                 int index,
                 out int value)
@@ -1529,10 +1528,10 @@ namespace Derby.Tape
                 byte low = data[index + 2];
                 byte high = data[index + 3];
                 byte trailing = data[index + 4];
-                return TryDecodeSpectrumNumericValue(exponent, sign, low, high, trailing, out value);
+                return TryDecodeMountedSpectrumNumericValue(exponent, sign, low, high, trailing, out value);
             }
 
-            private static bool TryDecodeSpectrumNumericValue(
+            private static bool TryDecodeMountedSpectrumNumericValue(
                 byte exponent,
                 byte signOrMantissa,
                 byte third,
@@ -1570,7 +1569,7 @@ namespace Derby.Tape
                 return true;
             }
 
-            private static int GetBasicVariableEntryLength(byte[] data, int index)
+            private static int GetMountedBasicVariableEntryLength(byte[] data, int index)
             {
                 if ((uint)index >= (uint)data.Length)
                     return 0;
@@ -1632,6 +1631,5 @@ namespace Derby.Tape
                 string[][] PreambleStatements,
                 string[] ExpressionTokens);
 
-        }
     }
 }

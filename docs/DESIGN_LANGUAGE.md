@@ -6,11 +6,11 @@
 
 This document is the visual and interaction specification for the Windows frontend. It combines reusable design tokens with examples captured from the current application. New UI should feel like another part of the same tool, not a separately designed utility.
 
-### Brand identity
+## Brand Identity
 
 Use `DERBY` in uppercase for the product mark, window identity, and prominent
 headings. Use `Derby` for namespaces, assemblies, executable names, paths, and
-ordinary prose. The full descriptive name is **DERBY - ZX Spectrum 48K / 128K
+ordinary prose. The full descriptive name is **DERBY - ZX Spectrum 48K / 128K / +2A
 Emulator**. The compact `D` mark uses only `Ink`, `Paper`, and the mint brand
 accent; do not add rainbow stripes, horse imagery, gradients, or unrelated
 nostalgia motifs.

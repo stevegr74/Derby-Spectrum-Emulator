@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Derby.Z80;
+using static Derby.Tape.SpectrumRomWorkspace;
 
 namespace Derby.Tape
 {
@@ -28,43 +29,7 @@ namespace Derby.Tape
         private const int DefaultTapeAutoStartInitialInterruptDelay = 32;
         private const int RomInitializationFrameLimit = 150;
 
-        private const ushort BasicProgramStart = 23755;
-        private const ushort DefaultStackPointer = 0xFF58;
-        private const ushort RomSystemVariablesBase = 0x5C3A;
-        private const ushort ErrorNumberSystemVariableAddress = RomSystemVariablesBase;
-
-        private const ushort NewPpcAddress = 23618;
-        private const ushort NspPcAddress = 23620;
-        private const ushort PpcAddress = 23621;
-        private const ushort SubPpcAddress = 23623;
-        private const ushort ErrorStackPointerAddress = 23613;
-        private const ushort FlagsSystemVariableAddress = 23611;
-        private const ushort TvFlagSystemVariableAddress = 23612;
-        private const ushort BorderSystemVariableAddress = 23624;
-        private const ushort StreamsAddress = 23568;
-        private const ushort VarsAddress = 23627;
-        private const ushort ChansAddress = 23631;
-        private const ushort CurChlAddress = 23633;
-        private const ushort ProgAddress = 23635;
-        private const ushort NextLineAddress = 23637;
-        private const ushort DataAddress = 23639;
-        private const ushort EditLineAddress = 23641;
-        private const ushort KCurAddress = 23643;
-        private const ushort ChAddAddress = 23645;
-        private const ushort XPtrAddress = 23647;
-        private const ushort WorkspaceAddress = 23649;
-        private const ushort StackBottomAddress = 23651;
-        private const ushort StackEndAddress = 23653;
-        private const ushort RamTopAddress = 23730;
-        private const ushort PhysicalRamTopAddress = 23732;
-        private const ushort Spectrum128TapeLoadBankSelectAddress = 23388;
-        private const ushort Spectrum128RamRstAddress = 23389;
-        private const byte Spectrum128RamRstOpcode = 0xCF;
-        private const ushort InitialChannelsAreaAddress = BasicProgramStart - 21;
-        private const ushort KeyboardChannelDescriptorAddress = InitialChannelsAreaAddress;
-        private const ushort ScreenChannelDescriptorAddress = InitialChannelsAreaAddress + 5;
-
-        public static TapLoadResult Load(Spectrum128Machine machine, string path)
+        public static TapLoadResult Load(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -118,7 +83,7 @@ namespace Derby.Tape
             return new TapLoadResult(blocks.Count, loadedBlockCount, autoStartFileName);
         }
 
-        public static TapMountResult Mount(Spectrum128Machine machine, string path)
+        public static TapMountResult Mount(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -136,7 +101,7 @@ namespace Derby.Tape
             return new TapMountResult(blocks.Count, Path.GetFileName(path));
         }
 
-        public static TapeExecutionResult LoadWithPolicy(Spectrum128Machine machine, string path)
+        public static TapeExecutionResult LoadWithPolicy(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -151,7 +116,7 @@ namespace Derby.Tape
             return TapeExecutionEngine.Execute(machine, displayName, blocks, plan);
         }
 
-        public static TapBootstrapResult LoadAllStandardBlocksAndAutoStart(Spectrum128Machine machine, string path)
+        public static TapBootstrapResult LoadAllStandardBlocksAndAutoStart(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -169,7 +134,7 @@ namespace Derby.Tape
                 stopBeforeFirstCustomHeader: false);
         }
 
-        public static TapBootstrapResult BootstrapBasicProgramAndMountRemaining(Spectrum128Machine machine, string path)
+        public static TapBootstrapResult BootstrapBasicProgramAndMountRemaining(SpectrumMachine machine, string path)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -182,7 +147,7 @@ namespace Derby.Tape
         }
 
         internal static TapBootstrapResult BootstrapTapeBlocksAndMountRemaining(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             bool skipCustomHeaderForEarPlayback = true,
@@ -239,7 +204,7 @@ namespace Derby.Tape
 
             AdvanceBootstrapTapeTime(
                 machine,
-                EstimateTapeBlockDurationTStates(headerBlock) + EstimateTapeBlockDurationTStates(dataBlock));
+                TapeBlockTiming.EstimateDuration(headerBlock) + TapeBlockTiming.EstimateDuration(dataBlock));
 
             consumedBlockCount += 2;
 
@@ -262,7 +227,7 @@ namespace Derby.Tape
             bool headeredStandardRemainder = HasStandardHeaderDataPairAfterLeadingBasic(blocks);
             if (rawStandardMixedRemainder || headeredStandardRemainder)
             {
-                Func<Spectrum128Machine, ushort?>? continuationResolver =
+                Func<SpectrumMachine, ushort?>? continuationResolver =
                     BasicBootstrapExecutor.CreateMountedLoadUsrContinuationResolver(
                         machine,
                         BasicProgramStart,
@@ -371,7 +336,7 @@ namespace Derby.Tape
             return header.Type == ProgramType;
         }
 
-        internal static TapeLoadPlan CreateExecutionPlan(Spectrum128Machine machine, IReadOnlyList<TapeBlock> blocks)
+        internal static TapeLoadPlan CreateExecutionPlan(SpectrumMachine machine, IReadOnlyList<TapeBlock> blocks)
         {
             return TapeLoadPlanner.Create(machine, blocks);
         }
@@ -431,7 +396,7 @@ namespace Derby.Tape
         }
 
         internal static TapeExecutionResult ExecutePlan(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             TapeLoadPlan plan,
@@ -442,7 +407,7 @@ namespace Derby.Tape
             => TapeExecutionEngine.GetProtectedLiveTapeTimingDivisor(strategy, blocks);
 
         internal static TapBootstrapResult LoadAllStandardTapeBlocksAndAutoStart(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             bool skipCustomHeaderForEarPlayback = true,
@@ -481,7 +446,7 @@ namespace Derby.Tape
             {
                 while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
                 {
-                    consumedTStates += EstimateTapeBlockDurationTStates(blocks[index]);
+                    consumedTStates += TapeBlockTiming.EstimateDuration(blocks[index]);
                     index++;
                     consumedBlockCount++;
                 }
@@ -507,8 +472,8 @@ namespace Derby.Tape
                 }
 
                 LoadDataBlock(machine, header, dataBlock.Payload!);
-                consumedTStates += EstimateTapeBlockDurationTStates(headerBlock);
-                consumedTStates += EstimateTapeBlockDurationTStates(dataBlock);
+                consumedTStates += TapeBlockTiming.EstimateDuration(headerBlock);
+                consumedTStates += TapeBlockTiming.EstimateDuration(dataBlock);
 
                 if (header.Type == ProgramType && autoStartFileName == null && header.AutoStartLine < 32768)
                 {
@@ -609,7 +574,7 @@ namespace Derby.Tape
         }
 
         private static void ReloadConsumedStandardBlocks(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks,
             int consumedBlockCount)
         {
@@ -636,7 +601,7 @@ namespace Derby.Tape
         }
 
         private static IReadOnlyList<CustomLoaderWaitLoop> CaptureCustomLoaderWaitLoops(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks)
         {
             if (FindFirstCustomHeaderBlockIndex(blocks) < 0)
@@ -679,7 +644,7 @@ namespace Derby.Tape
         }
 
         private static bool TryResolvePatchedCustomLoaderWaitLoop(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<CustomLoaderWaitLoop> waitLoops,
             out ushort resumePc)
         {
@@ -715,7 +680,7 @@ namespace Derby.Tape
             ushort CodeLength);
 
         internal static bool RequiresRomDrivenBootstrapForStandardTape(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks,
             bool use128kMode)
         {
@@ -796,7 +761,7 @@ namespace Derby.Tape
         }
 
         internal static bool RequiresRomDrivenBootstrapForMixedTape(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks)
         {
             if (machine == null)
@@ -831,7 +796,7 @@ namespace Derby.Tape
         }
 
         internal static bool RequiresLeadingStandardBasicChainFakeLoad(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks)
         {
             if (machine == null)
@@ -893,7 +858,7 @@ namespace Derby.Tape
         }
 
         internal static bool RequiresMountedRealtimeForMixedTape(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks)
         {
             if (machine == null)
@@ -980,7 +945,7 @@ namespace Derby.Tape
         }
 
         internal static bool CanResolveMountedLoadUsrContinuation(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks)
         {
             int index = 0;
@@ -1010,7 +975,7 @@ namespace Derby.Tape
         }
 
         internal static TapBootstrapResult LoadLeadingStandardBasicChainAndMountRemaining(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             bool skipCustomHeaderForEarPlayback,
@@ -1034,7 +999,7 @@ namespace Derby.Tape
             ulong consumedTStates = 0;
             while (consumedBlockCount < blocks.Count && blocks[consumedBlockCount].Kind == TapeBlockKind.Metadata)
             {
-                consumedTStates += EstimateTapeBlockDurationTStates(blocks[consumedBlockCount]);
+                consumedTStates += TapeBlockTiming.EstimateDuration(blocks[consumedBlockCount]);
                 consumedBlockCount++;
             }
 
@@ -1059,8 +1024,8 @@ namespace Derby.Tape
                 effectiveProgramLength);
 
             LoadBasicProgram(machine, effectiveHeader, dataBlock.Payload!);
-            consumedTStates += EstimateTapeBlockDurationTStates(headerBlock);
-            consumedTStates += EstimateTapeBlockDurationTStates(dataBlock);
+            consumedTStates += TapeBlockTiming.EstimateDuration(headerBlock);
+            consumedTStates += TapeBlockTiming.EstimateDuration(dataBlock);
             consumedBlockCount += 2;
             AdvanceBootstrapTapeTime(machine, consumedTStates);
 
@@ -1150,7 +1115,7 @@ namespace Derby.Tape
         }
 
         internal static bool RequiresMountedLoadSemanticsForStandardTape(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks,
             bool use128kMode)
         {
@@ -1179,7 +1144,7 @@ namespace Derby.Tape
         }
 
         internal static bool CanExecuteLeadingBasicProgramWithBootstrap(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks,
             bool use128kMode)
         {
@@ -1207,7 +1172,7 @@ namespace Derby.Tape
         }
 
         internal static bool CanSatisfyLeadingBasicLoadRequestsBeforeProtectedRemainder(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks,
             bool use128kMode)
         {
@@ -1262,7 +1227,7 @@ namespace Derby.Tape
         }
 
         private static bool CanBootstrapLoadedBasicProgram(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             TapHeaderInfo header,
             byte[] payload,
             bool use128kMode)
@@ -1294,7 +1259,7 @@ namespace Derby.Tape
         }
 
         internal static TapBootstrapResult LoadLeadingBasicProgramAndMountRemainingForRomAutoStart(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             bool skipCustomHeaderForEarPlayback = true,
@@ -1336,7 +1301,7 @@ namespace Derby.Tape
             bool rawStandardMixedRemainder = RequiresMountedRealtimeForMixedTape(machine, blocks);
             if (rawStandardMixedRemainder)
             {
-                Func<Spectrum128Machine, ushort?>? mountedLoadUsrContinuationResolver =
+                Func<SpectrumMachine, ushort?>? mountedLoadUsrContinuationResolver =
                     BasicBootstrapExecutor.CreateMountedLoadUsrContinuationResolver(
                         machine,
                         BasicProgramStart,
@@ -1355,7 +1320,7 @@ namespace Derby.Tape
             }
             else
             {
-                Func<Spectrum128Machine, ushort?>? mountedLoadUsrContinuationResolver =
+                Func<SpectrumMachine, ushort?>? mountedLoadUsrContinuationResolver =
                     BasicBootstrapExecutor.CreateMountedLoadUsrContinuationResolver(
                         machine,
                         BasicProgramStart,
@@ -1396,7 +1361,7 @@ namespace Derby.Tape
         }
 
         internal static bool Requires128kTapeLoadModeForStandardTape(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks)
         {
             if (machine == null)
@@ -1435,7 +1400,7 @@ namespace Derby.Tape
             return TapeExecutionEngine.ContainsElectricallyDecodedProtectedStream(blocks);
         }
 
-        internal static bool Use128kTapeLoadMode(Spectrum128Machine machine)
+        internal static bool Use128kTapeLoadMode(SpectrumMachine machine)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -1444,7 +1409,7 @@ namespace Derby.Tape
         }
 
         internal static void StartRomDrivenMountedBasicAutoStart(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort autoStartLine)
         {
             WriteWord(machine, NewPpcAddress, autoStartLine);
@@ -1471,14 +1436,14 @@ namespace Derby.Tape
                 (byte)(machine.PeekMemory(FlagsSystemVariableAddress) | 0x80));
         }
 
-        internal static bool CanStartRomDrivenMountedBasicAutoStart(Spectrum128Machine machine)
+        internal static bool CanStartRomDrivenMountedBasicAutoStart(SpectrumMachine machine)
         {
             ushort errorStackPointer = ReadWord(machine, ErrorStackPointerAddress);
             return errorStackPointer >= 0x4000 && errorStackPointer != 0xFFFF;
         }
 
         private static void InitializeMachineForRomDrivenTapeLoad(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             bool use128kMode)
         {
             machine.Reset();
@@ -1511,7 +1476,7 @@ namespace Derby.Tape
         }
 
         internal static TapBootstrapResult StartNative128kRomTapeLoader(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             int nonRomTimingDivisor,
@@ -1625,7 +1590,7 @@ namespace Derby.Tape
             return index;
         }
 
-        internal static void AdvanceBootstrapTapeTime(Spectrum128Machine machine, ulong consumedTStates)
+        internal static void AdvanceBootstrapTapeTime(SpectrumMachine machine, ulong consumedTStates)
         {
             if (consumedTStates == 0)
                 return;
@@ -1678,7 +1643,7 @@ namespace Derby.Tape
             };
         }
 
-        internal static void InitializeMachineForFakeTapeLoad(Spectrum128Machine machine, bool use128kMode)
+        internal static void InitializeMachineForFakeTapeLoad(SpectrumMachine machine, bool use128kMode)
         {
             machine.Reset();
             if (use128kMode)
@@ -1712,7 +1677,7 @@ namespace Derby.Tape
             machine.PokeMemory(BasicProgramStart, 0x0D);
         }
 
-        private static void InitializeRomChannelsAndStreams(Spectrum128Machine machine)
+        private static void InitializeRomChannelsAndStreams(SpectrumMachine machine)
         {
             WriteWord(machine, ChansAddress, InitialChannelsAreaAddress);
             WriteWord(machine, CurChlAddress, KeyboardChannelDescriptorAddress);
@@ -1744,7 +1709,7 @@ namespace Derby.Tape
                 machine.PokeMemory((ushort)(InitialChannelsAreaAddress + i), channelData[i]);
         }
 
-        internal static void LoadDataBlock(Spectrum128Machine machine, TapHeaderInfo header, byte[] payload)
+        internal static void LoadDataBlock(SpectrumMachine machine, TapHeaderInfo header, byte[] payload)
         {
             switch (header.Type)
             {
@@ -1767,7 +1732,7 @@ namespace Derby.Tape
         }
 
         internal static void LoadBasicProgram(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             TapHeaderInfo header,
             byte[] payload,
             bool preserveInterpreterWorkspace = false)
@@ -1848,12 +1813,12 @@ namespace Derby.Tape
             }
         }
 
-        internal static void LoadBasicProgram(Spectrum128Machine machine, TapHeaderInfo header, byte[] payload)
+        internal static void LoadBasicProgram(SpectrumMachine machine, TapHeaderInfo header, byte[] payload)
         {
             LoadBasicProgram(machine, header, payload, preserveInterpreterWorkspace: false);
         }
 
-        private static void InitializeInterpreterPointersForLoadedProgram(Spectrum128Machine machine, ushort editLineAddress)
+        internal static void InitializeInterpreterPointersForLoadedProgram(SpectrumMachine machine, ushort editLineAddress)
         {
             WriteWord(machine, CurChlAddress, KeyboardChannelDescriptorAddress);
             WriteWord(machine, KCurAddress, editLineAddress);
@@ -1861,7 +1826,7 @@ namespace Derby.Tape
             WriteWord(machine, XPtrAddress, 0);
         }
 
-        internal static void LoadBytes(Spectrum128Machine machine, ushort startAddress, byte[] payload)
+        internal static void LoadBytes(SpectrumMachine machine, ushort startAddress, byte[] payload)
         {
             if (payload == null)
                 throw new ArgumentNullException(nameof(payload));
@@ -1900,6 +1865,17 @@ namespace Derby.Tape
             return (ushort)(data[offset] | (data[offset + 1] << 8));
         }
 
+        private static ushort ReadWord(SpectrumMachine machine, ushort address)
+        {
+            return (ushort)(machine.PeekMemory(address) | (machine.PeekMemory((ushort)(address + 1)) << 8));
+        }
+
+        private static void WriteWord(SpectrumMachine machine, ushort address, ushort value)
+        {
+            machine.PokeMemory(address, (byte)(value & 0xFF));
+            machine.PokeMemory((ushort)(address + 1), (byte)(value >> 8));
+        }
+
         internal static bool IsSupportedRomHeaderType(byte type)
         {
             return type == ProgramType || type == NumberArrayType || type == CharacterArrayType || type == CodeType;
@@ -1930,7 +1906,7 @@ namespace Derby.Tape
         }
 
         private static BootstrapExecutionResult ExecuteBootstrapBasicAutoStart(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort programStart,
             ushort programLength,
             ushort autoStartLine,
@@ -1945,7 +1921,7 @@ namespace Derby.Tape
         }
 
         internal static bool TryExecuteLoadedMountedBasicProgram(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort programLength,
             ushort dataLength,
             ushort autoStartLine)
@@ -1977,7 +1953,7 @@ namespace Derby.Tape
             {
                 machine.Trace?.Invoke(
                     $"[MountedLoad] Loaded BASIC requires mounted-load semantics len={programLength} auto={autoStartLine}");
-                Func<Spectrum128Machine, ushort?>? mountedLoadUsrContinuationResolver =
+                Func<SpectrumMachine, ushort?>? mountedLoadUsrContinuationResolver =
                     BasicBootstrapExecutor.CreateMountedLoadUsrContinuationResolver(
                         machine,
                         BasicProgramStart,
@@ -2002,7 +1978,7 @@ namespace Derby.Tape
             {
                 machine.Trace?.Invoke(
                     $"[MountedLoad] Loaded BASIC requires deferred ROM BASIC continuation len={programLength} auto={autoStartLine}");
-                Func<Spectrum128Machine, ushort?>? romBasicContinuationResolver =
+                Func<SpectrumMachine, ushort?>? romBasicContinuationResolver =
                     BasicBootstrapExecutor.CreateMountedLoadRomBasicContinuationResolver(
                         machine,
                         BasicProgramStart,
@@ -2033,7 +2009,7 @@ namespace Derby.Tape
         }
 
         internal static bool ShouldReloadStructuredMountedBasicProgramWithoutPreservingInterpreterWorkspace(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort programLength,
             ushort autoStartLine)
         {
@@ -2051,7 +2027,7 @@ namespace Derby.Tape
         }
 
         internal static bool RequiresRomDrivenStructuredMountedProgram(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             TapHeaderInfo header,
             ushort loadedProgramLength)
         {

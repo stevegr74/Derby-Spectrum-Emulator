@@ -150,7 +150,7 @@ namespace Derby
                 return joystickSettings;
         }
 
-        private void PollJoystick(Spectrum128Machine activeMachine)
+        private void PollJoystick(SpectrumMachine activeMachine)
         {
             HostJoystickSettings settings;
             bool reset;

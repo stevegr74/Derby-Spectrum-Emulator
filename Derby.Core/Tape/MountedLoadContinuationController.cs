@@ -26,8 +26,8 @@ namespace Derby.Tape
         private const ushort KeyboardChannelDescriptorAddress = 23739;
         private const ulong StreamingInterpreterRefreshIntervalTStates = 4096;
 
-        private readonly Spectrum128Machine machine;
-        private Func<Spectrum128Machine, ushort?>? resolver;
+        private readonly SpectrumMachine machine;
+        private Func<SpectrumMachine, ushort?>? resolver;
         private bool requiresUsrReturnAddress;
         private ushort? basicResumeLine;
         private byte basicResumeStatement;
@@ -37,7 +37,7 @@ namespace Derby.Tape
         private bool preserveLiveInterpreterStateForDirectUsrEntry;
         private ulong nextStreamingInterpreterRefreshTStates;
 
-        internal MountedLoadContinuationController(Spectrum128Machine machine)
+        internal MountedLoadContinuationController(SpectrumMachine machine)
         {
             this.machine = machine ?? throw new ArgumentNullException(nameof(machine));
         }
@@ -45,7 +45,7 @@ namespace Derby.Tape
         internal bool HasPending =>
             resolver != null || basicResumeLine.HasValue;
 
-        internal Func<Spectrum128Machine, ushort?>? Resolver
+        internal Func<SpectrumMachine, ushort?>? Resolver
         {
             get => resolver;
             set => resolver = value;
@@ -67,7 +67,7 @@ namespace Derby.Tape
         }
 
         internal void SetResolver(
-            Func<Spectrum128Machine, ushort?> resolver,
+            Func<SpectrumMachine, ushort?> resolver,
             bool requireUsrReturnAddress)
         {
             ArgumentNullException.ThrowIfNull(resolver);
@@ -256,7 +256,7 @@ namespace Derby.Tape
                 $"Resume gate open basicResume={(basicResumeLine.HasValue ? 1 : 0)} " +
                 $"requireUsrReturn={(requiresUsrReturnAddress ? 1 : 0)}");
 
-            Func<Spectrum128Machine, ushort?> continuationResolver = resolver;
+            Func<SpectrumMachine, ushort?> continuationResolver = resolver;
             resolver = null;
             requiresUsrReturnAddress = false;
             ushort? resolvedEntryPoint = continuationResolver(machine);
@@ -515,7 +515,7 @@ namespace Derby.Tape
 
         internal sealed class QuickState
         {
-            internal Func<Spectrum128Machine, ushort?>? Resolver;
+            internal Func<SpectrumMachine, ushort?>? Resolver;
             internal bool RequiresUsrReturnAddress;
             internal ushort? BasicResumeLine;
             internal byte BasicResumeStatement;

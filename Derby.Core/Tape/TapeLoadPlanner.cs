@@ -5,7 +5,7 @@ namespace Derby.Tape
 {
     internal static class TapeLoadPlanner
     {
-        public static TapeLoadPlan Create(Spectrum128Machine machine, IReadOnlyList<TapeBlock> blocks)
+        public static TapeLoadPlan Create(SpectrumMachine machine, IReadOnlyList<TapeBlock> blocks)
         {
             ArgumentNullException.ThrowIfNull(machine);
 

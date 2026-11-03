@@ -27,7 +27,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 2, parameter1: 0x8000, parameter2: 0),
                     BuildDataBlock(new byte[] { 0xAA, 0xBB }));
                 var standardBlocks = parseBlocks.Invoke(null, new object[] { standardTape })!;
-                var standardMachine = new Spectrum128Machine(tempFolder);
+                var standardMachine = new SpectrumMachine(tempFolder);
                 object standardPlan = createPlan.Invoke(null, new[] { standardMachine, standardBlocks })!;
                 Assert.Equal("FullFakeLoad", strategyProperty.GetValue(standardPlan)!.ToString());
                 Assert.Equal("StandardTapeFullyAccelerated", reasonCodeProperty.GetValue(standardPlan)!.ToString());
@@ -49,7 +49,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 0, fileName: "STAGE2", dataLength: (ushort)opaqueBasicStage.Length, parameter1: 0, parameter2: (ushort)opaqueBasicStage.Length),
                     BuildDataBlock(opaqueBasicStage));
                 var romDrivenBlocks = parseBlocks.Invoke(null, new object[] { romDrivenTape })!;
-                var romDrivenMachine = new Spectrum128Machine(tempFolder);
+                var romDrivenMachine = new SpectrumMachine(tempFolder);
                 object romDrivenPlan = createPlan.Invoke(null, new[] { romDrivenMachine, romDrivenBlocks })!;
                 Assert.Equal("RomBootstrapMounted", strategyProperty.GetValue(romDrivenPlan)!.ToString());
                 Assert.Equal("StandardBasicChainRequiresRom", reasonCodeProperty.GetValue(romDrivenPlan)!.ToString());
@@ -62,7 +62,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 0, fileName: "GAME", dataLength: (ushort)opaqueBasicStage.Length, parameter1: 0, parameter2: (ushort)opaqueBasicStage.Length),
                     BuildDataBlock(opaqueBasicStage));
                 var nonContiguousBasicBlocks = parseBlocks.Invoke(null, new object[] { nonContiguousBasicTape })!;
-                var nonContiguousBasicMachine = new Spectrum128Machine(tempFolder);
+                var nonContiguousBasicMachine = new SpectrumMachine(tempFolder);
                 object nonContiguousBasicPlan = createPlan.Invoke(null, new[] { nonContiguousBasicMachine, nonContiguousBasicBlocks })!;
                 Assert.Equal("RomBootstrapMounted", strategyProperty.GetValue(nonContiguousBasicPlan)!.ToString());
                 Assert.Equal("StandardBasicChainRequiresRom", reasonCodeProperty.GetValue(nonContiguousBasicPlan)!.ToString());
@@ -78,7 +78,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 3, fileName: "FAST", dataLength: 1, parameter1: 0x8000, parameter2: 0),
                     BuildDataBlock(new byte[] { 0x99 }));
                 var hybridBlocks = parseBlocks.Invoke(null, new object[] { hybridTape })!;
-                var hybridMachine = new Spectrum128Machine(tempFolder);
+                var hybridMachine = new SpectrumMachine(tempFolder);
                 object hybridPlan = createPlan.Invoke(null, new[] { hybridMachine, hybridBlocks })!;
                 Assert.Equal("BootstrapHybrid", strategyProperty.GetValue(hybridPlan)!.ToString());
                 Assert.Equal("StandardTapeRequiresMountedSemantics", reasonCodeProperty.GetValue(hybridPlan)!.ToString());
@@ -89,7 +89,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 0, fileName: "STAGE2", dataLength: (ushort)protectedBasicStage.Length, parameter1: 0, parameter2: (ushort)protectedBasicStage.Length),
                     BuildDataBlock(protectedBasicStage));
                 var protectedHybridBlocks = parseBlocks.Invoke(null, new object[] { protectedHybridTape })!;
-                var protectedHybridMachine = new Spectrum128Machine(tempFolder);
+                var protectedHybridMachine = new SpectrumMachine(tempFolder);
                 object protectedHybridPlan = createPlan.Invoke(null, new[] { protectedHybridMachine, protectedHybridBlocks })!;
                 Assert.Equal("BootstrapHybrid", strategyProperty.GetValue(protectedHybridPlan)!.ToString());
                 Assert.Equal("StandardTapeRequiresMountedSemantics", reasonCodeProperty.GetValue(protectedHybridPlan)!.ToString());
@@ -98,7 +98,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 2, parameter1: 0x8000, parameter2: 0),
                     BuildDataBlock(new byte[] { 0xAA, 0xBB }));
                 var mountedBlocks = parseBlocks.Invoke(null, new object[] { mountedOnlyTape })!;
-                var mountedMachine = new Spectrum128Machine(tempFolder);
+                var mountedMachine = new SpectrumMachine(tempFolder);
                 object mountedPlan = createPlan.Invoke(null, new[] { mountedMachine, mountedBlocks })!;
                 Assert.Equal("MountedRealtime", strategyProperty.GetValue(mountedPlan)!.ToString());
                 Assert.Equal("NoSafeAccelerationPath", reasonCodeProperty.GetValue(mountedPlan)!.ToString());
@@ -138,7 +138,7 @@ namespace Derby.Tests
 
                 MethodInfo parseBlocks = typeof(TapLoader).GetMethod("ParseBlocks", BindingFlags.NonPublic | BindingFlags.Static)!;
                 var blocks = (IReadOnlyList<TapeBlock>)parseBlocks.Invoke(null, new object[] { tape })!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 TapeLoadPlan plan = TapLoader.CreateExecutionPlan(machine, blocks);
 
@@ -181,7 +181,7 @@ namespace Derby.Tests
                 BindingFlags.NonPublic | BindingFlags.Static)!;
             var blocks = (IReadOnlyList<TapeBlock>)parseBlocks.Invoke(null, new object[] { tape })!;
             string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-            var machine = new Spectrum128Machine(romFolder);
+            var machine = new SpectrumMachine(romFolder);
             var plan = new TapeLoadPlan(
                 TapeLoadStrategy.RomBootstrapMounted,
                 reasonCode,
@@ -226,7 +226,7 @@ namespace Derby.Tests
                     BuildDataBlock(payload));
                 MethodInfo parseBlocks = typeof(TapLoader).GetMethod("ParseBlocks", BindingFlags.NonPublic | BindingFlags.Static)!;
                 var blocks = (IReadOnlyList<TapeBlock>)parseBlocks.Invoke(null, new object[] { tape })!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 TapeLoadPlan plan = TapLoader.CreateExecutionPlan(machine, blocks);
 
@@ -260,7 +260,7 @@ namespace Derby.Tests
                     BuildDataBlock(payload)));
 
                 string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(machineModel);
 
                 TapeExecutionResult result = TapLoader.LoadWithPolicy(machine, tapePath);
@@ -310,7 +310,7 @@ namespace Derby.Tests
                     BuildDataBlock(new byte[] { 0x10, 0x20, 0x30 }, flag: 0x98)));
 
                 string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(machineModel);
 
                 TapeExecutionResult result = TapLoader.LoadWithPolicy(machine, tapePath);
@@ -371,7 +371,7 @@ namespace Derby.Tests
                 MethodInfo tryExecute = typeof(TapLoader).GetMethod(
                     "TryExecuteLoadedMountedBasicProgram",
                     BindingFlags.NonPublic | BindingFlags.Static)!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, malformedProgram });
 
                 bool executed = (bool)tryExecute.Invoke(
@@ -413,7 +413,7 @@ namespace Derby.Tests
 
                 MethodInfo parseBlocks = typeof(TapLoader).GetMethod("ParseBlocks", BindingFlags.NonPublic | BindingFlags.Static)!;
                 var blocks = (IReadOnlyList<TapeBlock>)parseBlocks.Invoke(null, new object[] { tape })!;
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 TapeLoadPlan plan = TapLoader.CreateExecutionPlan(machine, blocks);
 
@@ -473,7 +473,7 @@ namespace Derby.Tests
                     BuildDataBlock(new byte[] { 0x33 }));
                 File.WriteAllBytes(tapePath, tape);
 
-                var machine = new Spectrum128Machine(tempFolder, SpectrumRomProfile.SyntheticTest);
+                var machine = new SpectrumMachine(tempFolder, SpectrumRomProfile.SyntheticTest);
                 TapeExecutionResult result = TapLoader.LoadWithPolicy(machine, tapePath);
 
                 Assert.Equal(TapeLoadStrategy.RomBootstrapMounted, result.Strategy);
@@ -526,7 +526,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 0, fileName: "STAGE2", dataLength: (ushort)secondStage.Length, parameter1: 0, parameter2: (ushort)secondStage.Length),
                     BuildDataBlock(secondStage));
 
-                var machine = new Spectrum128Machine(tempFolder, SpectrumRomProfile.SyntheticTest);
+                var machine = new SpectrumMachine(tempFolder, SpectrumRomProfile.SyntheticTest);
                 MethodInfo parseBlocks = typeof(TapLoader).GetMethod("ParseBlocks", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadRomBootstrap = typeof(TapLoader).GetMethod("LoadLeadingBasicProgramAndMountRemainingForRomAutoStart", BindingFlags.NonPublic | BindingFlags.Static)!;
                 IReadOnlyList<TapeBlock> blocks = (IReadOnlyList<TapeBlock>)parseBlocks.Invoke(null, new object[] { tap })!;
@@ -574,7 +574,7 @@ namespace Derby.Tests
                     BuildDataBlock(firstStage),
                     BuildHeaderBlock(3, "CODE", 1, 0x8000, 0),
                     BuildDataBlock(new byte[] { 0xC9 })));
-                var machine = new Spectrum128Machine(tempFolder, SpectrumRomProfile.SyntheticTest);
+                var machine = new SpectrumMachine(tempFolder, SpectrumRomProfile.SyntheticTest);
                 var plan = new TapeLoadPlan(
                     TapeLoadStrategy.RomBootstrapMounted,
                     TapeLoadPlanReason.UnrepresentableMountedContinuation,
@@ -606,7 +606,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
 
                 Assert.Throws<InvalidOperationException>(() =>
                     TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath));
@@ -655,7 +655,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal(2, result.ConsumedBlockCount);
@@ -707,7 +707,7 @@ namespace Derby.Tests
                     BuildDataBlock(new byte[] { 0x00, 0xC9 }));
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal((ushort)0x8000, machine.Cpu.Regs.PC);
@@ -715,7 +715,7 @@ namespace Derby.Tests
                 Assert.True(machine.MountedTape!.IsActivelyStreamingEarSignal);
 
                 machine.Cpu.Regs.PC = machine.RomProfile.UsrReturnAddress;
-                MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
+                MethodInfo resumeMethod = typeof(SpectrumMachine).GetMethod(
                     "TryResumePendingMountedLoadUsrContinuation",
                     BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -752,7 +752,7 @@ namespace Derby.Tests
                     BuildDataBlock(new byte[] { 0xAA, 0xBB, 0xC9 }));
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal((ushort)0x4000, machine.Cpu.Regs.PC);
@@ -782,7 +782,7 @@ namespace Derby.Tests
                         Colon(),
                         Token(239)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
                     .Single(method =>
@@ -791,11 +791,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo shouldDefer = executorType.GetMethod("ShouldDeferToRomForMountedLoadProgram", BindingFlags.Public | BindingFlags.Static)!;
                 TapeBlock headerBlock = TapeBlock.CreateData(BuildHeaderBlock(
                     type: 0,
@@ -827,7 +827,7 @@ namespace Derby.Tests
                     BuildBasicLine(0, Token(244), Ascii("23624"), Comma(), Ascii("0"), NumberMarker(0)),
                     BuildBasicLine(0, Token(244), Ascii("23662"), Comma(), Ascii("0"), NumberMarker(0)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
                     .Single(method =>
@@ -836,11 +836,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo parseLines = executorType.GetMethod("ParseLines", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo canExecute = executorType.GetMethod("CanExecuteProgram", BindingFlags.NonPublic | BindingFlags.Static)!;
                 TapeBlock headerBlock = TapeBlock.CreateData(BuildHeaderBlock(
@@ -877,7 +877,7 @@ namespace Derby.Tests
                         Colon(),
                         Token(243), Ascii("D")));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -889,7 +889,7 @@ namespace Derby.Tests
                                parameters[1].ParameterType.Name == "TapHeaderInfo";
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo parseLines = executorType.GetMethod("ParseLines", BindingFlags.NonPublic | BindingFlags.Static)!;
 
                 initializeMachine.Invoke(null, new object[] { machine, false });
@@ -944,7 +944,7 @@ namespace Derby.Tests
                         Ascii("z-256"), NumberMarker(256), Ascii("*"), Token(186),
                         Ascii("(z/256"), NumberMarker(256), Ascii(")")));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -954,7 +954,7 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -983,7 +983,7 @@ namespace Derby.Tests
         [Fact]
         public void BasicBootstrapExecutor_Tokenizes_Int_And_Division()
         {
-            Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+            Type executorType = typeof(BasicBootstrapExecutor);
             MethodInfo tokenize = executorType.GetMethod("Tokenize", BindingFlags.NonPublic | BindingFlags.Static)!;
             object tokenSpans = tokenize.Invoke(null, new object[]
             {
@@ -1005,8 +1005,8 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
-                Type parserType = typeof(TapLoader).GetNestedType("ExpressionParser", BindingFlags.NonPublic)!;
+                var machine = new SpectrumMachine(tempFolder);
+                Type parserType = typeof(BasicExpressionParser);
                 ConstructorInfo parserCtor = parserType
                     .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .Single(ctor => ctor.GetParameters().Length == 6);
@@ -1046,7 +1046,7 @@ namespace Derby.Tests
                     BuildBasicLine(0, Token(244), Ascii("23663"), Comma(), Ascii("34"), NumberMarker(34)),
                     BuildBasicLine(0, Token(244), Ascii("23664"), Comma(), Ascii("51"), NumberMarker(51)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
                     .Single(method =>
@@ -1055,11 +1055,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 MethodInfo requiresRomDriven = executorType.GetMethod("RequiresRomDrivenMountedLoadedProgram", BindingFlags.Public | BindingFlags.Static)!;
                 TapeBlock headerBlock = TapeBlock.CreateData(BuildHeaderBlock(
                     type: 0,
@@ -1096,7 +1096,7 @@ namespace Derby.Tests
                     BuildBasicLine(0, Token(244), Ascii("23663"), Comma(), Ascii("34"), NumberMarker(34)),
                     BuildBasicLine(0, Token(244), Ascii("23664"), Comma(), Ascii("51"), NumberMarker(51)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -1106,7 +1106,7 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -1176,7 +1176,7 @@ namespace Derby.Tests
                         Colon(),
                         Token(244), Ascii("23624"), Comma(), Ascii("0"), NumberMarker(0)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -1186,7 +1186,7 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -1266,7 +1266,7 @@ namespace Derby.Tests
                         Comma(),
                         Token(190), Ascii("23648"), NumberMarker(23648)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -1276,7 +1276,7 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -1343,7 +1343,7 @@ namespace Derby.Tests
                         Ascii("17"), NumberMarker(17), Comma(),
                         Ascii("34"), NumberMarker(34)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -1353,7 +1353,7 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -1405,7 +1405,7 @@ namespace Derby.Tests
                         Token(228),
                         Ascii("2"), NumberMarker(2)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -1415,7 +1415,7 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -1475,7 +1475,7 @@ namespace Derby.Tests
                         Ascii("11"), NumberMarker(11), Comma(),
                         Ascii("22"), NumberMarker(22)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -1485,7 +1485,7 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -1591,7 +1591,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal(2, result.ConsumedBlockCount);
@@ -1640,7 +1640,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal(2, result.ConsumedBlockCount);
@@ -1680,7 +1680,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal(2, result.ConsumedBlockCount);
@@ -1702,13 +1702,13 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 ConstructorInfo constructor = executorType.GetConstructor(
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                     binder: null,
-                    new[] { typeof(Spectrum128Machine), typeof(ushort), typeof(ushort), typeof(bool) },
+                    new[] { typeof(SpectrumMachine), typeof(ushort), typeof(ushort), typeof(bool) },
                     modifiers: null)!;
                 MethodInfo applyClear = executorType.GetMethod("ApplyClear", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -1753,7 +1753,7 @@ namespace Derby.Tests
                         Token(244), Ascii("40001"), NumberMarker(40001), Comma(),
                         Token(190), Ascii("23648"), NumberMarker(23648)));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 MethodInfo initializeMachine = typeof(TapLoader).GetMethod("InitializeMachineForFakeTapeLoad", BindingFlags.NonPublic | BindingFlags.Static)!;
                 MethodInfo loadBasicProgram = typeof(TapLoader)
                     .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
@@ -1763,15 +1763,15 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
                 MethodInfo parseHeaderInfo = typeof(TapLoader).GetMethod("ParseHeaderInfo", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)!;
-                Type executorType = typeof(TapLoader).GetNestedType("BasicBootstrapExecutor", BindingFlags.NonPublic)!;
+                Type executorType = typeof(BasicBootstrapExecutor);
                 ConstructorInfo constructor = executorType.GetConstructor(
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                     binder: null,
-                    new[] { typeof(Spectrum128Machine), typeof(ushort), typeof(ushort), typeof(bool) },
+                    new[] { typeof(SpectrumMachine), typeof(ushort), typeof(ushort), typeof(bool) },
                     modifiers: null)!;
                 MethodInfo executeImmediate = executorType.GetMethod(
                     "TryExecuteImmediateSideEffectProgram",
@@ -1835,7 +1835,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.Equal(6, result.ConsumedBlockCount);
@@ -1876,7 +1876,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.Equal(4, result.ConsumedBlockCount);
@@ -1912,7 +1912,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.Equal(4, result.ConsumedBlockCount);
@@ -1953,7 +1953,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.Equal(6, result.ConsumedBlockCount);
@@ -2043,7 +2043,7 @@ namespace Derby.Tests
 
                 File.WriteAllBytes(tapePath, tap);
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapBootstrapResult result = TapLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.Equal(6, result.ConsumedBlockCount);
@@ -2064,7 +2064,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeBlock headerBlock = TapeBlock.CreateData(
                     BuildHeaderBlock(type: 42, fileName: "FAST", dataLength: 4, parameter1: 0x9000, parameter2: 0),
                     2168, 64, 667, 735, 855, 1710, 8, 10);
@@ -2097,7 +2097,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeBlock dataBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x11, 0x22, 0x33, 0x44 }),
                     2168, 32, 667, 735, 855, 1710, 8, 0);
@@ -2148,7 +2148,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 1, parameter1: 0x8000, parameter2: 0),
                     BuildDataBlock(new byte[] { 0xC9 })));
 
-                var machine = new Spectrum128Machine(tempFolder, SpectrumRomProfile.SyntheticTest);
+                var machine = new SpectrumMachine(tempFolder, SpectrumRomProfile.SyntheticTest);
                 TapeExecutionResult result = TapLoader.LoadWithPolicy(machine, tapePath);
 
                 Assert.Equal(TapeLoadStrategy.FullFakeLoad, result.Strategy);
@@ -2181,7 +2181,7 @@ namespace Derby.Tests
                     BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 1, parameter1: 0x8000, parameter2: 0),
                     BuildDataBlock(new byte[] { 0xC9 })));
 
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeExecutionResult result = TapLoader.LoadWithPolicy(machine, tapePath);
 
                 Assert.Equal(TapeLoadStrategy.FullFakeLoad, result.Strategy);

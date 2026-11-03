@@ -23,7 +23,7 @@ namespace Derby
                     ClearHostAndSpectrumInputState();
                     lock (machineLock)
                     {
-                        Spectrum128Machine newMachine = CreateConfiguredMachine();
+                        SpectrumMachine newMachine = CreateConfiguredMachine();
                         SnapshotLoader.Load(newMachine, dialog.FileName, selectedMachineModel);
                         machine = newMachine;
                     }
@@ -72,7 +72,7 @@ namespace Derby
                     {
                         lock (machineLock)
                         {
-                            Spectrum128Machine newMachine = CreateConfiguredMachine();
+                            SpectrumMachine newMachine = CreateConfiguredMachine();
                             Tape.TzxLoader.LoadWithPolicy(newMachine, dialog.FileName);
                             machine = newMachine;
                         }
@@ -81,7 +81,7 @@ namespace Derby
                     {
                         lock (machineLock)
                         {
-                            Spectrum128Machine newMachine = CreateConfiguredMachine();
+                            SpectrumMachine newMachine = CreateConfiguredMachine();
                             Tape.TapLoader.LoadWithPolicy(newMachine, dialog.FileName);
                             machine = newMachine;
                         }
@@ -194,7 +194,7 @@ namespace Derby
                         ClearHostAndSpectrumInputState();
                         lock (machineLock)
                         {
-                            Spectrum128Machine newMachine = CreateConfiguredMachine();
+                            SpectrumMachine newMachine = CreateConfiguredMachine();
                             RzxLoader.Load(newMachine, dialog.FileName);
                             machine = newMachine;
                         }
@@ -211,7 +211,7 @@ namespace Derby
                         ClearHostAndSpectrumInputState();
                         lock (machineLock)
                         {
-                            Spectrum128Machine newMachine = CreateConfiguredMachine();
+                            SpectrumMachine newMachine = CreateConfiguredMachine();
                             SzxSnapshotLoader.Load(newMachine, dialog.FileName);
                             machine = newMachine;
                         }
@@ -228,7 +228,7 @@ namespace Derby
                         ClearHostAndSpectrumInputState();
                         lock (machineLock)
                         {
-                            Spectrum128Machine newMachine = CreateConfiguredMachine();
+                            SpectrumMachine newMachine = CreateConfiguredMachine();
                             Z80SnapshotLoader.Load(newMachine, dialog.FileName, selectedMachineModel);
                             machine = newMachine;
                         }

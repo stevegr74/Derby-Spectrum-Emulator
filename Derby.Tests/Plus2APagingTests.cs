@@ -8,7 +8,7 @@ namespace Derby.Tests
         public void NormalPaging_SelectsAllFourRomBanks()
         {
             using var fixture = new Plus2ARomFixture();
-            Spectrum128Machine machine = fixture.CreateMachine();
+            SpectrumMachine machine = fixture.CreateMachine();
 
             Assert.Equal((byte)0x10, machine.PeekMemory(0x0000));
             machine.DebugWritePort(0x7FFD, 0x10);
@@ -26,7 +26,7 @@ namespace Derby.Tests
             if (!File.Exists(Path.Combine(romFolder, "plus3-3.rom")))
                 return;
 
-            var machine = new Spectrum128Machine(SpectrumRomSet.BundledPlus2A(romFolder));
+            var machine = new SpectrumMachine(SpectrumRomSet.BundledPlus2A(romFolder));
 
             Assert.Equal("Sinclair ZX Spectrum +2A/+3", machine.RomProfile.Name);
             Assert.False(machine.SupportsRomTapeAcceleration);
@@ -45,7 +45,7 @@ namespace Derby.Tests
             int slot3)
         {
             using var fixture = new Plus2ARomFixture();
-            Spectrum128Machine machine = fixture.CreateMachine();
+            SpectrumMachine machine = fixture.CreateMachine();
 
             machine.DebugWritePort(0x1FFD, portValue);
 
@@ -66,7 +66,7 @@ namespace Derby.Tests
         public void RevisedPartialPortDecoding_AcceptsAliasesAndRejectsStandard128Aliases()
         {
             using var fixture = new Plus2ARomFixture();
-            Spectrum128Machine plus2A = fixture.CreateMachine();
+            SpectrumMachine plus2A = fixture.CreateMachine();
 
             plus2A.DebugWritePort(0x5FFD, 0x17);
             Assert.Equal(7, plus2A.PagedRamBank);
@@ -74,7 +74,7 @@ namespace Derby.Tests
             plus2A.DebugWritePort(0x1FFD, 0x04);
             Assert.Equal(3, plus2A.CurrentRomBank);
 
-            Spectrum128Machine standard128 = fixture.CreateStandard128Machine();
+            SpectrumMachine standard128 = fixture.CreateStandard128Machine();
             standard128.DebugWritePort(0x1FFD, 0x05);
             Assert.False(standard128.SpecialPagingEnabled);
             Assert.Equal(0, standard128.CurrentRomBank);
@@ -84,7 +84,7 @@ namespace Derby.Tests
         public void PagingLock_BlocksBothPagingRegisters()
         {
             using var fixture = new Plus2ARomFixture();
-            Spectrum128Machine machine = fixture.CreateMachine();
+            SpectrumMachine machine = fixture.CreateMachine();
 
             machine.DebugWritePort(0x7FFD, 0x23);
             machine.DebugWritePort(0x1FFD, 0x07);
@@ -100,10 +100,10 @@ namespace Derby.Tests
         public void QuickState_RestoresSpecialPagingMapAndRam()
         {
             using var fixture = new Plus2ARomFixture();
-            Spectrum128Machine machine = fixture.CreateMachine();
+            SpectrumMachine machine = fixture.CreateMachine();
             machine.DebugWritePort(0x1FFD, 0x07);
             machine.PokeMemory(0x4000, 0xA7);
-            Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+            SpectrumMachine.QuickState state = machine.CaptureQuickState();
 
             machine.Reset();
             machine.RestoreQuickState(state);
@@ -132,10 +132,10 @@ namespace Derby.Tests
 
             public string Folder { get; }
 
-            public Spectrum128Machine CreateMachine() =>
+            public SpectrumMachine CreateMachine() =>
                 new(SpectrumRomSet.BundledPlus2A(Folder));
 
-            public Spectrum128Machine CreateStandard128Machine() =>
+            public SpectrumMachine CreateStandard128Machine() =>
                 new(SpectrumRomSet.Bundled128K(Folder));
 
             public void Dispose() => Directory.Delete(Folder, recursive: true);

@@ -31,7 +31,7 @@ namespace Derby.Tape
             internal int TapeStateValue;
             internal int? ExpectedDataLength;
             internal string? PendingHeaderName;
-            internal TapLoader.TapHeaderInfo? PendingHeaderInfo;
+            internal TapHeaderInfo? PendingHeaderInfo;
         }
 
         public QuickState CaptureQuickState()

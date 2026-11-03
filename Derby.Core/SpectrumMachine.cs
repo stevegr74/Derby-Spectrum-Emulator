@@ -8,7 +8,7 @@ using Derby.Z80;
 
 namespace Derby
 {
-    public sealed partial class Spectrum128Machine
+    public sealed partial class SpectrumMachine
     {
         public const int FrameTStates48 = 69888;
         public const int FrameTStates128 = 70908;
@@ -96,12 +96,12 @@ namespace Derby
         private ushort lastObservedPc;
         private ulong? interruptPulseEndTStates;
         private int frameTStates = FrameTStates128;
-        private bool uses48kMemoryMap;
+        private readonly SpectrumMemoryPaging memoryPaging = new();
         private int tStatesUntilNextInterrupt;
         private bool realignInterruptPhaseAfterNextAccept;
         private readonly MountedLoadContinuationController mountedLoadContinuation;
 
-        internal Func<Spectrum128Machine, ushort?>? PendingMountedLoadResolver
+        internal Func<SpectrumMachine, ushort?>? PendingMountedLoadResolver
         {
             get => mountedLoadContinuation.Resolver;
             set => mountedLoadContinuation.Resolver = value;
@@ -133,8 +133,6 @@ namespace Derby
             }
         }
 
-        private byte last7ffdValue = 0xFF;
-        private byte last1ffdValue;
         private RzxPlaybackSession? rzxPlayback;
         private MountedTape? mountedTape => tapeTransport.MountedTape;
         public MountedTape? MountedTape => tapeTransport.MountedTape;
@@ -142,22 +140,22 @@ namespace Derby
         public TapeTransportTransition LastTapeTransportTransition => tapeTransport.LastTransition;
         public bool IsTapeStoppedAtMarker => tapeTransport.IsStoppedAtMarker;
 
-        public Spectrum128Machine(string romFolder)
+        public SpectrumMachine(string romFolder)
             : this(SpectrumRomSet.Bundled128K(romFolder), romProfileOverride: null)
         {
         }
 
-        internal Spectrum128Machine(string romFolder, SpectrumRomProfile? romProfileOverride)
+        internal SpectrumMachine(string romFolder, SpectrumRomProfile? romProfileOverride)
             : this(SpectrumRomSet.Bundled128K(romFolder), romProfileOverride)
         {
         }
 
-        public Spectrum128Machine(SpectrumRomSet romSet)
+        public SpectrumMachine(SpectrumRomSet romSet)
             : this(romSet, romProfileOverride: null)
         {
         }
 
-        private Spectrum128Machine(SpectrumRomSet romSet, SpectrumRomProfile? romProfileOverride)
+        private SpectrumMachine(SpectrumRomSet romSet, SpectrumRomProfile? romProfileOverride)
         {
             ArgumentNullException.ThrowIfNull(romSet);
             RomSet = romSet;
@@ -214,19 +212,33 @@ namespace Derby
             set => cpu.Trace = value;
         }
 
-        public int PagedRamBank { get; private set; }
-        public int CurrentRomBank { get; private set; }
-        public bool PagingLocked { get; private set; }
-        public int ScreenBank { get; private set; } = 5;
+        public int PagedRamBank
+        {
+            get => memoryPaging.PagedRamBank;
+            private set => memoryPaging.PagedRamBank = value;
+        }
+        public int CurrentRomBank
+        {
+            get => memoryPaging.CurrentRomBank;
+            private set => memoryPaging.CurrentRomBank = value;
+        }
+        public bool PagingLocked
+        {
+            get => memoryPaging.PagingLocked;
+            private set => memoryPaging.PagingLocked = value;
+        }
+        public int ScreenBank
+        {
+            get => memoryPaging.ScreenBank;
+            private set => memoryPaging.ScreenBank = value;
+        }
         public int BorderColor { get; private set; } = 1;
         public int FrameCount { get; private set; }
         public int FrameTStates => frameTStates;
         public int CurrentCpuClockHz => TimingProfile.CpuClockHz;
         public SpectrumMachineModel MachineModel { get; private set; } = SpectrumMachineModel.Spectrum128K;
         public SpectrumMemoryPagingModel MemoryPagingModel => RomSet.PagingModel;
-        public bool SpecialPagingEnabled =>
-            MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3 &&
-            (last1ffdValue & 0x01) != 0;
+        public bool SpecialPagingEnabled => memoryPaging.IsSpecialPagingEnabled(MemoryPagingModel);
         public bool HasAyHardware => ayHardwareEnabled;
         public SpectrumRomSet RomSet { get; }
         public int RomBankCount => romBanks.Length;
@@ -256,15 +268,15 @@ namespace Derby
             PagedRamBank = 0;
             CurrentRomBank = model == SpectrumMachineModel.Spectrum48K ? 1 : 0;
             PagingLocked = model == SpectrumMachineModel.Spectrum48K;
-            uses48kMemoryMap = model == SpectrumMachineModel.Spectrum48K;
+            memoryPaging.Uses48KMemoryMap = model == SpectrumMachineModel.Spectrum48K;
             ScreenBank = 5;
             BorderColor = 1;
             FrameCount = 0;
             LastAboveWriteFrame = -1;
-            last7ffdValue = model == SpectrumMachineModel.Spectrum48K
+            memoryPaging.Last7ffdValue = model == SpectrumMachineModel.Spectrum48K
                 ? (byte)0x10
                 : MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3 ? (byte)0x00 : (byte)0xFF;
-            last1ffdValue = 0;
+            memoryPaging.Last1ffdValue = 0;
             tapeTransport.Reset();
             ResetMountedTapeActivityTracking();
             rzxPlayback = null;
@@ -522,7 +534,7 @@ namespace Derby
             if (MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3)
                 return bank >= 4;
 
-            return bank == 5 || (!uses48kMemoryMap && slot == 3 && (bank & 0x01) != 0);
+            return bank == 5 || (!memoryPaging.Uses48KMemoryMap && slot == 3 && (bank & 0x01) != 0);
         }
 
         private void ApplyMemoryContention(ushort addr)
@@ -764,11 +776,11 @@ namespace Derby
             int oldRam = PagedRamBank;
             int oldScreen = ScreenBank;
             int oldRom = CurrentRomBank;
-            byte oldPaging = last7ffdValue;
+            byte oldPaging = memoryPaging.Last7ffdValue;
 
             PagedRamBank = value & 0x07;
             ScreenBank = ((value & 0x08) != 0) ? 7 : 5;
-            last7ffdValue = (byte)(value & 0x3F);
+            memoryPaging.Last7ffdValue = (byte)(value & 0x3F);
             UpdateCurrentRomBank();
 
             if ((value & 0x20) != 0)
@@ -877,7 +889,7 @@ namespace Derby
         }
 
         public void SetPendingMountedLoadUsrContinuationResolver(
-            Func<Spectrum128Machine, ushort?> resolver,
+            Func<SpectrumMachine, ushort?> resolver,
             bool requireUsrReturnAddress = false)
         {
             mountedLoadContinuation.SetResolver(resolver, requireUsrReturnAddress);
@@ -997,9 +1009,9 @@ namespace Derby
             z80.ResetExecutionStatePreserveTiming();
             CurrentRomBank = 1;
             PagingLocked = false;
-            uses48kMemoryMap = false;
+            memoryPaging.Uses48KMemoryMap = false;
             frameTStates = FrameTStates128;
-            last7ffdValue = (byte)(
+            memoryPaging.Last7ffdValue = (byte)(
                 (PagedRamBank & 0x07) |
                 (ScreenBank == 7 ? 0x08 : 0x00) |
                 0x10);
@@ -1088,45 +1100,17 @@ namespace Derby
 
         public int GetMappedRamBankForSlot(int slot)
         {
-            if ((uint)slot >= 4)
-                throw new ArgumentOutOfRangeException(nameof(slot));
-
-            if (!SpecialPagingEnabled)
-            {
-                return slot switch
-                {
-                    1 => 5,
-                    2 => 2,
-                    3 => PagedRamBank,
-                    _ => throw new InvalidOperationException("Slot 0 currently contains ROM.")
-                };
-            }
-
-            int configuration = (last1ffdValue >> 1) & 0x03;
-            return configuration switch
-            {
-                0 => slot,
-                1 => slot + 4,
-                2 => slot == 3 ? 3 : slot + 4,
-                3 => slot switch { 0 => 4, 1 => 7, 2 => 6, _ => 3 },
-                _ => throw new InvalidOperationException()
-            };
+            return memoryPaging.GetMappedRamBankForSlot(slot, MemoryPagingModel);
         }
 
         public bool IsMappedSlotRom(int slot)
         {
-            if ((uint)slot >= 4)
-                throw new ArgumentOutOfRangeException(nameof(slot));
-            return slot == 0 && !SpecialPagingEnabled;
+            return memoryPaging.IsMappedSlotRom(slot, MemoryPagingModel);
         }
 
         private void UpdateCurrentRomBank()
         {
-            int lowBit = (last7ffdValue >> 4) & 0x01;
-            int highBit = MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3
-                ? (last1ffdValue >> 1) & 0x02
-                : 0;
-            CurrentRomBank = highBit | lowBit;
+            memoryPaging.UpdateCurrentRomBank(MemoryPagingModel);
         }
 
         public byte ReadPort(ushort port)
@@ -1426,14 +1410,14 @@ namespace Derby
             ScreenBank = 5;
             CurrentRomBank = 1;
             PagingLocked = false;
-            uses48kMemoryMap = false;
+            memoryPaging.Uses48KMemoryMap = false;
             BorderColor = borderColor & 0x07;
             frameTStates = FrameTStates128;
             FrameCount = 0;
             floatingBusDisplayStartAdjustTStates = 0;
             floatingBusSampleAdjustTStates = 0;
-            last7ffdValue = 0x10;
-            last1ffdValue = 0;
+            memoryPaging.Last7ffdValue = 0x10;
+            memoryPaging.Last1ffdValue = 0;
             autoDebugDumpPending = false;
             autoDebugDumpReason = null;
             autoDebugDumpSnapshot = null;
@@ -1455,14 +1439,14 @@ namespace Derby
             ScreenBank = 5;
             CurrentRomBank = 1; // Use the 48 BASIC ROM in your current setup.
             PagingLocked = true;
-            uses48kMemoryMap = true;
+            memoryPaging.Uses48KMemoryMap = true;
             BorderColor = borderColor & 0x07;
             frameTStates = targetFrameTStates;
             FrameCount = 0;
             floatingBusDisplayStartAdjustTStates = 0;
             floatingBusSampleAdjustTStates = 0;
-            last7ffdValue = 0x10;
-            last1ffdValue = 0;
+            memoryPaging.Last7ffdValue = 0x10;
+            memoryPaging.Last1ffdValue = 0;
             autoDebugDumpPending = false;
             autoDebugDumpReason = null;
             autoDebugDumpSnapshot = null;
@@ -1547,14 +1531,14 @@ namespace Derby
             ScreenBank = ((last7ffdValue & 0x08) != 0) ? 7 : 5;
             CurrentRomBank = ((last7ffdValue & 0x10) != 0) ? 1 : 0;
             PagingLocked = (last7ffdValue & 0x20) != 0;
-            uses48kMemoryMap = false;
+            memoryPaging.Uses48KMemoryMap = false;
             BorderColor = borderColor & 0x07;
             frameTStates = FrameTStates128;
             FrameCount = 0;
             floatingBusDisplayStartAdjustTStates = 0;
             floatingBusSampleAdjustTStates = 0;
-            this.last7ffdValue = (byte)(last7ffdValue & 0x3F);
-            last1ffdValue = 0;
+            memoryPaging.Last7ffdValue = (byte)(last7ffdValue & 0x3F);
+            memoryPaging.Last1ffdValue = 0;
             autoDebugDumpPending = false;
             autoDebugDumpReason = null;
             autoDebugDumpSnapshot = null;
@@ -1600,7 +1584,7 @@ namespace Derby
                 if (PagingLocked)
                     return;
 
-                last1ffdValue = (byte)(value & 0x1F);
+                memoryPaging.Last1ffdValue = (byte)(value & 0x1F);
                 UpdateCurrentRomBank();
                 Trace?.Invoke(
                     $"[1FFD] PC=0x{cpu.Regs.PC:X4} Frame={FrameCount} SPECIAL={(SpecialPagingEnabled ? 1 : 0)} ROM={CurrentRomBank} VAL=0x{value:X2}");
@@ -1617,11 +1601,11 @@ namespace Derby
                 int oldRam = PagedRamBank;
                 int oldScreen = ScreenBank;
                 int oldRom = CurrentRomBank;
-                byte oldPaging = last7ffdValue;
+                byte oldPaging = memoryPaging.Last7ffdValue;
 
                 PagedRamBank = value & 0x07;
                 ScreenBank = ((value & 0x08) != 0) ? 7 : 5;
-                last7ffdValue = (byte)(value & 0x3F);
+                memoryPaging.Last7ffdValue = (byte)(value & 0x3F);
                 UpdateCurrentRomBank();
 
                 if ((value & 0x20) != 0)

@@ -37,7 +37,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.Reset(model);
                 var tape = new MountedTape(
                     "clock-scaled.tzx",
@@ -84,7 +84,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape(
                     "transport.tap",
                     new[] { TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
@@ -108,7 +108,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 var tape = new MountedTape(
                     "fast-loaded.tap",
                     new[] { TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) },
@@ -135,7 +135,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape(
                     "marker.tzx",
                     new[]
@@ -167,7 +167,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeBlock dataBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x11, 0x22, 0x33, 0x44 }),
                     2168, 60000, 667, 735, 855, 1710, 8, 1000);
@@ -216,7 +216,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeBlock dataBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x11, 0x22, 0x33, 0x44 }),
                     2168, 60000, 667, 735, 855, 1710, 8, 1000);
@@ -269,7 +269,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeBlock dataBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x11, 0x22, 0x33, 0x44 }),
                     2168, 60000, 667, 735, 855, 1710, 8, 1000);
@@ -323,7 +323,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeBlock dataBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x11, 0x22, 0x33, 0x44 }),
                     2168, 60000, 667, 735, 855, 1710, 8, 1000);
@@ -385,7 +385,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 TapeBlock dataBlock = TapeBlock.CreateData(
                     BuildDataBlock(new byte[] { 0x11, 0x22, 0x33, 0x44 }),
                     2168, 60000, 667, 735, 855, 1710, 8, 1000);
@@ -437,7 +437,7 @@ namespace Derby.Tests
             string tempFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(tempFolder);
+                var machine = new SpectrumMachine(tempFolder);
                 machine.MountTape(new MountedTape(
                     "manual-pause.tap",
                     new[] { TapeBlock.CreatePureTone(pulseLength: 2168, pulseCount: 60000) }));

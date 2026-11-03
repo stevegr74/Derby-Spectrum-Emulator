@@ -11,7 +11,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 for (byte bank = 0; bank < 8; bank++)
                 {
                     machine.ForceApply7ffdValue(bank);
@@ -26,7 +26,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = 0x8123;
                 machine.Cpu.Regs.SP = 0x9ABC;
 
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
                 machine.RestoreQuickState(state);
 
@@ -54,7 +54,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.PokeMemory(0x8000, 0x3C); // INC A
                 machine.PokeMemory(0x8001, 0x34); // INC (HL)
                 machine.PokeMemory(0x8002, 0xC3); // JP 8000
@@ -65,7 +65,7 @@ namespace Derby.Tests
                 machine.Cpu.Regs.A = 7;
                 machine.PokeMemory(0x9000, 11);
 
-                Spectrum128Machine.QuickState state = machine.CaptureQuickState();
+                SpectrumMachine.QuickState state = machine.CaptureQuickState();
                 machine.ExecuteTimeSlice(4000);
                 (byte A, byte Memory, ushort PC, ulong TStates, int Frames) first =
                     (machine.Cpu.Regs.A, machine.PeekMemory(0x9000), machine.Cpu.Regs.PC,

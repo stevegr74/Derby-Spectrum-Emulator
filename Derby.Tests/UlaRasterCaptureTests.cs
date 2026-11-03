@@ -17,7 +17,7 @@ namespace Derby.Tests
             banks[5][0x0000] = 0x00;
             capture.AdvanceTo(14339);
             banks[5][0x1800] = 0x00;
-            capture.AdvanceTo(Spectrum128Machine.FrameTStates48);
+            capture.AdvanceTo(SpectrumMachine.FrameTStates48);
 
             UlaFrame frame = Assert.IsType<UlaFrame>(capture.LastCompletedFrame);
             Assert.Equal((byte)0x81, frame.GetBitmapByte(0, 0));
@@ -35,7 +35,7 @@ namespace Derby.Tests
             capture.AdvanceTo(14339);
             banks[5][0x1800] = 0x02;
             capture.AdvanceTo((ulong)14339 + 224);
-            capture.AdvanceTo(Spectrum128Machine.FrameTStates48);
+            capture.AdvanceTo(SpectrumMachine.FrameTStates48);
 
             UlaFrame frame = Assert.IsType<UlaFrame>(capture.LastCompletedFrame);
             Assert.Equal((byte)0x01, frame.GetAttributeByte(0, 0));
@@ -56,7 +56,7 @@ namespace Derby.Tests
             capture.AdvanceTo(14365);
             screenBank = 7;
             capture.AdvanceTo(14367);
-            capture.AdvanceTo(Spectrum128Machine.FrameTStates128);
+            capture.AdvanceTo(SpectrumMachine.FrameTStates128);
 
             UlaFrame frame = Assert.IsType<UlaFrame>(capture.LastCompletedFrame);
             Assert.Equal((byte)0x80, frame.GetBitmapByte(0, 0));
@@ -80,7 +80,7 @@ namespace Derby.Tests
             capture.AdvanceTo(0);
             capture.RecordBorderChange(12000, 4);
             borderColor = 4;
-            capture.AdvanceTo(Spectrum128Machine.FrameTStates48);
+            capture.AdvanceTo(SpectrumMachine.FrameTStates48);
 
             UlaFrame frame = Assert.IsType<UlaFrame>(capture.LastCompletedFrame);
             Assert.Equal(1, frame.BorderFrame.InitialColor);
@@ -97,11 +97,11 @@ namespace Derby.Tests
             bitmap[0] = 0x80;
             attributes[0] = 0x02;
             var borderFrame = new BorderFrame(
-                Spectrum128Machine.FrameTStates48,
+                SpectrumMachine.FrameTStates48,
                 initialColor: 0,
                 Array.Empty<BorderEvent>());
             var ulaFrame = new UlaFrame(
-                Spectrum128Machine.FrameTStates48,
+                SpectrumMachine.FrameTStates48,
                 bitmap,
                 attributes,
                 borderFrame);
@@ -110,8 +110,8 @@ namespace Derby.Tests
             frameBuffer.Render(ulaFrame, flashPhase: false);
 
             int firstDisplayPixel =
-                (Spectrum128Machine.BorderTopHeight * SpectrumFrameBuffer.Width) +
-                Spectrum128Machine.BorderLeftWidth;
+                (SpectrumMachine.BorderTopHeight * SpectrumFrameBuffer.Width) +
+                SpectrumMachine.BorderLeftWidth;
             Assert.Equal(
                 SpectrumFrameBuffer.GetSpectrumColorArgb(2, bright: false),
                 frameBuffer.Pixels.Span[firstDisplayPixel]);
@@ -126,7 +126,7 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
                 machine.PokeMemory(0x4000, 0x80);
                 machine.Cpu.Regs.PC = 0x8000;
@@ -149,12 +149,12 @@ namespace Derby.Tests
             string romFolder = CreateTempRoms();
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 machine.Reset(SpectrumMachineModel.Spectrum48K);
                 machine.PokeMemory(0x4000, 0x80);
                 machine.Cpu.Regs.PC = 0x8000;
                 machine.ExecuteFrame();
-                Spectrum128Machine.QuickState saved = machine.CaptureQuickState();
+                SpectrumMachine.QuickState saved = machine.CaptureQuickState();
 
                 machine.PokeMemory(0x4000, 0x00);
                 machine.ExecuteFrame();

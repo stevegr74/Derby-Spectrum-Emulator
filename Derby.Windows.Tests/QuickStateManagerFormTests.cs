@@ -13,7 +13,7 @@ namespace Derby.Tests
             RunSta(() =>
             {
                 SpectrumRomSet romSet = SpectrumRomSet.Bundled128K(Path.Combine(AppContext.BaseDirectory, "ROMs"));
-                var machine = new Spectrum128Machine(romSet);
+                var machine = new SpectrumMachine(romSet);
                 var slots = new QuickStateSlot?[8];
                 using var form = new QuickStateManagerForm(
                     index => slots[index],
@@ -86,7 +86,7 @@ namespace Derby.Tests
             RunSta(() =>
             {
                 SpectrumRomSet romSet = SpectrumRomSet.Bundled128K(Path.Combine(AppContext.BaseDirectory, "ROMs"));
-                var machine = new Spectrum128Machine(romSet);
+                var machine = new SpectrumMachine(romSet);
                 var slots = new QuickStateSlot?[8];
                 slots[3] = CreateSlot(machine, romSet, "Existing.sna");
                 int saveCalls = 0;
@@ -133,7 +133,7 @@ namespace Derby.Tests
         }
 
         private static QuickStateSlot CreateSlot(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             SpectrumRomSet romSet,
             string mediaName)
         {

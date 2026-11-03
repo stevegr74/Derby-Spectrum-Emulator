@@ -11,7 +11,7 @@ namespace Derby.Tests
         public void BundledRomPair_Enables_AddressBasedTapeServices()
         {
             string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-            var machine = new Spectrum128Machine(romFolder);
+            var machine = new SpectrumMachine(romFolder);
 
             Assert.Equal("Sinclair ZX Spectrum 128K", machine.RomProfile.Name);
             Assert.True(machine.SupportsRomTapeAcceleration);
@@ -24,7 +24,7 @@ namespace Derby.Tests
         public void BundledRomProfile_Does_Not_Classify_Application_Ram_As_A_Rom_Return_Path()
         {
             string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-            var machine = new Spectrum128Machine(romFolder);
+            var machine = new SpectrumMachine(romFolder);
 
             Assert.False(machine.RomProfile.IsMountedLoadReturnAddress(0x5E87));
             Assert.True(machine.RomProfile.IsMountedLoadReturnAddress(0x15FE));
@@ -34,7 +34,7 @@ namespace Derby.Tests
         public void Bundled48kRomSet_Uses48kHardwareAndKnownTapeProfile()
         {
             string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-            var machine = new Spectrum128Machine(SpectrumRomSet.Bundled48K(romFolder));
+            var machine = new SpectrumMachine(SpectrumRomSet.Bundled48K(romFolder));
 
             Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
             Assert.Equal("Sinclair ZX Spectrum 48K", machine.RomProfile.Name);
@@ -46,7 +46,7 @@ namespace Derby.Tests
         public void BundledPlus2RomSet_Uses128kHardwareWithoutUnsafeAddressTraps()
         {
             string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-            var machine = new Spectrum128Machine(SpectrumRomSet.BundledPlus2(romFolder));
+            var machine = new SpectrumMachine(SpectrumRomSet.BundledPlus2(romFolder));
 
             Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
             Assert.Equal("Sinclair ZX Spectrum +2 Grey", machine.RomProfile.Name);
@@ -85,7 +85,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(SpectrumRomSet.Create48K("Custom 48K", path));
+                var machine = new SpectrumMachine(SpectrumRomSet.Create48K("Custom 48K", path));
 
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
                 Assert.Equal("Unknown 48K ROM", machine.RomProfile.Name);
@@ -105,7 +105,7 @@ namespace Derby.Tests
 
             try
             {
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var tape = new MountedTape(
                     "unknown-rom.tap",
                     new[]

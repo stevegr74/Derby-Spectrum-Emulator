@@ -232,7 +232,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(codeData, pauseMs: 1000),
                         BuildTextDescriptionBlock("tail")));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TapBootstrapResult result = Tape.TzxLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
@@ -262,7 +262,7 @@ namespace Derby.Tests
                     BuildTzx(
                         BuildPureToneBlock(2168, 4)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TzxLoader.Mount(machine, tapePath);
 
@@ -432,23 +432,23 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var standardMachine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var standardMachine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 var standardResult = Tape.TzxLoader.LoadWithPolicy(standardMachine, standardPath);
                 Assert.Equal("FullFakeLoad", standardResult.Strategy.ToString());
 
-                var romDrivenMachine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var romDrivenMachine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 var romDrivenResult = Tape.TzxLoader.LoadWithPolicy(romDrivenMachine, romDrivenPath);
                 Assert.Equal("RomBootstrapMounted", romDrivenResult.Strategy.ToString());
 
-                var hybridMachine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var hybridMachine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 var hybridResult = Tape.TzxLoader.LoadWithPolicy(hybridMachine, hybridPath);
                 Assert.Equal("BootstrapHybrid", hybridResult.Strategy.ToString());
 
-                var romControlledMixedMachine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var romControlledMixedMachine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 var romControlledMixedResult = Tape.TzxLoader.LoadWithPolicy(romControlledMixedMachine, romControlledMixedPath);
                 Assert.Equal("RomBootstrapMounted", romControlledMixedResult.Strategy.ToString());
 
-                var chainedBasicPrefixMachine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var chainedBasicPrefixMachine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 var chainedBasicPrefixResult = Tape.TzxLoader.LoadWithPolicy(chainedBasicPrefixMachine, chainedBasicPrefixPath);
                 Assert.Equal("BootstrapHybrid", chainedBasicPrefixResult.Strategy.ToString());
 
@@ -463,7 +463,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(new byte[] { 0x00, 0x10, 0x20, 0x30 }, pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(new byte[] { 0x05, 0x06, 0x07, 0x08 }), pauseMs: 1000)));
 
-                var mountedMixedMachine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var mountedMixedMachine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 var mountedMixedResult = Tape.TzxLoader.LoadWithPolicy(mountedMixedMachine, mountedMixedPath);
                 Assert.Equal("BootstrapHybrid", mountedMixedResult.Strategy.ToString());
 
@@ -497,7 +497,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var protectedHybridMachine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var protectedHybridMachine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 var protectedHybridResult = Tape.TzxLoader.LoadWithPolicy(protectedHybridMachine, protectedHybridPath);
                 Assert.Equal("RomBootstrapMounted", protectedHybridResult.Strategy.ToString());
             }
@@ -531,7 +531,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var machine = new Spectrum128Machine(romFolder, SpectrumRomProfile.SyntheticTest);
+                var machine = new SpectrumMachine(romFolder, SpectrumRomProfile.SyntheticTest);
                 IReadOnlyList<Tape.TapeBlock> blocks = Tape.TzxLoader.ParseBlocks(File.ReadAllBytes(tapePath));
                 Tape.TapeLoadPlan plan = Tape.TapLoader.CreateExecutionPlan(machine, blocks);
 
@@ -564,7 +564,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(basicProgram), pauseMs: 1000),
                         BuildStandardSpeedDataBlock(new byte[] { 0x00, 0x10, 0x20, 0x30 }, pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Tape.TapeExecutionResult result = Tape.TzxLoader.LoadWithPolicy(machine, tapePath);
 
                 Assert.Equal("BootstrapHybrid", result.Strategy.ToString());
@@ -621,11 +621,11 @@ namespace Derby.Tests
                             return false;
                         ParameterInfo[] parameters = method.GetParameters();
                         return parameters.Length == 3 &&
-                               parameters[0].ParameterType == typeof(Spectrum128Machine) &&
+                               parameters[0].ParameterType == typeof(SpectrumMachine) &&
                                parameters[2].ParameterType == typeof(byte[]);
                     });
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 loadBasicProgram.Invoke(null, new object[] { machine, header, protectedHandoffProgram });
 
                 MethodInfo tryExecuteLoadedMountedBasicProgram = typeof(Tape.TapLoader).GetMethod(
@@ -675,10 +675,10 @@ namespace Derby.Tests
                             pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(new byte[] { 0xAA }), pauseMs: 1000)));
 
-                var machine128k = new Spectrum128Machine(romFolder);
+                var machine128k = new SpectrumMachine(romFolder);
                 Tape.TapeExecutionResult result128k = Tape.TzxLoader.LoadWithPolicy(machine128k, tapePath);
 
-                var machine48k = new Spectrum128Machine(romFolder);
+                var machine48k = new SpectrumMachine(romFolder);
                 machine48k.Reset(SpectrumMachineModel.Spectrum48K);
                 Tape.TapeExecutionResult result48k = Tape.TzxLoader.LoadWithPolicy(machine48k, tapePath);
 
@@ -735,7 +735,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Tape.TapeExecutionResult result = Tape.TzxLoader.LoadWithPolicy(machine, tapePath);
 
                 Assert.Equal("BootstrapHybrid", result.Strategy.ToString());
@@ -793,7 +793,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Tape.TapeExecutionResult result = Tape.TzxLoader.LoadWithPolicy(machine, tapePath);
 
                 Assert.Equal("LeadingStandardChainFakeLoad", result.Strategy.ToString());
@@ -841,7 +841,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(667, 735),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 MethodInfo createExecutionPlan = typeof(Tape.TapLoader).GetMethod(
                     "CreateExecutionPlan",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
@@ -892,7 +892,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 MethodInfo createExecutionPlan = typeof(Tape.TapLoader).GetMethod(
                     "CreateExecutionPlan",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
@@ -949,7 +949,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Tape.TapeExecutionResult result = Tape.TzxLoader.LoadWithPolicy(machine, tapePath);
 
                 Assert.Equal("BootstrapHybrid", result.Strategy.ToString());
@@ -985,7 +985,7 @@ namespace Derby.Tests
                         BuildPureDataBlock(new byte[] { 0xE8 }, usedBitsInLastByte: 6, pauseMs: 0),
                         BuildPureDataBlock(new byte[] { 0x40, 0xAA, 0x55 }, usedBitsInLastByte: 8, pauseMs: 1)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 var blocks = Tape.TzxLoader.ParseBlocks(File.ReadAllBytes(tapePath));
                 object plan = typeof(Tape.TapLoader)
                     .GetMethod("CreateExecutionPlan", BindingFlags.NonPublic | BindingFlags.Static)!
@@ -1025,7 +1025,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(564, 1129),
                         BuildPureDataBlock(new byte[] { 0xE8, 0xC3, 0x5B }, usedBitsInLastByte: 8, pauseMs: 0)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 IReadOnlyList<Tape.TapeBlock> blocks = Tape.TzxLoader.ParseBlocks(File.ReadAllBytes(tapePath));
                 object plan = typeof(Tape.TapLoader)
                     .GetMethod("CreateExecutionPlan", BindingFlags.NonPublic | BindingFlags.Static)!
@@ -1064,7 +1064,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(basicHeader, pauseMs: 1000),
                         BuildStandardSpeedDataBlock(basicData, pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TapBootstrapResult result = Tape.TzxLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
@@ -1101,7 +1101,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(type: 0, fileName: "TR", dataLength: (ushort)basicProgram.Length, parameter1: 0, parameter2: (ushort)basicProgram.Length), pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(basicProgram), pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TapBootstrapResult result = Tape.TzxLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
@@ -1135,7 +1135,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(type: 42, fileName: "FAST", dataLength: 1, parameter1: 0x8000, parameter2: 0), pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(new byte[] { 0x99 }), pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Tape.TzxLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.False(machine.HasMountedTape);
@@ -1166,7 +1166,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(type: 0, fileName: "AUTO", dataLength: (ushort)basicProgram.Length, parameter1: 0, parameter2: (ushort)basicProgram.Length), pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(basicProgram), pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TapBootstrapResult result = Tape.TzxLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
@@ -1207,7 +1207,7 @@ namespace Derby.Tests
                         BuildPulseSequenceBlock(855, 1710),
                         BuildPureDataBlock(new byte[] { 0xAA, 0x55, 0xF0 }, usedBitsInLastByte: 8, pauseMs: 250)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
                 Tape.TapBootstrapResult result = Tape.TzxLoader.BootstrapBasicProgramAndMountRemaining(machine, tapePath);
 
                 Assert.Equal(2, result.ConsumedBlockCount);
@@ -1253,7 +1253,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(type: 3, fileName: "TWO", dataLength: 3, parameter1: 0x8000, parameter2: 0), pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(new byte[] { 0x00, 0x01, 0x02 }), pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TapBootstrapResult result = Tape.TzxLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
@@ -1293,7 +1293,7 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(type: 42, fileName: "FAST", dataLength: (ushort)customData.Length, parameter1: 0x9000, parameter2: 0), pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(customData), pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TapBootstrapResult result = Tape.TzxLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
@@ -1345,14 +1345,14 @@ namespace Derby.Tests
                         BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(type: 3, fileName: "TWO", dataLength: (ushort)secondCode.Length, parameter1: 0xC000, parameter2: 0), pauseMs: 1000),
                         BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(secondCode), pauseMs: 1000)));
 
-                var machine = new Spectrum128Machine(romFolder);
+                var machine = new SpectrumMachine(romFolder);
 
                 Tape.TapBootstrapResult result = Tape.TzxLoader.LoadAllStandardBlocksAndAutoStart(machine, tapePath);
 
                 Assert.Equal(2, result.ConsumedBlockCount);
                 Assert.Equal((ushort)0xC000, machine.Cpu.Regs.PC);
                 Assert.False(machine.PagingLocked);
-                Assert.Equal(Spectrum128Machine.FrameTStates128, machine.FrameTStates);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
                 Assert.Equal(1, machine.CurrentRomBank);
                 Assert.Equal((byte)0xAA, machine.GetRamBankCopy(3)[0]);
                 Assert.Equal((byte)0xAB, machine.GetRamBankCopy(3)[1]);
@@ -1374,7 +1374,7 @@ namespace Derby.Tests
             return folder;
         }
 
-        private static ushort ReadWord(Spectrum128Machine machine, ushort address)
+        private static ushort ReadWord(SpectrumMachine machine, ushort address)
         {
             return (ushort)(machine.PeekMemory(address) | (machine.PeekMemory((ushort)(address + 1)) << 8));
         }
@@ -1579,12 +1579,12 @@ namespace Derby.Tests
             return new byte[] { 0x23, (byte)(relativeOffset & 0xFF), (byte)((relativeOffset >> 8) & 0xFF) };
         }
 
-        private static void DumpSysVars(string label, Spectrum128Machine machine)
+        private static void DumpSysVars(string label, SpectrumMachine machine)
         {
-            static ushort ReadWord(Spectrum128Machine m, ushort addr)
+            static ushort ReadWord(SpectrumMachine m, ushort addr)
                 => (ushort)(m.PeekMemory(addr) | (m.PeekMemory((ushort)(addr + 1)) << 8));
 
-            static string DumpBytes(Spectrum128Machine m, ushort start, int length)
+            static string DumpBytes(SpectrumMachine m, ushort start, int length)
             {
                 var bytes = new byte[length];
                 for (int i = 0; i < length; i++)

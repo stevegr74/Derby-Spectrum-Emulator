@@ -12,7 +12,7 @@ namespace Derby.Tests
         public void KempstonPort_ReturnsActiveHighState_InBothMachineModels(SpectrumMachineModel model)
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.Reset(model);
             machine.SetJoystickState(
                 SpectrumJoystickInterface.Kempston,
@@ -28,7 +28,7 @@ namespace Derby.Tests
         public void KempstonState_MasksUnsupportedBits_AndCanBeCleared()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
 
             machine.SetJoystickState(SpectrumJoystickInterface.Kempston, (SpectrumJoystickState)0xFF);
             Assert.Equal(SpectrumJoystickState.All, machine.GetJoystickState(SpectrumJoystickInterface.Kempston));
@@ -45,7 +45,7 @@ namespace Derby.Tests
         public void KempstonPort_IsPresentAndNeutralWithoutAHostController()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
 
             Assert.False(machine.IsJoystickInterfaceActive(SpectrumJoystickInterface.Kempston));
             Assert.Equal(0x00, machine.DebugReadPort(0x001F));
@@ -56,7 +56,7 @@ namespace Derby.Tests
         public void NonKempstonOddPort_StillUsesFloatingBus()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(SpectrumJoystickInterface.Kempston, SpectrumJoystickState.All);
 
             Assert.NotEqual(0x1F, machine.DebugReadPort(0x003F));
@@ -66,11 +66,11 @@ namespace Derby.Tests
         public void TimedPortRead_UsesKempstonState()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(
                 SpectrumJoystickInterface.Kempston,
                 SpectrumJoystickState.Left | SpectrumJoystickState.Down);
-            MethodInfo readPortTimed = typeof(Spectrum128Machine).GetMethod(
+            MethodInfo readPortTimed = typeof(SpectrumMachine).GetMethod(
                 "ReadPortTimed",
                 BindingFlags.Instance | BindingFlags.NonPublic)!;
 
@@ -83,7 +83,7 @@ namespace Derby.Tests
         public void SinclairKeysSixThroughZero_MapToInterfaceTwoSocketOne()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(
                 SpectrumJoystickInterface.SinclairKeys6To0,
                 SpectrumJoystickState.Left | SpectrumJoystickState.Up | SpectrumJoystickState.Fire);
@@ -96,7 +96,7 @@ namespace Derby.Tests
         public void Cursor_MapsDirectionsAndFireToCursorKeysAndZero()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(
                 SpectrumJoystickInterface.Cursor,
                 SpectrumJoystickState.Left |
@@ -113,7 +113,7 @@ namespace Derby.Tests
         public void SinclairKeysOneThroughFive_MapToInterfaceTwoSocketTwo()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(
                 SpectrumJoystickInterface.SinclairKeys1To5,
                 SpectrumJoystickState.Right | SpectrumJoystickState.Down | SpectrumJoystickState.Fire);
@@ -126,7 +126,7 @@ namespace Derby.Tests
         public void SinclairJoystickAndKeyboardContributionsRemainIndependent()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetKey(row: 4, bit: 3, pressed: true); // 7
             machine.SetJoystickState(SpectrumJoystickInterface.SinclairKeys6To0, SpectrumJoystickState.Left); // 6
 
@@ -140,7 +140,7 @@ namespace Derby.Tests
         public void BothSinclairJoysticks_AreReadableSimultaneously()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(
                 SpectrumJoystickInterface.SinclairKeys1To5,
                 SpectrumJoystickState.Left | SpectrumJoystickState.Fire);
@@ -156,7 +156,7 @@ namespace Derby.Tests
         public void CursorAndSinclairInputs_CombineOnSharedKeyboardRows()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(SpectrumJoystickInterface.Cursor, SpectrumJoystickState.Left);
             machine.SetJoystickState(SpectrumJoystickInterface.SinclairKeys1To5, SpectrumJoystickState.Fire);
 
@@ -171,7 +171,7 @@ namespace Derby.Tests
         public void NonKempstonInterfaces_LeaveKempstonPortNeutral(SpectrumJoystickInterface joystickInterface)
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(joystickInterface, SpectrumJoystickState.All);
 
             Assert.Equal(0x00, machine.DebugReadPort(0x001F));
@@ -181,7 +181,7 @@ namespace Derby.Tests
         public void RzxInputTakesPrecedenceOverLiveKempstonState()
         {
             using var roms = TestRomFolder.Create();
-            var machine = new Spectrum128Machine(roms.Path);
+            var machine = new SpectrumMachine(roms.Path);
             machine.SetJoystickState(SpectrumJoystickInterface.Kempston, SpectrumJoystickState.All);
             var replay = new RzxPlaybackSession("input.rzx", [new RzxFrame(1, [0x12, 0x0A], false)]);
             Assert.True(replay.TryBeginNextFrame(out _));
@@ -189,7 +189,7 @@ namespace Derby.Tests
 
             Assert.Equal(0x12, machine.DebugReadPort(0x001F));
 
-            MethodInfo readPortTimed = typeof(Spectrum128Machine).GetMethod(
+            MethodInfo readPortTimed = typeof(SpectrumMachine).GetMethod(
                 "ReadPortTimed",
                 BindingFlags.Instance | BindingFlags.NonPublic)!;
             Assert.Equal(0x0A, (byte)readPortTimed.Invoke(machine, [unchecked((ushort)0x001F), 3])!);

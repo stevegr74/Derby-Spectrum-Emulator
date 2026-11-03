@@ -18,7 +18,7 @@ namespace Derby.Tests
             if (!File.Exists(rom0) || !File.Exists(rom1))
                 return;
 
-            var machine = new Spectrum128Machine(romFolder);
+            var machine = new SpectrumMachine(romFolder);
             for (int i = 0; i < 30; i++)
                 machine.ExecuteFrame();
 
@@ -36,7 +36,7 @@ namespace Derby.Tests
                 return;
             }
 
-            var machine = new Spectrum128Machine(SpectrumRomSet.BundledPlus2A(romFolder));
+            var machine = new SpectrumMachine(SpectrumRomSet.BundledPlus2A(romFolder));
             for (int frame = 0; frame < 100; frame++)
                 machine.ExecuteFrame();
 

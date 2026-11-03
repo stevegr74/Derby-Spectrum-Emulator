@@ -16,8 +16,8 @@ namespace Derby.Tests
             frameBuffer.Render(screenRam, borderColor: 2, flashPhase: false);
 
             ReadOnlySpan<uint> pixels = frameBuffer.Pixels.Span;
-            int displayOffset = (Spectrum128Machine.BorderTopHeight * SpectrumFrameBuffer.Width) +
-                                Spectrum128Machine.BorderLeftWidth;
+            int displayOffset = (SpectrumMachine.BorderTopHeight * SpectrumFrameBuffer.Width) +
+                                SpectrumMachine.BorderLeftWidth;
             Assert.Equal(SpectrumFrameBuffer.GetSpectrumColorArgb(2, false), pixels[0]);
             Assert.Equal(SpectrumFrameBuffer.GetSpectrumColorArgb(7, false), pixels[displayOffset]);
             Assert.Equal(SpectrumFrameBuffer.GetSpectrumColorArgb(1, false), pixels[displayOffset + 1]);
@@ -33,10 +33,10 @@ namespace Derby.Tests
         public void FrameBuffer_RendersBorderColorChangesAtTheirTStatePositions()
         {
             const int firstVisibleTState = 14364 -
-                                           (Spectrum128Machine.BorderTopHeight * 228) -
-                                           (Spectrum128Machine.BorderLeftWidth / 2);
+                                           (SpectrumMachine.BorderTopHeight * 228) -
+                                           (SpectrumMachine.BorderLeftWidth / 2);
             var borderFrame = new BorderFrame(
-                Spectrum128Machine.FrameTStates128,
+                SpectrumMachine.FrameTStates128,
                 initialColor: 1,
                 new[] { new BorderEvent(firstVisibleTState + (10 * 228) + 4, 2) });
             var frameBuffer = new SpectrumFrameBuffer();
@@ -49,8 +49,8 @@ namespace Derby.Tests
         }
 
         [Theory]
-        [InlineData(Spectrum128Machine.FrameTStates48, 14336, 224, 6)]
-        [InlineData(Spectrum128Machine.FrameTStates128, 14364, 228, 4)]
+        [InlineData(SpectrumMachine.FrameTStates48, 14336, 224, 6)]
+        [InlineData(SpectrumMachine.FrameTStates128, 14364, 228, 4)]
         public void FrameBuffer_LatchesBorderChangesInEightPixelGroups(
             int frameTStates,
             int topLeftDisplayTState,
@@ -58,8 +58,8 @@ namespace Derby.Tests
             int latchLeadTStates)
         {
             int firstVisibleTState = topLeftDisplayTState -
-                                     (Spectrum128Machine.BorderTopHeight * lineTStates) -
-                                     (Spectrum128Machine.BorderLeftWidth / 2);
+                                     (SpectrumMachine.BorderTopHeight * lineTStates) -
+                                     (SpectrumMachine.BorderLeftWidth / 2);
             var borderFrame = new BorderFrame(
                 frameTStates,
                 initialColor: 1,
@@ -78,8 +78,8 @@ namespace Derby.Tests
         }
 
         [Theory]
-        [InlineData(Spectrum128Machine.FrameTStates48, 14336, 224, 6)]
-        [InlineData(Spectrum128Machine.FrameTStates128, 14364, 228, 4)]
+        [InlineData(SpectrumMachine.FrameTStates48, 14336, 224, 6)]
+        [InlineData(SpectrumMachine.FrameTStates128, 14364, 228, 4)]
         public void FrameBuffer_DoesNotStretchVisiblePixelsAcrossHorizontalFlyback(
             int frameTStates,
             int topLeftDisplayTState,
@@ -87,8 +87,8 @@ namespace Derby.Tests
             int latchLeadTStates)
         {
             int firstVisibleTState = topLeftDisplayTState -
-                                     (Spectrum128Machine.BorderTopHeight * lineTStates) -
-                                     (Spectrum128Machine.BorderLeftWidth / 2);
+                                     (SpectrumMachine.BorderTopHeight * lineTStates) -
+                                     (SpectrumMachine.BorderLeftWidth / 2);
             int secondLineStart = firstVisibleTState + lineTStates;
             var borderFrame = new BorderFrame(
                 frameTStates,
@@ -122,24 +122,24 @@ namespace Derby.Tests
         public void RenderToBitmap_Fills_The_Visible_Border_With_The_Selected_Color()
         {
             using var bitmap = new Bitmap(
-                Spectrum128Machine.ScreenWidth,
-                Spectrum128Machine.ScreenHeight,
+                SpectrumMachine.ScreenWidth,
+                SpectrumMachine.ScreenHeight,
                 System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             SpectrumRenderer.RenderToBitmap(bitmap, new byte[0x1B00], borderColor: 2, flashPhase: false);
 
             int expectedBorder = SpectrumRenderer.GetSpectrumColor(2, false).ToArgb();
             Assert.Equal(expectedBorder, bitmap.GetPixel(0, 0).ToArgb());
-            Assert.Equal(expectedBorder, bitmap.GetPixel(Spectrum128Machine.BorderLeftWidth - 1, Spectrum128Machine.BorderTopHeight).ToArgb());
-            Assert.Equal(expectedBorder, bitmap.GetPixel(Spectrum128Machine.ScreenWidth - 1, Spectrum128Machine.ScreenHeight - 1).ToArgb());
+            Assert.Equal(expectedBorder, bitmap.GetPixel(SpectrumMachine.BorderLeftWidth - 1, SpectrumMachine.BorderTopHeight).ToArgb());
+            Assert.Equal(expectedBorder, bitmap.GetPixel(SpectrumMachine.ScreenWidth - 1, SpectrumMachine.ScreenHeight - 1).ToArgb());
         }
 
         [Fact]
         public void RenderToBitmap_Renders_Flash_And_NonFlash_Correctly()
         {
             using var bitmap = new Bitmap(
-                Spectrum128Machine.ScreenWidth,
-                Spectrum128Machine.ScreenHeight,
+                SpectrumMachine.ScreenWidth,
+                SpectrumMachine.ScreenHeight,
                 System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             byte[] screenRam = new byte[0x1B00];
@@ -154,8 +154,8 @@ namespace Derby.Tests
 
             SpectrumRenderer.RenderToBitmap(bitmap, screenRam, borderColor: 0, flashPhase: false);
 
-            int displayX = Spectrum128Machine.BorderLeftWidth;
-            int displayY = Spectrum128Machine.BorderTopHeight;
+            int displayX = SpectrumMachine.BorderLeftWidth;
+            int displayY = SpectrumMachine.BorderTopHeight;
             Color litNormal = bitmap.GetPixel(displayX, displayY);
             Color unlitNormal = bitmap.GetPixel(displayX + 1, displayY);
 
@@ -175,8 +175,8 @@ namespace Derby.Tests
         public void RenderToBitmap_Does_Not_Swap_When_Flash_Bit_Is_Clear()
         {
             using var bitmap = new Bitmap(
-                Spectrum128Machine.ScreenWidth,
-                Spectrum128Machine.ScreenHeight,
+                SpectrumMachine.ScreenWidth,
+                SpectrumMachine.ScreenHeight,
                 System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             byte[] screenRam = new byte[0x1B00];
@@ -186,8 +186,8 @@ namespace Derby.Tests
             screenRam[0x1800] = (byte)((1 << 3) | 7);
 
             SpectrumRenderer.RenderToBitmap(bitmap, screenRam, borderColor: 0, flashPhase: false);
-            int displayX = Spectrum128Machine.BorderLeftWidth;
-            int displayY = Spectrum128Machine.BorderTopHeight;
+            int displayX = SpectrumMachine.BorderLeftWidth;
+            int displayY = SpectrumMachine.BorderTopHeight;
             Color litNormal = bitmap.GetPixel(displayX, displayY);
             Color unlitNormal = bitmap.GetPixel(displayX + 1, displayY);
 

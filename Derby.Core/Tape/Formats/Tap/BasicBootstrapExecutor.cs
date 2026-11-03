@@ -3,18 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Derby.Z80;
+using static Derby.Tape.TapLoader;
+using static Derby.Tape.SpectrumRomWorkspace;
 
 namespace Derby.Tape
 {
-    public static partial class TapLoader
+    internal sealed partial class BasicBootstrapExecutor
     {
-        private static ushort ReadWord(Spectrum128Machine machine, ushort address)
+        private static ushort ReadWord(SpectrumMachine machine, ushort address)
         {
             return (ushort)(machine.PeekMemory(address) | (machine.PeekMemory((ushort)(address + 1)) << 8));
         }
 
         private static bool TryReadLiveBasicNumericVariable(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             string variableName,
             out int value)
         {
@@ -48,8 +50,8 @@ namespace Derby.Tape
             return false;
         }
 
-        private static bool TryReadMountedContinuationNumericVariable(
-            Spectrum128Machine machine,
+        internal static bool TryReadMountedContinuationNumericVariable(
+            SpectrumMachine machine,
             string variableName,
             out int value)
         {
@@ -57,7 +59,7 @@ namespace Derby.Tape
         }
 
         private static bool TryReadBasicNumericVariableFromSnapshot(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             byte targetHeader,
             ushort varsAddress,
             byte[] variableData,
@@ -96,7 +98,7 @@ namespace Derby.Tape
         }
 
         private static bool TryReadBasicNumericVariableFromRange(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             byte targetHeader,
             ushort varsAddress,
             ushort eLineAddress,
@@ -184,7 +186,7 @@ namespace Derby.Tape
         }
 
         private static bool TryReadSpectrumSmallIntegerFromSnapshot(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort baseAddress,
             byte[] variableData,
             int offset,
@@ -207,7 +209,7 @@ namespace Derby.Tape
         }
 
         private static int GetLiveBasicVariableEntryLength(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort address,
             ushort eLineAddress)
         {
@@ -259,7 +261,7 @@ namespace Derby.Tape
         }
 
         private static bool TryReadSpectrumSmallInteger(
-            Spectrum128Machine machine,
+            SpectrumMachine machine,
             ushort address,
             out int value)
         {
@@ -313,15 +315,13 @@ namespace Derby.Tape
             return true;
         }
 
-        private static void WriteWord(Spectrum128Machine machine, ushort address, ushort value)
+        private static void WriteWord(SpectrumMachine machine, ushort address, ushort value)
         {
             machine.PokeMemory(address, (byte)(value & 0xFF));
             machine.PokeMemory((ushort)(address + 1), (byte)(value >> 8));
         }
 
-        private sealed partial class BasicBootstrapExecutor
-        {
-            private readonly Spectrum128Machine machine;
+        private readonly SpectrumMachine machine;
             private List<BasicLine> lines;
             private Queue<int> dataValues;
             private readonly Dictionary<string, int> variables = new(StringComparer.OrdinalIgnoreCase);
@@ -330,7 +330,7 @@ namespace Derby.Tape
             public int IgnoredLoadCount { get; private set; }
             public int ConsumedMountedLoadCount { get; private set; }
 
-            public BasicBootstrapExecutor(Spectrum128Machine machine, ushort programStart, ushort programLength, bool ignoreLoadStatements)
+            public BasicBootstrapExecutor(SpectrumMachine machine, ushort programStart, ushort programLength, bool ignoreLoadStatements)
             {
                 this.machine = machine ?? throw new ArgumentNullException(nameof(machine));
                 this.ignoreLoadStatements = ignoreLoadStatements;
@@ -731,7 +731,7 @@ namespace Derby.Tape
                 return top >= DefaultStackPointer ? DefaultStackPointer : top;
             }
 
-            private static bool ShouldRelocateMachineStackAfterClear(Spectrum128Machine machine, ushort top)
+            private static bool ShouldRelocateMachineStackAfterClear(SpectrumMachine machine, ushort top)
             {
                 return machine.Cpu.Regs.SP > top || machine.Cpu.Regs.SP < 0x8000;
             }
@@ -1159,11 +1159,11 @@ namespace Derby.Tape
 
             private int EvaluateExpression(List<string> tokens, int startIndex, int endIndex)
             {
-                var parser = new ExpressionParser(machine, variables, tokens, startIndex, endIndex);
+                var parser = new BasicExpressionParser(machine, variables, tokens, startIndex, endIndex);
                 return parser.Parse();
             }
 
-            private static List<BasicLine> ParseLines(Spectrum128Machine machine, ushort programStart, ushort programLength)
+            private static List<BasicLine> ParseLines(SpectrumMachine machine, ushort programStart, ushort programLength)
             {
                 var parsedLines = new List<BasicLine>();
                 ushort cursor = programStart;
@@ -1363,7 +1363,7 @@ namespace Derby.Tape
             private static bool IsAsciiLetterOrDigit(char c) => IsAsciiLetter(c) || IsAsciiDigit(c);
 
             public static bool RequiresMountedLoadSemantics(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -1411,7 +1411,7 @@ namespace Derby.Tape
             }
 
             public static bool CanHandleLoadedProgram(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -1436,7 +1436,7 @@ namespace Derby.Tape
             }
 
             private static bool CanEvaluateProgramExpressions(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 List<BasicLine> parsedLines,
                 ushort autoStartLine)
             {
@@ -1468,7 +1468,7 @@ namespace Derby.Tape
             }
 
             private static bool CanEvaluateStatementExpressions(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 List<string> statement)
             {
@@ -1539,7 +1539,7 @@ namespace Derby.Tape
             }
 
             private static bool CanParseExpression(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables,
                 List<string> tokens,
                 int startIndex,
@@ -1548,13 +1548,13 @@ namespace Derby.Tape
                 if (startIndex > endIndex)
                     return false;
 
-                var parser = new ExpressionParser(machine, variables, tokens, startIndex, endIndex);
+                var parser = new BasicExpressionParser(machine, variables, tokens, startIndex, endIndex);
                 parser.Parse();
                 return true;
             }
 
             public static bool CanRunPreloadedProgramUnderRom(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -1582,7 +1582,7 @@ namespace Derby.Tape
             }
 
             public static bool CanExecuteImmediateSideEffectProgram(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -1598,7 +1598,7 @@ namespace Derby.Tape
             }
 
             public static bool ShouldDeferToRomForMountedLoadProgram(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -1647,7 +1647,7 @@ namespace Derby.Tape
             }
 
             public static bool RequiresRomDrivenMountedLoadedProgram(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -1684,7 +1684,7 @@ namespace Derby.Tape
             }
 
             public static bool Requires128kTapeLoadMode(
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 ushort programStart,
                 ushort programLength,
                 ushort autoStartLine)
@@ -1722,7 +1722,7 @@ namespace Derby.Tape
                                 if (commaIndex <= 1)
                                     break;
 
-                                var parser = new ExpressionParser(machine, variables, statement, 1, commaIndex - 1);
+                                var parser = new BasicExpressionParser(machine, variables, statement, 1, commaIndex - 1);
                                 if (parser.Parse() == Spectrum128TapeLoadBankSelectAddress)
                                     return true;
                                 break;
@@ -1903,7 +1903,7 @@ namespace Derby.Tape
 
             private static IEnumerable<int> CollectDataValues(
                 List<BasicLine> parsedLines,
-                Spectrum128Machine machine,
+                SpectrumMachine machine,
                 Dictionary<string, int> variables)
             {
                 foreach (BasicLine line in parsedLines)
@@ -1922,7 +1922,7 @@ namespace Derby.Tape
 
                             if (itemEnd > itemStart)
                             {
-                                var parser = new ExpressionParser(machine, variables, statement, itemStart, itemEnd - 1);
+                                var parser = new BasicExpressionParser(machine, variables, statement, itemStart, itemEnd - 1);
                                 yield return parser.Parse();
                             }
 
@@ -1974,27 +1974,7 @@ namespace Derby.Tape
                 List<int> StatementByteOffsets,
                 List<List<TokenSpan>> StatementTokenSpans,
                 ushort DataAddress);
-            private readonly record struct ForFrame(string VariableName, int EndValue, int LineIndex, int StatementIndex);
-        }
+        private readonly record struct ForFrame(string VariableName, int EndValue, int LineIndex, int StatementIndex);
 
-        internal sealed class TapHeaderInfo
-        {
-            public TapHeaderInfo(byte type, string fileName, ushort dataLength, ushort parameter1, ushort parameter2)
-            {
-                Type = type;
-                FileName = string.IsNullOrWhiteSpace(fileName) ? "unnamed" : fileName;
-                DataLength = dataLength;
-                AutoStartLine = parameter1;
-                ProgramLength = parameter2;
-                StartAddress = parameter1;
-            }
-
-            public byte Type { get; }
-            public string FileName { get; }
-            public ushort DataLength { get; }
-            public ushort AutoStartLine { get; }
-            public ushort ProgramLength { get; }
-            public ushort StartAddress { get; }
-        }
     }
 }

@@ -8,7 +8,7 @@ using Derby.ManualHarness;
 using System.Reflection;
 
 string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
-var machine = new Spectrum128Machine(romFolder);
+var machine = new SpectrumMachine(romFolder);
 
 if (args.Length > 0)
 {
@@ -198,7 +198,7 @@ if (args.Length > 0)
 
     if (dumpTapeBlocks)
     {
-        DumpTapeBlocks(snapshotPath, machine.FrameTStates == Spectrum128Machine.FrameTStates48);
+        DumpTapeBlocks(snapshotPath, machine.FrameTStates == SpectrumMachine.FrameTStates48);
         return;
     }
 
@@ -517,7 +517,7 @@ if (args.Length > 0)
     return;
 }
 
-static void ExecuteHarnessStep(Spectrum128Machine machine, string executionMode)
+static void ExecuteHarnessStep(SpectrumMachine machine, string executionMode)
 {
     switch (executionMode)
     {
@@ -736,7 +736,7 @@ static TapeLoadStrategy ParseTapeStrategy(string value)
 }
 
 static TapeExecutionResult LoadTapeWithForcedStrategy(
-    Spectrum128Machine machine,
+    SpectrumMachine machine,
     string path,
     TapeLoadStrategy strategy,
     bool isTzx)
@@ -761,7 +761,7 @@ static IReadOnlyList<TapeBlock> InvokeTapLoaderParseBlocks(byte[] fileData)
 }
 
 static TapeExecutionResult InvokeTapLoaderExecutePlan(
-    Spectrum128Machine machine,
+    SpectrumMachine machine,
     string displayName,
     IReadOnlyList<TapeBlock> blocks,
     TapeLoadPlan plan,
@@ -806,7 +806,7 @@ static (ushort Address, int Length) ParseMemoryDumpRequest(string script)
     return (ParseAddress(parts[0]), length);
 }
 
-static string BuildMemoryDump(Spectrum128Machine machine, ushort address, int length)
+static string BuildMemoryDump(SpectrumMachine machine, ushort address, int length)
 {
     var builder = new System.Text.StringBuilder();
     builder.AppendLine($"=== MEMORY {address:X4} ({length} bytes) ===");
@@ -838,7 +838,7 @@ static byte ParseByte(string value)
     return Convert.ToByte(value, 16);
 }
 
-static void ApplyRegister(Spectrum128Machine machine, string registerName, ushort value)
+static void ApplyRegister(SpectrumMachine machine, string registerName, ushort value)
 {
     switch (registerName.ToUpperInvariant())
     {
@@ -855,7 +855,7 @@ static void ApplyRegister(Spectrum128Machine machine, string registerName, ushor
     }
 }
 
-static void ApplyKey(Spectrum128Machine machine, string keyName, bool pressed)
+static void ApplyKey(SpectrumMachine machine, string keyName, bool pressed)
 {
     foreach ((int row, int bit) in ResolveKey(keyName))
         machine.SetKey(row, bit, pressed);
@@ -921,7 +921,7 @@ static IEnumerable<(int row, int bit)> ResolveKey(string keyName)
     }
 }
 
-static void WriteHarnessArtifacts(Spectrum128Machine machine, string dump, string tag)
+static void WriteHarnessArtifacts(SpectrumMachine machine, string dump, string tag)
 {
     string debugFolder = Path.Combine(AppContext.BaseDirectory, "debug");
     Directory.CreateDirectory(debugFolder);
@@ -942,9 +942,9 @@ static void WriteHarnessArtifacts(Spectrum128Machine machine, string dump, strin
     Console.WriteLine($"Harness frame image: {imagePath}");
 }
 
-static string BuildBasicSystemVariableDebug(Spectrum128Machine machine)
+static string BuildBasicSystemVariableDebug(SpectrumMachine machine)
 {
-    static ushort ReadWord(Spectrum128Machine machine, ushort address) =>
+    static ushort ReadWord(SpectrumMachine machine, ushort address) =>
         (ushort)(machine.PeekMemory(address) | (machine.PeekMemory((ushort)(address + 1)) << 8));
 
     ushort vars = ReadWord(machine, 23627);
