@@ -2,6 +2,8 @@
 
 ![DERBY wordmark](assets/branding/derby-wordmark.svg)
 
+[![CI](https://github.com/stevegr74/Derby-Spectrum-Emulator/actions/workflows/ci.yml/badge.svg)](https://github.com/stevegr74/Derby-Spectrum-Emulator/actions/workflows/ci.yml)
+
 **DERBY - ZX Spectrum 48K / 128K / +2A Emulator**
 
 A from-scratch ZX Spectrum emulator written in C# with no third-party runtime dependencies. The name honours Derby, the development codename used for Sinclair's Spectrum 128.
@@ -238,6 +240,10 @@ Run all tests:
 ```text
 dotnet test
 ```
+
+GitHub Actions builds the complete solution on Windows, runs both automated test
+projects, and then runs the checked-in ZEXDOC and ZEXALL programs through the
+headless compliance runner. TRX diagnostics are retained for every CI run.
 
 Test coverage includes:
 
