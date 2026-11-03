@@ -26,9 +26,6 @@ namespace Derby
         private const double TurboTickSlowThresholdMilliseconds = 12.0;
         private const double TurboTickRecoverThresholdMilliseconds = 6.0;
         private const int PostLoadInputSuppressionMilliseconds = 250;
-        private const double TapeTransportFullOverlaySeconds = 3.0;
-        private const double TapeTransportStoppedIconSeconds = 5.0;
-        private const double QuickStateOverlaySeconds = 2.5;
         private const string ApplicationTitle = "DERBY";
         private const int MaximumMediaTitleLength = 48;
         private const int QuickStateSlotCount = 8;
@@ -118,20 +115,14 @@ namespace Derby
         private SpectrumDisplayMode displayMode = SpectrumDisplayMode.Enhanced2x;
         private SpectrumMachineModel selectedMachineModel = SpectrumMachineModel.Spectrum128K;
         private bool isStatusOverlayVisible;
-        private TapeTransportState lastObservedTapeTransportState = TapeTransportState.NoTape;
-        private bool lastObservedTapeMarkerStop;
-        private TapeTransportState tapeTransportOverlayState = TapeTransportState.NoTape;
-        private bool tapeTransportOverlayMarkerStop;
-        private long tapeTransportFullOverlayExpiresAtTicks;
-        private long tapeTransportIconExpiresAtTicks;
+        private readonly TapeTransportOverlay tapeTransportOverlay = new();
+        private readonly QuickStateFeedbackOverlay quickStateFeedbackOverlay = new();
         private readonly QuickStateSlot?[] quickStateSlots = new QuickStateSlot?[QuickStateSlotCount];
         private readonly QuickStateArchiveStore quickStateArchiveStore;
         private bool quickStateArchiveLoaded;
         private string? loadedMediaDisplayName;
         private PokeMediaIdentity? loadedMediaIdentity;
         private readonly Stack<PokeApplication> pokeApplications = new();
-        private string? quickStateOverlayText;
-        private long quickStateOverlayExpiresAtTicks;
         private EmulatorHelpForm? helpForm;
         private IDisposable? helpPauseLease;
         private DisassemblerForm? disassemblerForm;
@@ -322,10 +313,9 @@ namespace Derby
                 }
             });
 
-            lastObservedTapeTransportState = state;
-            lastObservedTapeMarkerStop = markerStop;
+            tapeTransportOverlay.SetObservedState(state, markerStop);
             if (state is TapeTransportState.Playing or TapeTransportState.Stopped)
-                ShowTapeTransportOverlay(state, markerStop);
+                tapeTransportOverlay.Show(state, markerStop, frameClock.ElapsedTicks);
 
             UpdateTapeTransportMenuItem();
             PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
@@ -346,9 +336,7 @@ namespace Derby
 
         private void ShowQuickStateOverlay(string text)
         {
-            quickStateOverlayText = text;
-            quickStateOverlayExpiresAtTicks = frameClock.ElapsedTicks +
-                (long)(QuickStateOverlaySeconds * System.Diagnostics.Stopwatch.Frequency);
+            quickStateFeedbackOverlay.Show(text, frameClock.ElapsedTicks);
         }
 
         private void ToggleHelpWindow()
@@ -928,9 +916,14 @@ namespace Derby
                 SpectrumRenderer.RenderToBitmap(presentationBitmap, presentationFrameBuffer);
             else
                 SpectrumRenderer.RenderScaledToBitmap(presentationBitmap, presentationFrameBuffer, layout.Scale);
-            DrawTapeTransportOverlay(presentationBitmap, layout.Scale, now);
+            tapeTransportOverlay.Draw(presentationBitmap, layout.Scale, now);
             DrawStatusOverlay(presentationBitmap, layout.Scale, now);
-            DrawQuickStateOverlay(presentationBitmap, layout.Scale, now);
+            quickStateFeedbackOverlay.Draw(
+                presentationBitmap,
+                layout.Scale,
+                now,
+                isStatusOverlayVisible,
+                tapeTransportOverlay.IsFullOverlayVisible(now));
             long renderEndTicks = frameClock.ElapsedTicks;
 
             screenBox.Image = presentationBitmap;
@@ -990,11 +983,12 @@ namespace Derby
                 currentTurboTapeLoadFactor = TurboTapeLoadFactor;
                 tapeTurboPlaybackPolicy.Reset();
                 inputEmulatedTStates = 0;
-                lastObservedTapeTransportState = machine.TapeTransportState;
-                lastObservedTapeMarkerStop = machine.IsTapeStoppedAtMarker;
+                tapeTransportOverlay.SetObservedState(
+                    machine.TapeTransportState,
+                    machine.IsTapeStoppedAtMarker);
             }
-            if (lastObservedTapeTransportState == TapeTransportState.NoTape)
-                ClearTapeTransportOverlay();
+            if (tapeTransportOverlay.ObservedState == TapeTransportState.NoTape)
+                tapeTransportOverlay.Clear();
             PublishPresentationState();
             lastStatsTicks = now;
             framesRenderedThisSecond = 0;
@@ -1047,143 +1041,22 @@ namespace Derby
         private void ShowMountedTapeTransportFeedback()
         {
             TapeTransportState state = machine.TapeTransportState;
-            lastObservedTapeTransportState = state;
-            lastObservedTapeMarkerStop = machine.IsTapeStoppedAtMarker;
+            tapeTransportOverlay.SetObservedState(state, machine.IsTapeStoppedAtMarker);
             UpdateTapeTransportMenuItem();
             if (state == TapeTransportState.Playing)
-                ShowTapeTransportOverlay(state, markerStop: false);
+                tapeTransportOverlay.Show(state, markerStop: false, frameClock.ElapsedTicks);
         }
 
         private void UpdateTapeTransportFeedback(long nowTicks)
         {
             TapeTransportState state = machine.TapeTransportState;
             bool markerStop = machine.IsTapeStoppedAtMarker;
-            if (state != lastObservedTapeTransportState || markerStop != lastObservedTapeMarkerStop)
+            if (tapeTransportOverlay.Observe(state, markerStop, nowTicks))
             {
-                lastObservedTapeTransportState = state;
-                lastObservedTapeMarkerStop = markerStop;
-
-                if (state is TapeTransportState.Playing or TapeTransportState.Stopped or TapeTransportState.Ended)
-                    ShowTapeTransportOverlay(state, markerStop);
-                else if (state == TapeTransportState.NoTape)
-                    ClearTapeTransportOverlay();
-
                 UpdateTapeTransportMenuItem();
             }
 
-            if (tapeTransportOverlayState == TapeTransportState.Ended &&
-                nowTicks >= tapeTransportIconExpiresAtTicks)
-            {
-                ClearTapeTransportOverlay();
-            }
-        }
-
-        private void ShowTapeTransportOverlay(TapeTransportState state, bool markerStop)
-        {
-            tapeTransportOverlayState = state;
-            tapeTransportOverlayMarkerStop = markerStop;
-            long nowTicks = frameClock.ElapsedTicks;
-            tapeTransportFullOverlayExpiresAtTicks =
-                nowTicks + (long)(TapeTransportFullOverlaySeconds * System.Diagnostics.Stopwatch.Frequency);
-            tapeTransportIconExpiresAtTicks = state switch
-            {
-                TapeTransportState.Playing => long.MaxValue,
-                TapeTransportState.Stopped =>
-                    nowTicks + (long)(TapeTransportStoppedIconSeconds * System.Diagnostics.Stopwatch.Frequency),
-                _ => tapeTransportFullOverlayExpiresAtTicks
-            };
-        }
-
-        private void ClearTapeTransportOverlay()
-        {
-            tapeTransportOverlayState = TapeTransportState.NoTape;
-            tapeTransportOverlayMarkerStop = false;
-            tapeTransportFullOverlayExpiresAtTicks = 0;
-            tapeTransportIconExpiresAtTicks = 0;
-        }
-
-        private void DrawTapeTransportOverlay(Bitmap bitmap, int scale, long nowTicks)
-        {
-            if (tapeTransportOverlayState == TapeTransportState.NoTape ||
-                nowTicks >= tapeTransportIconExpiresAtTicks)
-                return;
-
-            string text = tapeTransportOverlayState switch
-            {
-                TapeTransportState.Playing => "TAPE PLAYING - F5 STOP",
-                TapeTransportState.Stopped when tapeTransportOverlayMarkerStop => "TAPE AUTO-STOPPED - F5 RESUME",
-                TapeTransportState.Stopped => "TAPE PAUSED - F5 RESUME",
-                TapeTransportState.Ended => "TAPE ENDED",
-                _ => string.Empty
-            };
-            Color accent = tapeTransportOverlayState switch
-            {
-                TapeTransportState.Playing => Color.FromArgb(60, 220, 150),
-                TapeTransportState.Stopped => Color.FromArgb(255, 190, 55),
-                _ => Color.FromArgb(210, 215, 220)
-            };
-            bool showFullOverlay = nowTicks < tapeTransportFullOverlayExpiresAtTicks;
-
-            int x = 8 * scale;
-            int y = 8 * scale;
-            int width = (showFullOverlay ? (tapeTransportOverlayMarkerStop ? 238 : 190) : 30) * scale;
-            int height = (showFullOverlay ? 30 : 24) * scale;
-            int iconLeft = x + (8 * scale);
-            int iconSize = (showFullOverlay ? 14 : 11) * scale;
-            int iconTop = y + ((height - iconSize) / 2);
-
-            using Graphics graphics = Graphics.FromImage(bitmap);
-            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            using var backgroundBrush = new SolidBrush(Color.FromArgb(showFullOverlay ? 210 : 168, 8, 12, 14));
-            using var accentBrush = new SolidBrush(accent);
-            using var borderPen = new Pen(Color.FromArgb(showFullOverlay ? 235 : 190, accent), Math.Max(1, scale));
-            using var font = new Font(FontFamily.GenericSansSerif, 8.5f * scale, FontStyle.Bold, GraphicsUnit.Pixel);
-            graphics.FillRectangle(backgroundBrush, x, y, width, height);
-            graphics.DrawRectangle(borderPen, x, y, width - 1, height - 1);
-
-            if (tapeTransportOverlayState == TapeTransportState.Playing)
-            {
-                graphics.FillPolygon(accentBrush, new[]
-                {
-                    new Point(iconLeft, iconTop),
-                    new Point(iconLeft, iconTop + iconSize),
-                    new Point(iconLeft + iconSize, iconTop + (iconSize / 2))
-                });
-            }
-            else
-            {
-                graphics.FillRectangle(accentBrush, iconLeft, iconTop, iconSize, iconSize);
-            }
-
-            if (showFullOverlay)
-                graphics.DrawString(text, font, accentBrush, x + (28 * scale), y + (9 * scale));
-        }
-
-        private void DrawQuickStateOverlay(Bitmap bitmap, int scale, long nowTicks)
-        {
-            if (quickStateOverlayText == null || nowTicks >= quickStateOverlayExpiresAtTicks)
-                return;
-
-            Color accent = quickStateOverlayText.EndsWith("RESTORED", StringComparison.Ordinal)
-                ? Color.FromArgb(255, 190, 55)
-                : Color.FromArgb(60, 220, 190);
-            int width = 150 * scale;
-            int height = 30 * scale;
-            int x = bitmap.Width - width - (8 * scale);
-            bool avoidFullTapeOverlay = IsFullTapeOverlayVisible(nowTicks);
-            int y = isStatusOverlayVisible
-                ? SpectrumStatusOverlay.GetBounds(bitmap.Width, scale, avoidFullTapeOverlay).Bottom + (8 * scale)
-                : avoidFullTapeOverlay ? SpectrumStatusOverlay.TapeClearanceY * scale : 8 * scale;
-
-            using Graphics graphics = Graphics.FromImage(bitmap);
-            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            using var backgroundBrush = new SolidBrush(Color.FromArgb(210, 8, 12, 14));
-            using var accentBrush = new SolidBrush(accent);
-            using var borderPen = new Pen(Color.FromArgb(235, accent), Math.Max(1, scale));
-            using var font = new Font(FontFamily.GenericSansSerif, 8.5f * scale, FontStyle.Bold, GraphicsUnit.Pixel);
-            graphics.FillRectangle(backgroundBrush, x, y, width, height);
-            graphics.DrawRectangle(borderPen, x, y, width - 1, height - 1);
-            graphics.DrawString(quickStateOverlayText, font, accentBrush, x + (9 * scale), y + (9 * scale));
+            tapeTransportOverlay.ExpireEndedFeedback(nowTicks);
         }
 
         private void UpdateWindowTitle()
@@ -1234,13 +1107,12 @@ namespace Derby
                 tapeState,
                 markerStop,
                 SpectrumDisplayModes.GetLayout(displayMode).Label);
-            SpectrumStatusOverlay.Draw(bitmap, scale, data, IsFullTapeOverlayVisible(nowTicks));
+            SpectrumStatusOverlay.Draw(
+                bitmap,
+                scale,
+                data,
+                tapeTransportOverlay.IsFullOverlayVisible(nowTicks));
         }
-
-        private bool IsFullTapeOverlayVisible(long nowTicks) =>
-            tapeTransportOverlayState != TapeTransportState.NoTape &&
-            nowTicks < tapeTransportFullOverlayExpiresAtTicks &&
-            nowTicks < tapeTransportIconExpiresAtTicks;
 
         private int GetEmulationSpeedMultiplier(Spectrum128Machine activeMachine)
         {

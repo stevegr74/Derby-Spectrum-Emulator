@@ -69,8 +69,9 @@ status table in the main README remains the authoritative roadmap summary.
   automatic stop/resume, media replacement, reset, tape end, and Quick State.
 - Added capability gates for protected, noncanonical, mixed, and unsupported
   BASIC loaders so unsafe acceleration falls back to native ROM execution.
-- Split parsing/timing, ROM loading, BASIC expressions, mounted continuation,
-  and regression tests by responsibility while retaining the complete suite.
+- Split TAP parsing, format-neutral plan execution, timing, ROM loading, BASIC
+  expressions, mounted continuation, and regression tests by responsibility
+  while retaining the complete suite.
 - Re-ran the verified-media matrix and interactive multiload checkpoints,
   including Target Renegade, New Zealand Story, Indiana Jones, and Oracle's Cave.
 
