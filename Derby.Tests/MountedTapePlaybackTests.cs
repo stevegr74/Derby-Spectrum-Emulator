@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Derby.Tap;
+using Derby.Tape;
 using Xunit;
 
 namespace Derby.Tests

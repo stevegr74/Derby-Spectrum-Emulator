@@ -73,7 +73,7 @@ namespace Derby
                         lock (machineLock)
                         {
                             Spectrum128Machine newMachine = CreateConfiguredMachine();
-                            Tap.TzxLoader.LoadWithPolicy(newMachine, dialog.FileName);
+                            Tape.TzxLoader.LoadWithPolicy(newMachine, dialog.FileName);
                             machine = newMachine;
                         }
                     }
@@ -82,7 +82,7 @@ namespace Derby
                         lock (machineLock)
                         {
                             Spectrum128Machine newMachine = CreateConfiguredMachine();
-                            Tap.TapLoader.LoadWithPolicy(newMachine, dialog.FileName);
+                            Tape.TapLoader.LoadWithPolicy(newMachine, dialog.FileName);
                             machine = newMachine;
                         }
                     }
@@ -154,7 +154,7 @@ namespace Derby
             }
         }
 
-        private Tap.TapMountResult ReplaceMountedTape(string path)
+        private Tape.TapMountResult ReplaceMountedTape(string path)
         {
             string extension = Path.GetExtension(path);
             lock (machineLock)
@@ -163,9 +163,9 @@ namespace Derby
                     throw new InvalidOperationException("There is no mounted tape to replace.");
 
                 return extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase)
-                    ? Tap.TzxLoader.Mount(machine, path)
+                    ? Tape.TzxLoader.Mount(machine, path)
                     : extension.Equals(".tap", StringComparison.OrdinalIgnoreCase)
-                        ? Tap.TapLoader.Mount(machine, path)
+                        ? Tape.TapLoader.Mount(machine, path)
                         : throw new InvalidOperationException("Tape replacement requires a .tap or .tzx image.");
             }
         }

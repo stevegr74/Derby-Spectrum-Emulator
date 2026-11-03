@@ -1,7 +1,7 @@
 using System;
 using Derby.Z80;
 
-namespace Derby.Tap
+namespace Derby.Tape
 {
     internal sealed class MountedLoadContinuationController
     {

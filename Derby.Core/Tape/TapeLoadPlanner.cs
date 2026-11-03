@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Derby.Tap
+namespace Derby.Tape
 {
     internal static class TapeLoadPlanner
     {

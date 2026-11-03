@@ -1,4 +1,4 @@
-namespace Derby.Tap
+namespace Derby.Tape
 {
     public sealed partial class MountedTape
     {

@@ -214,12 +214,12 @@ namespace Derby.Tests
                     machine.Reset(SpectrumMachineModel.Spectrum48K);
                     machine.Cpu.Regs.PC = 0x8123;
                     machine.PokeMemory(0x9000, 0x5A);
-                    machine.MountTape(new Tap.MountedTape("side-1.tzx", Array.Empty<Tap.TapeBlock>()));
+                    machine.MountTape(new Tape.MountedTape("side-1.tzx", Array.Empty<Tape.TapeBlock>()));
 
                     MethodInfo replaceMethod = typeof(MainForm).GetMethod(
                         "ReplaceMountedTape",
                         BindingFlags.Instance | BindingFlags.NonPublic)!;
-                    var result = (Tap.TapMountResult)replaceMethod.Invoke(form, [tapePath])!;
+                    var result = (Tape.TapMountResult)replaceMethod.Invoke(form, [tapePath])!;
 
                     Assert.Same(machine, machineField.GetValue(form));
                     Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);

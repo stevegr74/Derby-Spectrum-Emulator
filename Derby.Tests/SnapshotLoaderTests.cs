@@ -131,14 +131,14 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(tempFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "playing.tap",
-                    new[] { Tap.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
+                    new[] { Tape.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
 
                 SnapshotLoader.LoadSna48k(machine, CreateMinimalSna48());
 
                 Assert.False(machine.HasMountedTape);
-                Assert.Equal(Tap.TapeTransportState.NoTape, machine.TapeTransportState);
+                Assert.Equal(Tape.TapeTransportState.NoTape, machine.TapeTransportState);
             }
             finally
             {
@@ -301,9 +301,9 @@ namespace Derby.Tests
                 data[26] = 0x06;
 
                 var machine = new Spectrum128Machine(tempFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "playing.tap",
-                    new[] { Tap.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
+                    new[] { Tape.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
 
                 SnapshotLoader.Load(machine, data, SpectrumMachineModel.Spectrum48K);
 
@@ -324,7 +324,7 @@ namespace Derby.Tests
                 Assert.True(machine.PagingLocked);
                 Assert.Equal(6, machine.BorderColor);
                 Assert.False(machine.HasMountedTape);
-                Assert.Equal(Tap.TapeTransportState.NoTape, machine.TapeTransportState);
+                Assert.Equal(Tape.TapeTransportState.NoTape, machine.TapeTransportState);
 
                 for (int bank = 0; bank < 8; bank++)
                     Assert.Equal((byte)(0xA0 + bank), machine.GetRamBankCopy(bank)[0]);

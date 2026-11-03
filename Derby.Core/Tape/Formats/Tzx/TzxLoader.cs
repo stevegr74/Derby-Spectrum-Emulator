@@ -4,7 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 
-namespace Derby.Tap
+namespace Derby.Tape
 {
     public static class TzxLoader
     {

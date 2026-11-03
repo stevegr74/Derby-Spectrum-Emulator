@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Derby.Tap;
+using Derby.Tape;
 using Xunit;
 
 namespace Derby.Tests
@@ -16,7 +16,7 @@ namespace Derby.Tests
             Type tapLoaderType = typeof(TapLoader);
             MethodInfo parseBlocks = tapLoaderType.GetMethod("ParseBlocks", BindingFlags.NonPublic | BindingFlags.Static)!;
             MethodInfo createPlan = tapLoaderType.GetMethod("CreateExecutionPlan", BindingFlags.NonPublic | BindingFlags.Static)!;
-            Type planType = tapLoaderType.Assembly.GetType("Derby.Tap.TapeLoadPlan")!;
+            Type planType = tapLoaderType.Assembly.GetType("Derby.Tape.TapeLoadPlan")!;
             var strategyProperty = planType.GetProperty("Strategy")!;
             var reasonCodeProperty = planType.GetProperty("ReasonCode")!;
             try

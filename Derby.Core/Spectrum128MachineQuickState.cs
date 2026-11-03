@@ -1,5 +1,5 @@
 using Derby.Audio;
-using Derby.Tap;
+using Derby.Tape;
 using Derby.Z80;
 
 namespace Derby

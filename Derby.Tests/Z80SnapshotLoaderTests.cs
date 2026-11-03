@@ -125,14 +125,14 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(tempFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "playing.tap",
-                    new[] { Tap.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
+                    new[] { Tape.TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) }));
 
                 Z80SnapshotLoader.Load(machine, BuildV1Snapshot(new byte[Ram48Size], compressed: false));
 
                 Assert.False(machine.HasMountedTape);
-                Assert.Equal(Tap.TapeTransportState.NoTape, machine.TapeTransportState);
+                Assert.Equal(Tape.TapeTransportState.NoTape, machine.TapeTransportState);
             }
             finally
             {

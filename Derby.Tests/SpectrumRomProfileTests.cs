@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using Derby.Tap;
+using Derby.Tape;
 using Xunit;
 
 namespace Derby.Tests

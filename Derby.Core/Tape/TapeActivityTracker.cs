@@ -1,4 +1,4 @@
-namespace Derby.Tap
+namespace Derby.Tape
 {
     internal sealed class TapeActivityTracker
     {
