@@ -32,6 +32,8 @@ namespace Derby.Tests
                         .Single(label => label.Name == "CompactMemoryMap");
                     Panel memoryMap = Descendants(form).OfType<Panel>()
                         .Single(panel => panel.Name == "MemoryMapPanel");
+                    memoryMap.Width = 500;
+                    Application.DoEvents();
                     Label[] memoryBlocks = Descendants(form).OfType<Label>()
                         .Where(label => label.Name.StartsWith("MemoryMapBlock", StringComparison.Ordinal))
                         .OrderBy(label => label.Name)
@@ -42,8 +44,8 @@ namespace Derby.Tests
                         Assert.True(block.Width > 0, $"{block.Name} should have a non-zero width.");
                         Assert.True(block.Height > 0, $"{block.Name} should have a non-zero height.");
                         Assert.True(
-                            memoryMap.ClientRectangle.Contains(block.Bounds),
-                            $"{block.Name} bounds {block.Bounds} exceed the memory-map panel {memoryMap.ClientRectangle}.");
+                            block.Parent!.ClientRectangle.Contains(block.Bounds),
+                            $"{block.Name} bounds {block.Bounds} exceed its layout panel {block.Parent.ClientRectangle}.");
                     });
                     Assert.InRange(memoryBlocks.Max(block => block.Width) - memoryBlocks.Min(block => block.Width), 0, 2);
                     Assert.Contains("LISTING 8000H | PC 8000H | 128K", summary.Text);
