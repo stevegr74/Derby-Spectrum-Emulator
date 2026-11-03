@@ -49,7 +49,7 @@ namespace Derby.Tape
             var blocks = ParseBlocksForNewTapeLoad(File.ReadAllBytes(path), machine.MachineModel);
             string displayName = Path.GetFileName(path);
             TapeLoadPlan plan = TapLoader.CreateExecutionPlan(machine, blocks);
-            return TapLoader.ExecutePlan(
+            return TapeExecutionEngine.Execute(
                 machine,
                 displayName,
                 blocks,

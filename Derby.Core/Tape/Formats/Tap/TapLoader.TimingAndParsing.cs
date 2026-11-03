@@ -86,45 +86,7 @@ namespace Derby.Tape
         }
 
         internal static IReadOnlyList<TapeBlock> ParseBlocks(byte[] fileData)
-        {
-            var blocks = new List<TapeBlock>();
-            int offset = 0;
-
-            while (offset < fileData.Length)
-            {
-                if (offset + 2 > fileData.Length)
-                    throw new InvalidOperationException("The .tap file ends inside a block length field.");
-
-                int blockLength = ReadWord(fileData, offset);
-                offset += 2;
-
-                if (blockLength < 2)
-                {
-                    throw new InvalidOperationException(
-                        $"Invalid tape block length {blockLength}. Each block must contain at least a flag byte and checksum byte.");
-                }
-
-                if (offset + blockLength > fileData.Length)
-                    throw new InvalidOperationException("The .tap file ends inside a tape block.");
-
-                ValidateChecksum(fileData, offset, blockLength);
-                byte[] streamData = new byte[blockLength];
-                Buffer.BlockCopy(fileData, offset, streamData, 0, blockLength);
-                blocks.Add(TapeBlock.CreateData(
-                    streamData,
-                    PilotPulseLengthTStates,
-                    streamData[0] < 0x80 ? HeaderPilotPulseCount : DataPilotPulseCount,
-                    SyncFirstPulseLengthTStates,
-                    SyncSecondPulseLengthTStates,
-                    ZeroBitPulseLengthTStates,
-                    OneBitPulseLengthTStates,
-                    usedBitsInLastByte: 8,
-                    pauseAfterBlockMs: StandardTapPauseAfterBlockMs));
-                offset += blockLength;
-            }
-
-            return blocks;
-        }
+            => TapFileParser.Parse(fileData);
 
     }
 }

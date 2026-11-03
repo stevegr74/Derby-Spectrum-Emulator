@@ -14,7 +14,9 @@ invariants unless a compatibility fix explicitly changes one.
 | `MountedTape` | Block position, exact pulse/EAR cursor, pause and stop-marker state, ROM-trap stream position, header/data sequencing, and transport Quick State | Machine-wide reset policy or BASIC/machine-code continuation |
 | `MountedLoadContinuationController` | Pending BASIC/USR continuation, workspace restoration, resume gates, and continuation Quick State | Physical tape position or the visible transport state |
 | `TapeLoadPlanner` | Capability-gated selection of full fake load, safe-prefix loading, ROM bootstrap, hybrid bootstrap, or real-time mounting, with a stable reason code and readable explanation | Parsing, plan execution, transport state, or continuation state |
-| `TapLoader` and `TzxLoader` | File parsing, plan execution, bootstrap execution, and construction of the remaining mounted tape | Long-lived transport ownership after loading hands control to the machine |
+| `TapFileParser` and `TzxLoader` | Decoding the TAP and TZX file formats into shared `TapeBlock` sequences | Strategy selection, shared execution policy, or long-lived transport state |
+| `TapeExecutionEngine` | Format-neutral execution of a selected load plan, including timing policy and construction of the remaining mounted tape | File-format parsing, strategy selection, or transport ownership after handoff |
+| `TapLoader` | TAP entry points and the shared Spectrum ROM/BASIC bootstrap operations used by planned tape execution | TZX parsing, strategy selection, or long-lived transport ownership |
 | Windows frontend | User commands and presentation of copied state | Mutation of tape internals or loader continuation state |
 
 The background emulation loop owns mutable machine and tape state. UI code may
@@ -69,7 +71,7 @@ retain mutable tape objects for direct cross-thread control.
 1. Locked lifecycle and restoration invariants with focused and table-driven tests.
 2. Isolated activity tracking and automatic handoff decisions in `TapeActivityTracker`, and media identity and lifecycle transitions in `TapeTransportController`.
 3. Isolated strategy selection in `TapeLoadPlanner`, leaving plan execution and continuation as separate responsibilities.
-4. Split parsing/timing, ROM loading, BASIC expression handling, and mounted continuation into focused partial-class files without changing their contracts.
+4. Isolated TAP parsing and format-neutral plan execution, then split ROM loading, BASIC expression handling, timing, and mounted continuation into focused implementation files without changing public contracts.
 5. Added structured transport transitions plus stable load-plan reason codes, while preserving readable diagnostic explanations.
 6. Split the tape regression suite by responsibility and retained the complete automated suite, ZEXDOC/ZEXALL, and representative difficult media as acceptance gates.
 
