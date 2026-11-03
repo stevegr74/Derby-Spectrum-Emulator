@@ -21,8 +21,8 @@ Feature contributions are generally **not accepted** unless they align directly 
 
 ## Project Principles (Non-Negotiable)
 
-- Standard library only
-- No third-party libraries or NuGet packages
+- Standard-library-only production code with no third-party runtime dependencies
+- Test-only packages may be used in the test projects
 - Incremental changes only
 - Do not rewrite large sections of the codebase
 - Maintain current architecture and structure
