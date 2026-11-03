@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using Derby.Z80;
-namespace Derby.Tap
+namespace Derby.Tape
 {
     public sealed partial class MountedTape
     {

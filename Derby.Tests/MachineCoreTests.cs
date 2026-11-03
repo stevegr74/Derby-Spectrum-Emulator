@@ -137,7 +137,7 @@ namespace Derby.Tests
                 WriteWord(machine, 23641, shrunkenEditLineAddress);
                 machine.RefreshPendingMountedLoadInterpreterContext();
 
-                MethodInfo readVariableMethod = typeof(Tap.TapLoader).GetMethod(
+                MethodInfo readVariableMethod = typeof(Tape.TapLoader).GetMethod(
                     "TryReadLiveBasicNumericVariable",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
                 object?[] args = new object?[] { machine, "a", 0 };
@@ -177,7 +177,7 @@ namespace Derby.Tests
                 for (ushort address = varsAddress; address < editLineAddress; address++)
                     machine.PokeMemory(address, 0x00);
 
-                MethodInfo readVariableMethod = typeof(Tap.TapLoader).GetMethod(
+                MethodInfo readVariableMethod = typeof(Tape.TapLoader).GetMethod(
                     "TryReadLiveBasicNumericVariable",
                     BindingFlags.Static | BindingFlags.NonPublic)!;
                 object?[] args = new object?[] { machine, "a", 0 };
@@ -806,11 +806,11 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "low-ear",
                     new[]
                     {
-                        Tap.TapeBlock.CreateSetSignalLevel(false)
+                        Tape.TapeBlock.CreateSetSignalLevel(false)
                     }));
 
                 machine.Cpu.WritePort!(0x00FE, 0x08);
@@ -835,12 +835,12 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "pause-progress",
                     new[]
                     {
-                        Tap.TapeBlock.CreatePause(1000),
-                        Tap.TapeBlock.CreatePureTone(2168, 32)
+                        Tape.TapeBlock.CreatePause(1000),
+                        Tape.TapeBlock.CreatePureTone(2168, 32)
                     }));
 
                 string before = machine.GetMountedTapeDebugState();
@@ -866,7 +866,7 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
                 machine.Cpu.Regs.PC = 0x2D2B;
                 machine.Cpu.Regs.SP = 0xFF00;
@@ -897,11 +897,11 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "active-mounted",
                     new[]
                     {
-                        Tap.TapeBlock.CreateData(new byte[] { 0xFF, 0xAA, 0x00 }, 2168, 3223, 667, 735, 855, 1710, 8, 1000)
+                        Tape.TapeBlock.CreateData(new byte[] { 0xFF, 0xAA, 0x00 }, 2168, 3223, 667, 735, 855, 1710, 8, 1000)
                     }));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
                 machine.Cpu.Regs.PC = 0x15FE;
@@ -929,12 +929,12 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "paused-mounted",
                     new[]
                     {
-                        Tap.TapeBlock.CreatePause(1000),
-                        Tap.TapeBlock.CreateData(new byte[] { 0xFF, 0xAA, 0x00 }, 2168, 3223, 667, 735, 855, 1710, 8, 1000)
+                        Tape.TapeBlock.CreatePause(1000),
+                        Tape.TapeBlock.CreateData(new byte[] { 0xFF, 0xAA, 0x00 }, 2168, 3223, 667, 735, 855, 1710, 8, 1000)
                     }));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
                 machine.Cpu.Regs.PC = 0x15FE;
@@ -962,11 +962,11 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "paused-before-unstructured-standard",
                     new[]
                     {
-                        Tap.TapeBlock.CreatePause(1000),
+                        Tape.TapeBlock.CreatePause(1000),
                         CreateUnstructuredLoadableStandardDataBlock(new byte[] { 0xFF, 0xAA, 0x00 }, pauseAfterBlockMs: 1000)
                     }));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
@@ -995,12 +995,12 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "paused-before-custom",
                     new[]
                     {
-                        Tap.TapeBlock.CreatePause(1000),
-                        Tap.TapeBlock.CreatePureTone(2168, 32)
+                        Tape.TapeBlock.CreatePause(1000),
+                        Tape.TapeBlock.CreatePureTone(2168, 32)
                     }));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
                 machine.Cpu.Regs.PC = 0x15FE;
@@ -1029,9 +1029,9 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape(
+                machine.MountTape(new Tape.MountedTape(
                     "idle-mounted",
-                    Array.Empty<Tap.TapeBlock>()));
+                    Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x8000);
                 machine.Cpu.Regs.PC = 0x1600;
                 machine.Cpu.Regs.SP = 0xFF00;
@@ -1059,7 +1059,7 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadBasicResume(40, 3);
                 machine.SetPendingMountedLoadUsrContinuation(0xFFFF);
                 machine.Cpu.Regs.PC = 0x2D2B;
@@ -1092,7 +1092,7 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x5CBB);
                 machine.Cpu.Regs.PC = 0x5E87;
                 machine.Cpu.Regs.SP = 0xFF00;
@@ -1120,7 +1120,7 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x5CBB);
                 machine.Cpu.Regs.PC = 0x10A8;
                 machine.Cpu.Regs.SP = 0xFF00;
@@ -1148,7 +1148,7 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuationResolver(_ => 0x8000, requireUsrReturnAddress: true);
                 machine.Cpu.Regs.PC = 0x1600;
                 machine.Cpu.Regs.SP = 0xFF00;
@@ -1175,7 +1175,7 @@ namespace Derby.Tests
             try
             {
                 var machine = new Spectrum128Machine(romFolder);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuationResolver(_ => 0x8000, requireUsrReturnAddress: true);
                 machine.Cpu.Regs.PC = 0x2D2B;
                 machine.Cpu.Regs.SP = 0xFF00;
@@ -1225,7 +1225,7 @@ namespace Derby.Tests
                 SetWord(machine, 23651, 0x5FC5);
                 SetWord(machine, 23653, 0x5FC5);
 
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.Cpu.Regs.PC = 0x2D2B;
 
                 MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
@@ -1288,7 +1288,7 @@ namespace Derby.Tests
                 SetWord(machine, 23651, 0x5CCE);
                 SetWord(machine, 23653, 0x5CCE);
 
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.Cpu.Regs.PC = 0x2D2B;
 
                 MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
@@ -1356,7 +1356,7 @@ namespace Derby.Tests
 
                 machine.SetPendingMountedLoadResumeCursorOverride(kCur: 0x5FC3, chAdd: 0x5FD0, xPtr: 0x5FD0);
                 machine.SetPendingMountedLoadDirectUsrContextPolicy(preserveLiveInterpreterState: true);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.Cpu.Regs.PC = 0x2D2B;
 
                 MethodInfo resumeMethod = typeof(Spectrum128Machine).GetMethod(
@@ -1391,7 +1391,7 @@ namespace Derby.Tests
             {
                 var machine = new Spectrum128Machine(romFolder);
                 machine.ConfigureFor128kTapeLoad(borderColor: 3);
-                machine.MountTape(new Tap.MountedTape("idle-mounted", Array.Empty<Tap.TapeBlock>()));
+                machine.MountTape(new Tape.MountedTape("idle-mounted", Array.Empty<Tape.TapeBlock>()));
                 machine.SetPendingMountedLoadUsrContinuation(0x0000);
                 machine.Cpu.Regs.AF = 0x1234;
                 machine.Cpu.Regs.BC = 0x5678;
@@ -1471,15 +1471,15 @@ namespace Derby.Tests
             return (ushort)(machine.PeekMemory(address) | (machine.PeekMemory((ushort)(address + 1)) << 8));
         }
 
-        private static Tap.TapeBlock CreateUnstructuredLoadableStandardDataBlock(byte[] streamData, ushort pauseAfterBlockMs)
+        private static Tape.TapeBlock CreateUnstructuredLoadableStandardDataBlock(byte[] streamData, ushort pauseAfterBlockMs)
         {
-            Type tapeBlockType = typeof(Tap.TapeBlock);
+            Type tapeBlockType = typeof(Tape.TapeBlock);
             ConstructorInfo constructor = tapeBlockType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Single();
 
-            return (Tap.TapeBlock)constructor.Invoke(new object?[]
+            return (Tape.TapeBlock)constructor.Invoke(new object?[]
             {
-                Tap.TapeBlockKind.Data,
+                Tape.TapeBlockKind.Data,
                 true,
                 false,
                 (byte[])streamData.Clone(),

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Derby.Tap;
+using Derby.Tape;
 using Derby.Input;
 using Derby.Z80;
 

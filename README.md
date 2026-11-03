@@ -127,7 +127,8 @@ Derby/
 |   |-- Debugging/              instruction-boundary execution control
 |   |-- Input/                  Spectrum joystick interfaces and state
 |   |-- Pokes/                  poke validation, matching, apply, and restore
-|   |-- Tape/                   TAP/TZX parsing, playback, bootstrap, and continuation
+|   |-- Tape/                   transport, playback, bootstrap, and continuation
+|   |   `-- Formats/            TAP and TZX format loaders
 |   |-- Ula/                    timing profiles and beam-aware raster capture
 |   `-- Z80/                    CPU execution and instruction decoding
 |

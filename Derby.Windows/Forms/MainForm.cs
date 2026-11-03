@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Derby.Audio;
 using Derby.Debugging;
 using Derby.Pokes;
-using Derby.Tap;
 using Derby.Tape;
 using Derby.Z80;
 

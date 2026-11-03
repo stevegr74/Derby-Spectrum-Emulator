@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Derby.Audio;
-using Derby.Tap;
+using Derby.Tape;
 using Derby;
 using Derby.ManualHarness;
 using System.Reflection;

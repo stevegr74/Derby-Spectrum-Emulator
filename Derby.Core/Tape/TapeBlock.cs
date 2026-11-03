@@ -1,6 +1,6 @@
 using System;
 
-namespace Derby.Tap
+namespace Derby.Tape
 {
     public enum TapeBlockKind
     {

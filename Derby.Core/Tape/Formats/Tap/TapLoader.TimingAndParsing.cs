@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-namespace Derby.Tap
+namespace Derby.Tape
 {
     public static partial class TapLoader
     {
