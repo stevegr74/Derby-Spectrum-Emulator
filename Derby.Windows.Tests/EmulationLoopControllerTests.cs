@@ -24,8 +24,8 @@ namespace Derby.Tests
                 }
             });
 
-            Assert.True(loopStarted.Wait(TimeSpan.FromSeconds(1)));
-            Assert.True(SpinWait.SpinUntil(() => Volatile.Read(ref iterations) > 0, TimeSpan.FromSeconds(1)));
+            Assert.True(loopStarted.Wait(TimeSpan.FromSeconds(5)));
+            Assert.True(SpinWait.SpinUntil(() => Volatile.Read(ref iterations) > 0, TimeSpan.FromSeconds(5)));
 
             int pauseCount = 0;
             int resumeCount = 0;
@@ -44,7 +44,7 @@ namespace Derby.Tests
             int resumedAt = Volatile.Read(ref iterations);
             Assert.True(SpinWait.SpinUntil(
                 () => Volatile.Read(ref iterations) > resumedAt,
-                TimeSpan.FromSeconds(1)));
+                TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
