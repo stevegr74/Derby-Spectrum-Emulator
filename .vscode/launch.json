@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build DERBY",
-            "program": "${workspaceFolder}/bin/Debug/net10.0-windows10.0.19041.0/Derby.dll",
+            "program": "${workspaceFolder}/Derby.Windows/bin/Debug/net10.0-windows10.0.19041.0/Derby.dll",
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false
         }

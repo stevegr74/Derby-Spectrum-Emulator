@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Derby.csproj" />
+    <ProjectReference Include="..\Derby.Windows\Derby.Windows.csproj" />
     <ProjectReference Include="..\Derby.Core\Derby.Core.csproj" />
   </ItemGroup>
 </Project>

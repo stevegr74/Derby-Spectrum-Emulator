@@ -131,13 +131,16 @@ Derby/
 |   |-- Ula/                    timing profiles and beam-aware raster capture
 |   `-- Z80/                    CPU execution and instruction decoding
 |
-|-- Audio/                      Windows audio pipeline and output adapters
-|-- Disassembly/                debugger UI, analysis, memory inspection, and export
-|-- Forms/                      main window, dialogs, and shared UI styling
-|-- Host/                       background loop, pause ownership, and UI snapshots
-|-- Input/                      Windows keyboard and USB-controller adapters
+|-- Derby.Windows/              net10.0 Windows frontend
+|   |-- Audio/                  Windows audio pipeline and output adapters
+|   |-- Disassembly/            debugger UI, analysis, memory inspection, and export
+|   |-- Forms/                  main window, dialogs, and shared UI styling
+|   |-- Host/                   background loop, pause ownership, and UI snapshots
+|   |-- Input/                  Windows keyboard and USB-controller adapters
+|   |-- Video/                  display scaling, presentation, and overlays
+|   |-- Derby.Windows.csproj    Windows frontend project
+|   `-- Program.cs              Windows application entry point
 |-- Pokes/                      editable game/poke library and format guide
-|-- Video/                      display scaling, presentation, and overlays
 |
 |-- Derby.Tests/                 Core unit and regression tests
 |-- Derby.Windows.Tests/         Windows presentation and host tests
@@ -148,8 +151,6 @@ Derby/
 |-- docs/                        user, design, compatibility, and engineering guides
 |-- ROMs/                        verified bundled ROM images and provenance
 |-- test-assets/                 checked-in test programs and fixtures
-|-- Derby.csproj                 net10.0 Windows frontend project
-|-- Program.cs                   Windows application entry point
 `-- README.md                    project overview, status, and roadmap
 ```
 
@@ -164,10 +165,10 @@ on Core. Windows presentation, debugger UI, and host behavior are covered by
 
 ## Running
 
-Run the emulator:
+Run the emulator from the repository root:
 
 ```text
-dotnet run
+dotnet run --project Derby.Windows
 ```
 
 ROM files must be present in the `ROMs` directory copied beside the executable

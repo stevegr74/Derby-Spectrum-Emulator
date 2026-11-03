@@ -48,7 +48,7 @@ intended model before mounting a tape.
 From source, start the emulator with:
 
 ```text
-dotnet run
+dotnet run --project Derby.Windows
 ```
 
 The emulator starts as a Spectrum 128K in `2x Enhanced` display mode and shows the 128K ROM menu.

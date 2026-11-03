@@ -2,7 +2,7 @@
 
 **Status:** Active frontend standard  
 **Applies to:** Windows forms, dialogs, menus, debugger tools, and future desktop UI  
-**Implementation source:** [`Forms/EmulatorUiStyle.cs`](../Forms/EmulatorUiStyle.cs)
+**Implementation source:** [`Derby.Windows/Forms/EmulatorUiStyle.cs`](../Derby.Windows/Forms/EmulatorUiStyle.cs)
 
 This document is the visual and interaction specification for the Windows frontend. It combines reusable design tokens with examples captured from the current application. New UI should feel like another part of the same tool, not a separately designed utility.
 
