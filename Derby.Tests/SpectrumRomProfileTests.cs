@@ -15,6 +15,9 @@ namespace Derby.Tests
 
             Assert.Equal("Sinclair ZX Spectrum 128K", machine.RomProfile.Name);
             Assert.True(machine.SupportsRomTapeAcceleration);
+            Assert.True(machine.RomProfile.IsIndefinitePauseWait(0x1F3E, 0));
+            Assert.False(machine.RomProfile.IsIndefinitePauseWait(0x1F3E, 1));
+            Assert.False(machine.RomProfile.IsIndefinitePauseWait(0x1F3D, 0));
         }
 
         [Fact]
@@ -87,6 +90,7 @@ namespace Derby.Tests
                 Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
                 Assert.Equal("Unknown 48K ROM", machine.RomProfile.Name);
                 Assert.False(machine.SupportsRomTapeAcceleration);
+                Assert.False(machine.RomProfile.IsIndefinitePauseWait(0x1F3E, 0));
             }
             finally
             {

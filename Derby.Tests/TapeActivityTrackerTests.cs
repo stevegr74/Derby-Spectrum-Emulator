@@ -50,6 +50,7 @@ namespace Derby.Tests
                     tape,
                     cpuIsHalted,
                     (ushort)programCounter,
+                    isRecognizedRomWait: false,
                     hasPendingContinuation,
                     100,
                     activityReadsPerFrame: 64,
@@ -57,6 +58,18 @@ namespace Derby.Tests
             }
 
             Assert.False(tape.IsPlaybackPaused);
+        }
+
+        [Fact]
+        public void AutomaticHandoff_RecognizedRomWaitMayStopBelowRam()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateDrivingTape();
+            tracker.ObserveLoaderActivity();
+
+            Assert.True(TryStop(tracker, tape, programCounter: 0x1F3E, isRecognizedRomWait: true));
+
+            Assert.True(tape.IsPlaybackPaused);
         }
 
         [Fact]
@@ -126,11 +139,16 @@ namespace Derby.Tests
             Assert.True(RecordKeyboardWaitFrame(tracker, tape));
         }
 
-        private static bool TryStop(TapeActivityTracker tracker, MountedTape tape) =>
+        private static bool TryStop(
+            TapeActivityTracker tracker,
+            MountedTape tape,
+            ushort programCounter = 0x8000,
+            bool isRecognizedRomWait = false) =>
             tracker.TryAutomaticallyStop(
                 tape,
                 cpuIsHalted: true,
-                programCounter: 0x8000,
+                programCounter,
+                isRecognizedRomWait,
                 hasPendingContinuation: false,
                 currentTStates: 100,
                 activityReadsPerFrame: 64,
@@ -151,6 +169,7 @@ namespace Derby.Tests
                 tape,
                 cpuIsHalted: false,
                 programCounter: 0x8000,
+                isRecognizedRomWait: false,
                 hasPendingContinuation: false,
                 currentTStates: 100,
                 activityReadsPerFrame: 64,

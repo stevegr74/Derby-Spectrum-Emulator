@@ -44,7 +44,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Kwah! (Melbourne House original) | `.tzx` | In 48K mode, the ROM-driven continuation completes, ends the tape cleanly, accepts SPACE at the start prompt, and enters the game |
 | 🟢 | Magician | `.tap` | Loading reaches the illustrated adventure opening and remains stable |
 | 🟢 | Manic Miner | `.tzx` | Standard header/data loading completes in 48K mode and reaches the stable animated game/attract screen |
-| 🟢 | OutRun | `.tap` | Native ROM loading reaches tape end and the complete loading picture; the post-load key handoff advances to the game mode menu |
+| 🟢 | OutRun | `.tap` | Native ROM loading automatically stops at the complete loading picture with the first unclaimed level record preserved; a key reaches the game mode menu, selecting OutRun automatically resumes the retained tape, and Stage 1 enters active gameplay |
 | 🟢 | Pac-Land | `.tzx` | In 48K mode, ROM-driven loading reaches the game/high-score screen and remains stable |
 | 🟢 | Paperboy (Elite original and Encore) | `.tzx` | Both releases reach the high-score/start screen and remain stable; Encore completes protected playback and ends the tape cleanly from both 48K and 128K startup selections |
 | 🟢 | Paperboy 2 (Mindscape) | `.tzx` | Loading reaches the character-selection menu and remains stable |

@@ -67,6 +67,7 @@ namespace Derby.Tap
             MountedTape? tape,
             bool cpuIsHalted,
             ushort programCounter,
+            bool isRecognizedRomWait,
             bool hasPendingContinuation,
             ulong currentTStates,
             int activityReadsPerFrame,
@@ -104,7 +105,7 @@ namespace Derby.Tap
             bool loaderHasRelinquishedTape =
                 LoaderActivityObserved &&
                 (sustainedKeyboardOnlyWait || lowRateHaltLoop) &&
-                programCounter >= 0x4000 &&
+                (programCounter >= 0x4000 || isRecognizedRomWait) &&
                 tape.IsActivelyDrivingEarLine &&
                 !hasPendingContinuation;
             if (!loaderHasRelinquishedTape)
@@ -118,10 +119,13 @@ namespace Derby.Tap
             }
 
             HandoffFrames++;
-            if (HandoffFrames < requiredHandoffFrames)
+            int effectiveRequiredFrames = isRecognizedRomWait ? 1 : requiredHandoffFrames;
+            if (HandoffFrames < effectiveRequiredFrames)
                 return false;
 
-            bool stopped = tape.PausePlayback(currentTStates);
+            bool stopped = isRecognizedRomWait
+                ? tape.PausePlaybackAtCurrentBlockStart(currentTStates)
+                : tape.PausePlayback(currentTStates);
             if (stopped)
             {
                 AutoPausedAtHandoff = true;

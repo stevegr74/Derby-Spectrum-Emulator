@@ -1325,6 +1325,7 @@ namespace Derby
                 activeTape,
                 cpu.IsHalted,
                 cpu.Regs.PC,
+                IsRecognizedIndefiniteRomPauseWait(),
                 HasPendingMountedLoadUsrContinuation,
                 cpu.TStates,
                 TapeLoaderActivityReadsPerFrame,
@@ -1336,6 +1337,10 @@ namespace Derby
                     $"[TapeTransport] Auto-stop frame={FrameCount} pc=0x{cpu.Regs.PC:X4} {activeTape.DebugPlaybackState}");
             }
         }
+
+        private bool IsRecognizedIndefiniteRomPauseWait() =>
+            (MachineModel == SpectrumMachineModel.Spectrum48K || CurrentRomBank == 1) &&
+            RomProfile.IsIndefinitePauseWait(cpu.Regs.PC, cpu.Regs.BC);
 
         private void ResetMountedTapeActivityTracking()
         {
