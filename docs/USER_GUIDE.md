@@ -29,7 +29,7 @@ This manual describes the emulator as it operates today. It begins with normal l
 
 # Chapter 1 - Getting Started
 
-The emulator models Spectrum 48K/Spectrum+ hardware, original 128K/grey +2
+The emulator models original Spectrum 48K hardware, original 128K/grey +2
 hardware, and +2A four-ROM paging. The chosen model affects ROM behaviour,
 memory, timing, sound, and how some games divide their tape content. Select the
 intended model before mounting a tape.
@@ -96,7 +96,6 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F5` | Stop or resume the mounted tape |
 | `F6` | Open or close the paused debugger and disassembler |
 | `F7` | Open the paused eight-slot Quick State Manager |
-| `F8` | Unassigned |
 | `F9` | Load a `.sna` snapshot |
 | `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
 | `F11` | Mount a `.tap` or `.tzx` tape image |
@@ -104,7 +103,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F12` | Write a machine diagnostic dump |
 | Right-click | Open the complete context menu |
 
-The context menu presents assigned function-key actions in order, followed by joystick options and the Poke Manager. `F8` is intentionally absent because it is currently unassigned.
+The context menu presents assigned function-key actions in order, followed by joystick options and the Poke Manager.
 
 ![Complete right-click context menu](images/context-menu.png)
 
@@ -124,7 +123,7 @@ The enhanced modes use pixel-art scaling rather than smoothing the image as an o
 
 ## Status Overlay
 
-Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, machine model, tape state, and display mode appear on separate right-aligned lines, moving below full tape feedback when necessary. The diagnostics can remain hidden during normal play.
+Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, the active 48K/128K timing family, tape state, and display mode appear on separate right-aligned lines, moving below full tape feedback when necessary. The diagnostics can remain hidden during normal play.
 
 ## Window Title
 
@@ -275,7 +274,7 @@ clearly labelled and cannot be loaded.
 4. Choose the small **X** in an occupied card's top-right corner to delete that slot after confirmation.
 5. Choose **Close** or press `Escape` to return without changing machine state.
 
-`F8` is unassigned. All eight slots are stored together in
+All eight slots are stored together in
 `%LocalAppData%\Derby\quick-states.dat`. DERBY compresses the versioned archive
 and replaces it atomically after a successful save, so application updates and
 read-only installation folders do not endanger the slots.

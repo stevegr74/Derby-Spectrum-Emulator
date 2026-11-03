@@ -22,7 +22,7 @@ Security concerns are generally limited to:
 
 ## Supported Versions
 
-Only the `main` branch is supported.
+Only the `master` branch is supported.
 
 ---
 
