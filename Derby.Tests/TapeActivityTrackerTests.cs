@@ -24,8 +24,54 @@ namespace Derby.Tests
             Assert.True(tracker.TryAutomaticallyResume(tape, true, 500, 64));
             Assert.False(tape.IsPlaybackPaused);
             Assert.False(tracker.AutoPausedAtHandoff);
+            Assert.True(tracker.AwaitingPostResumeHandoff);
             Assert.False(tape.ReadEarBit(599));
             Assert.True(tape.ReadEarBit(600));
+        }
+
+        [Fact]
+        public void AutomaticResume_StopsAgainAfterStableRamHandoff()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateDrivingTape();
+            tracker.ObserveLoaderActivity();
+
+            Assert.False(TryStop(tracker, tape));
+            Assert.False(TryStop(tracker, tape));
+            Assert.True(TryStop(tracker, tape));
+            for (int read = 0; read < 64; read++)
+                tracker.TryAutomaticallyResume(tape, true, 500, 64);
+
+            Assert.True(tracker.AwaitingPostResumeHandoff);
+            Assert.False(RecordActiveFrame(tracker, tape));
+            Assert.False(RecordActiveFrame(tracker, tape));
+            Assert.True(RecordActiveFrame(tracker, tape));
+            Assert.True(tape.IsPlaybackPaused);
+            Assert.False(tracker.AwaitingPostResumeHandoff);
+        }
+
+        [Fact]
+        public void AutomaticResume_DoesNotStopWhileEarActivityContinues()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateDrivingTape();
+            tracker.ObserveLoaderActivity();
+
+            Assert.False(TryStop(tracker, tape));
+            Assert.False(TryStop(tracker, tape));
+            Assert.True(TryStop(tracker, tape));
+            for (int read = 0; read < 64; read++)
+                tracker.TryAutomaticallyResume(tape, true, 500, 64);
+
+            for (int frame = 0; frame < 4; frame++)
+            {
+                for (int read = 0; read < 65; read++)
+                    tracker.RecordPortRead(keyboardOnly: false);
+                Assert.False(RecordActiveFrame(tracker, tape));
+            }
+
+            Assert.False(tape.IsPlaybackPaused);
+            Assert.True(tracker.AwaitingPostResumeHandoff);
         }
 
         [Theory]
@@ -79,6 +125,7 @@ namespace Derby.Tests
             tracker.RecordPortRead(keyboardOnly: false);
             tracker.RecordPortRead(keyboardOnly: true);
             tracker.ObserveLoaderActivity();
+            tracker.AwaitingPostResumeHandoff = true;
             TapeActivityTracker.QuickState state = tracker.CaptureQuickState();
 
             tracker.Reset();
@@ -87,6 +134,7 @@ namespace Derby.Tests
             Assert.Equal((ulong)2, tracker.PortReadCount);
             Assert.Equal((ulong)1, tracker.KeyboardOnlyPortReadCount);
             Assert.True(tracker.LoaderActivityObserved);
+            Assert.True(tracker.AwaitingPostResumeHandoff);
         }
 
         [Fact]

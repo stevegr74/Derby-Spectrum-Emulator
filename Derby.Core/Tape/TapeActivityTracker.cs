@@ -10,6 +10,7 @@ namespace Derby.Tap
             bool LoaderActivityObserved,
             int HandoffFrames,
             bool AutoPausedAtHandoff,
+            bool AwaitingPostResumeHandoff,
             int AutomaticResumeReads);
 
         public ulong PortReadCount { get; set; }
@@ -19,6 +20,7 @@ namespace Derby.Tap
         public bool LoaderActivityObserved { get; set; }
         public int HandoffFrames { get; set; }
         public bool AutoPausedAtHandoff { get; set; }
+        public bool AwaitingPostResumeHandoff { get; set; }
         public int AutomaticResumeReads { get; set; }
 
         public void RecordPortRead(bool keyboardOnly)
@@ -60,6 +62,7 @@ namespace Derby.Tap
 
             bool resumed = tape.ResumePlayback(sampleTStates);
             Reset();
+            AwaitingPostResumeHandoff = resumed;
             return resumed;
         }
 
@@ -102,10 +105,15 @@ namespace Derby.Tap
             bool lowRateHaltLoop =
                 cpuIsHalted &&
                 readsThisFrame <= (ulong)activityReadsPerFrame;
+            bool postResumeRamHandoff =
+                AwaitingPostResumeHandoff &&
+                programCounter >= 0x4000 &&
+                earSensitiveReadsThisFrame <= (ulong)activityReadsPerFrame;
             bool loaderHasRelinquishedTape =
-                LoaderActivityObserved &&
-                (sustainedKeyboardOnlyWait || lowRateHaltLoop) &&
-                (programCounter >= 0x4000 || isRecognizedRomWait) &&
+                ((LoaderActivityObserved &&
+                  (sustainedKeyboardOnlyWait || lowRateHaltLoop) &&
+                  (programCounter >= 0x4000 || isRecognizedRomWait)) ||
+                 postResumeRamHandoff) &&
                 tape.IsActivelyDrivingEarLine &&
                 !hasPendingContinuation;
             if (!loaderHasRelinquishedTape)
@@ -113,7 +121,7 @@ namespace Derby.Tap
                 // Game loops often interleave keyboard polling with several frames of
                 // music or animation. Preserve positive keyboard-wait evidence across
                 // frames with no tape reads, but cancel it as soon as EAR is sampled.
-                if (earSensitiveReadsThisFrame != 0)
+                if (earSensitiveReadsThisFrame != 0 && !AwaitingPostResumeHandoff)
                     HandoffFrames = 0;
                 return false;
             }
@@ -123,12 +131,14 @@ namespace Derby.Tap
             if (HandoffFrames < effectiveRequiredFrames)
                 return false;
 
-            bool stopped = isRecognizedRomWait
+            bool rewindUnclaimedRecord = isRecognizedRomWait || AwaitingPostResumeHandoff;
+            bool stopped = rewindUnclaimedRecord
                 ? tape.PausePlaybackAtCurrentBlockStart(currentTStates)
                 : tape.PausePlayback(currentTStates);
             if (stopped)
             {
                 AutoPausedAtHandoff = true;
+                AwaitingPostResumeHandoff = false;
                 AutomaticResumeReads = 0;
             }
 
@@ -145,6 +155,7 @@ namespace Derby.Tap
             LoaderActivityObserved = false;
             HandoffFrames = 0;
             AutoPausedAtHandoff = false;
+            AwaitingPostResumeHandoff = false;
             AutomaticResumeReads = 0;
         }
 
@@ -156,6 +167,7 @@ namespace Derby.Tap
             LoaderActivityObserved,
             HandoffFrames,
             AutoPausedAtHandoff,
+            AwaitingPostResumeHandoff,
             AutomaticResumeReads);
 
         public void RestoreQuickState(QuickState state)
@@ -167,6 +179,7 @@ namespace Derby.Tap
             LoaderActivityObserved = state.LoaderActivityObserved;
             HandoffFrames = state.HandoffFrames;
             AutoPausedAtHandoff = state.AutoPausedAtHandoff;
+            AwaitingPostResumeHandoff = state.AwaitingPostResumeHandoff;
             AutomaticResumeReads = state.AutomaticResumeReads;
         }
     }
