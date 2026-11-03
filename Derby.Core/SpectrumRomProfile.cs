@@ -41,6 +41,11 @@ namespace Derby
         internal ushort BasicLineNewAddress => 0x1B9E;
         internal ushort KeyboardInputLoopAddress => 0x15E7;
 
+        internal bool IsIndefinitePauseWait(ushort nextInstructionAddress, ushort counter) =>
+            SupportsAddressBasedTapeServices &&
+            nextInstructionAddress == 0x1F3E &&
+            counter == 0;
+
         internal bool IsMountedLoadReturnAddress(ushort address)
         {
             return IsInRange(address, 0x15F7, 0x15FA) ||

@@ -889,6 +889,42 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void MountedTape_InteractiveHandoff_RewindsCompletedUnclaimedRecordAndActivePayload()
+        {
+            TapeBlock controlBlock = TapeBlock.CreateData(
+                BuildDataBlock(new byte[] { 0x11 }, flag: 0x81),
+                0, 0, 0, 0, 1, 1, 8, 0);
+            TapeBlock payloadBlock = TapeBlock.CreateData(
+                BuildDataBlock(new byte[] { 0x22, 0x33 }, flag: 0x01),
+                0, 0, 0, 0, 1, 1, 8, 0);
+            var tape = new MountedTape(
+                "interactive-handoff",
+                new[] { controlBlock, payloadBlock },
+                initialBlockIndex: 0,
+                skipCustomHeaderForEarPlayback: false);
+
+            SetPrivateField(tape, "nextBlockIndex", 1);
+            SetPrivateField(tape, "earPlaybackBlockIndex", 1);
+            SetPrivateField(
+                tape,
+                "earPlaybackState",
+                Enum.Parse(GetPrivateField(tape, "earPlaybackState").GetType(), "Data"));
+            SetPrivateField(tape, "earPlaybackStarted", true);
+            SetPrivateField(tape, "lastEarSampleTStates", 100UL);
+            SetPrivateField(tape, "earStreamByteIndex", 2);
+            SetPrivateField(tape, "completedRomLoadableBlockIndex", 0);
+
+            Assert.True(tape.PausePlaybackAtCurrentBlockStart(100));
+
+            MountedTape.QuickState state = tape.CaptureQuickState();
+            Assert.True(state.PlaybackPaused);
+            Assert.Equal(0, state.NextBlockIndex);
+            Assert.Equal(0, state.EarPlaybackBlockIndex);
+            Assert.Equal(0, state.EarStreamByteIndex);
+            Assert.Equal(-1, state.CompletedRomLoadableBlockIndex);
+        }
+
+        [Fact]
         public void MountedTape_RomTrap_Reclaims_ActiveBlock_BeforeReportingFlagMismatch()
         {
             string tempFolder = CreateTempRoms();

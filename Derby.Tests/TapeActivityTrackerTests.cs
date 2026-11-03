@@ -24,8 +24,54 @@ namespace Derby.Tests
             Assert.True(tracker.TryAutomaticallyResume(tape, true, 500, 64));
             Assert.False(tape.IsPlaybackPaused);
             Assert.False(tracker.AutoPausedAtHandoff);
+            Assert.True(tracker.AwaitingPostResumeHandoff);
             Assert.False(tape.ReadEarBit(599));
             Assert.True(tape.ReadEarBit(600));
+        }
+
+        [Fact]
+        public void AutomaticResume_StopsAgainAfterStableRamHandoff()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateDrivingTape();
+            tracker.ObserveLoaderActivity();
+
+            Assert.False(TryStop(tracker, tape));
+            Assert.False(TryStop(tracker, tape));
+            Assert.True(TryStop(tracker, tape));
+            for (int read = 0; read < 64; read++)
+                tracker.TryAutomaticallyResume(tape, true, 500, 64);
+
+            Assert.True(tracker.AwaitingPostResumeHandoff);
+            Assert.False(RecordActiveFrame(tracker, tape));
+            Assert.False(RecordActiveFrame(tracker, tape));
+            Assert.True(RecordActiveFrame(tracker, tape));
+            Assert.True(tape.IsPlaybackPaused);
+            Assert.False(tracker.AwaitingPostResumeHandoff);
+        }
+
+        [Fact]
+        public void AutomaticResume_DoesNotStopWhileEarActivityContinues()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateDrivingTape();
+            tracker.ObserveLoaderActivity();
+
+            Assert.False(TryStop(tracker, tape));
+            Assert.False(TryStop(tracker, tape));
+            Assert.True(TryStop(tracker, tape));
+            for (int read = 0; read < 64; read++)
+                tracker.TryAutomaticallyResume(tape, true, 500, 64);
+
+            for (int frame = 0; frame < 4; frame++)
+            {
+                for (int read = 0; read < 65; read++)
+                    tracker.RecordPortRead(keyboardOnly: false);
+                Assert.False(RecordActiveFrame(tracker, tape));
+            }
+
+            Assert.False(tape.IsPlaybackPaused);
+            Assert.True(tracker.AwaitingPostResumeHandoff);
         }
 
         [Theory]
@@ -50,6 +96,7 @@ namespace Derby.Tests
                     tape,
                     cpuIsHalted,
                     (ushort)programCounter,
+                    isRecognizedRomWait: false,
                     hasPendingContinuation,
                     100,
                     activityReadsPerFrame: 64,
@@ -60,12 +107,25 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void AutomaticHandoff_RecognizedRomWaitMayStopBelowRam()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateDrivingTape();
+            tracker.ObserveLoaderActivity();
+
+            Assert.True(TryStop(tracker, tape, programCounter: 0x1F3E, isRecognizedRomWait: true));
+
+            Assert.True(tape.IsPlaybackPaused);
+        }
+
+        [Fact]
         public void QuickState_RestoresAllActivityAndHandoffCounters()
         {
             var tracker = new TapeActivityTracker();
             tracker.RecordPortRead(keyboardOnly: false);
             tracker.RecordPortRead(keyboardOnly: true);
             tracker.ObserveLoaderActivity();
+            tracker.AwaitingPostResumeHandoff = true;
             TapeActivityTracker.QuickState state = tracker.CaptureQuickState();
 
             tracker.Reset();
@@ -74,6 +134,7 @@ namespace Derby.Tests
             Assert.Equal((ulong)2, tracker.PortReadCount);
             Assert.Equal((ulong)1, tracker.KeyboardOnlyPortReadCount);
             Assert.True(tracker.LoaderActivityObserved);
+            Assert.True(tracker.AwaitingPostResumeHandoff);
         }
 
         [Fact]
@@ -126,11 +187,16 @@ namespace Derby.Tests
             Assert.True(RecordKeyboardWaitFrame(tracker, tape));
         }
 
-        private static bool TryStop(TapeActivityTracker tracker, MountedTape tape) =>
+        private static bool TryStop(
+            TapeActivityTracker tracker,
+            MountedTape tape,
+            ushort programCounter = 0x8000,
+            bool isRecognizedRomWait = false) =>
             tracker.TryAutomaticallyStop(
                 tape,
                 cpuIsHalted: true,
-                programCounter: 0x8000,
+                programCounter,
+                isRecognizedRomWait,
                 hasPendingContinuation: false,
                 currentTStates: 100,
                 activityReadsPerFrame: 64,
@@ -151,6 +217,7 @@ namespace Derby.Tests
                 tape,
                 cpuIsHalted: false,
                 programCounter: 0x8000,
+                isRecognizedRomWait: false,
                 hasPendingContinuation: false,
                 currentTStates: 100,
                 activityReadsPerFrame: 64,

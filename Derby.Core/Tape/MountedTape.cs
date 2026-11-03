@@ -261,6 +261,46 @@ namespace Derby.Tap
             return true;
         }
 
+        internal bool PausePlaybackAtCurrentBlockStart(ulong currentTStates)
+        {
+            if (playbackPaused || playbackCompleted)
+                return false;
+
+            ReadEarBit(currentTStates);
+            int blockIndex = earPlaybackBlockIndex;
+            if (blockIndex < 0 || blockIndex >= blocks.Count)
+                return PausePlayback(currentTStates);
+
+            if (completedRomLoadableBlockIndex >= 0 &&
+                completedRomLoadableBlockIndex == blockIndex - 1 &&
+                nextBlockIndex == blockIndex)
+            {
+                blockIndex = completedRomLoadableBlockIndex;
+            }
+
+            nextBlockIndex = blockIndex;
+            expectedDataLength = null;
+            pendingHeaderName = null;
+            pendingHeaderInfo = null;
+            romStreamTrapBlockIndex = -1;
+            romStreamTrapByteIndex = 0;
+            completedRomLoadableBlockIndex = -1;
+            playbackCompleted = false;
+            playbackPaused = false;
+            pausedByStopMarker = false;
+            stopMarkerResumeBlockIndex = -1;
+
+            int nextLoadableBlockIndex = FindNextLoadableBlockIndex(nextBlockIndex);
+            state = nextLoadableBlockIndex >= blocks.Count
+                ? TapeState.Idle
+                : IsHeaderBlock(blocks[nextLoadableBlockIndex]) ? TapeState.ExpectHeader : TapeState.ExpectData;
+            StartEarPlaybackBlock(blockIndex, preserveSignalPhase: false);
+
+            pausedPulseElapsedTStates = 0;
+            playbackPaused = true;
+            return true;
+        }
+
         public bool ResumePlayback(ulong currentTStates)
         {
             if (!playbackPaused || playbackCompleted)
