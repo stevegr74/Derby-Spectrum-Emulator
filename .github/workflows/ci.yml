@@ -32,8 +32,11 @@ jobs:
       - name: Build
         run: dotnet build Derby.sln -c Release --no-restore
 
-      - name: Run automated tests
-        run: dotnet test Derby.sln -c Release --no-build --logger trx --results-directory TestResults
+      - name: Run core tests
+        run: dotnet test Derby.Tests/Derby.Tests.csproj -c Release --no-build --logger "trx;LogFileName=core-tests.trx" --results-directory TestResults
+
+      - name: Run Windows frontend tests
+        run: dotnet test Derby.Windows.Tests/Derby.Windows.Tests.csproj -c Release --no-build --logger "trx;LogFileName=windows-tests.trx" --results-directory TestResults
 
       - name: Run ZEXDOC
         run: dotnet run -c Release --project Derby.Z80Compliance --no-build -- test-assets/z80/zexdoc.com 7000000000
