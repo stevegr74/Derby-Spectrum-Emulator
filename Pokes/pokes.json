@@ -624,6 +624,128 @@
         { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "29893", "value": "0" }] },
         { "id": "no-crashes", "name": "No crashes", "description": "Patches both collision-loss bytes.", "writes": [{ "space": "mapped", "address": "60514", "value": "24" }, { "space": "mapped", "address": "60515", "value": "6" }] }
       ]
+    },
+    {
+      "id": "720-degrees", "title": "720 Degrees", "aliases": ["720", "720°", "720 Degrees"], "models": ["48K", "128K"],
+      "sha256": ["063219D3E9C7DDE275D6801973F3DF76E7805275B2497503F903217657838730", "ECDB6506F841A0D2191FA4766039A6CCDBFE857840BC9DC683475C66D44D0050"],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "40774", "value": "0" }] },
+        { "id": "infinite-cash", "name": "Infinite cash", "description": "Prevents cash from running out.", "writes": [{ "space": "mapped", "address": "40360", "value": "0" }] },
+        { "id": "infinite-tickets", "name": "Infinite tickets", "description": "Prevents tickets from running out.", "writes": [{ "space": "mapped", "address": "35357", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "description": "Stops the timer. Restore the last applied poke before entering the ramp challenge so it can finish.", "writes": [{ "space": "mapped", "address": "41918", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "agent-x", "title": "Agent X", "aliases": ["Agent X"], "models": ["48K", "128K"],
+      "sha256": ["66308A18610D098F21C04A118FE2407F3E2AD0B909CE99B59D759CA63D78EC12"],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "26099", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "description": "Stops the timer.", "writes": [{ "space": "mapped", "address": "25917", "value": "0" }] },
+        { "id": "infinite-energy", "name": "Infinite energy", "description": "Prevents energy depletion.", "writes": [{ "space": "mapped", "address": "26817", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "airwolf", "title": "Airwolf", "aliases": ["Airwolf", "Airwolf (Elite)", "Airwolf (Encore)"], "models": ["48K", "128K"],
+      "sha256": ["200BEB87046925FDA6A8C96B848BBAF7C8BE06608D4AA15931C0C9D46860669B", "AA1AFDCE9822482634301B160CCEE1F657DEF9108ACECCBAE08825596F1A4884", "3D186BC92589D822007C98D34B540C1880DE50D092B3D852528D121A692F8615"],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "45982", "value": "0" }] },
+        { "id": "infinite-bonus", "name": "Infinite bonus", "description": "Prevents the bonus counter from decreasing.", "writes": [{ "space": "mapped", "address": "44665", "value": "0" }] },
+        { "id": "immunity", "name": "Immunity", "description": "Bypasses the principal damage check.", "writes": [{ "space": "mapped", "address": "44546", "value": "195" }] }
+      ]
+    },
+    {
+      "id": "airwolf-ii", "title": "Airwolf II", "aliases": ["Airwolf 2", "Airwolf II", "Airwolf 2 (Encore)"], "models": ["48K", "128K"],
+      "sha256": ["980EAD287F9FD0860D48AB9274EAA0EC4EE078928D7400EAEC418A160586F317"],
+      "pokes": [
+        { "id": "immunity", "name": "Immunity", "description": "Bypasses the principal damage check.", "writes": [{ "space": "mapped", "address": "57391", "value": "58" }] },
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "53471", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "alien-mind-games", "title": "Alien (Mind Games)", "aliases": ["Alien", "Alien (Mind Games)"], "models": ["48K", "128K"],
+      "sha256": ["CE8F4C1B11071C04BFD4B52A1CFD9ED0B4B046DA14BA45C9DC75F4A77EF300F9", "1DFD610A9D6F2E54D73C4FDD4FBD9960D1C8643CBE9BB0A35C25E6CF68ED5D28"],
+      "pokes": [
+        { "id": "infinite-time", "name": "Infinite time", "description": "Stops the principal timer.", "writes": [{ "space": "mapped", "address": "38897", "value": "42" }] },
+        { "id": "infinite-tooh", "name": "Infinite TOOH", "description": "Prevents the TOOH resource from being consumed.", "writes": [{ "space": "mapped", "address": "39563", "value": "182" }] },
+        { "id": "immunity", "name": "Immunity to the Alien", "description": "Prevents damage from the Alien.", "writes": [{ "space": "mapped", "address": "39256", "value": "201" }] }
+      ]
+    },
+    {
+      "id": "amaurote", "title": "Amaurote", "aliases": ["Amaurote", "Amaurote 128"], "models": ["48K", "128K"],
+      "sha256": ["D6ACF70FF2E4A35F15DB0F2D172623F83E737634219395719D1675690306745F", "464C8ABF35456A2626CA3DFA47AEBC98053E13F66327F7E1CD6A7E9ADEFD7B27", "CB91CE805EABB80EF05F2A3428CF4CFE8951222A2BF069C84C9D98319DA03DD5"],
+      "pokes": [
+        { "id": "infinite-money", "name": "Infinite money", "description": "Prevents money from running out.", "writes": [{ "space": "mapped", "address": "42506", "value": "0" }] },
+        { "id": "no-city-damage", "name": "No city damage", "description": "Prevents damage to the city.", "writes": [{ "space": "mapped", "address": "42974", "value": "175" }] },
+        { "id": "infinite-energy", "name": "Infinite energy", "description": "Patches both energy-depletion paths.", "writes": [{ "space": "mapped", "address": "42456", "value": "0" }, { "space": "mapped", "address": "38552", "value": "0" }] },
+        { "id": "infinite-bombs", "name": "Infinite bombs", "description": "Prevents bombs from being consumed.", "writes": [{ "space": "mapped", "address": "40615", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "andy-capp", "title": "Andy Capp", "aliases": ["Andy Capp", "Andy Capp (Alternative)"], "models": ["48K", "128K"],
+      "sha256": ["209688FE4BACE8088899F435F58EAF9591640646CC0CD2DA18EFED9E1A072000"],
+      "pokes": [
+        { "id": "infinite-kisses", "name": "Infinite kisses", "description": "Prevents kisses from being consumed.", "writes": [{ "space": "mapped", "address": "43584", "value": "0" }] },
+        { "id": "infinite-alcometer", "name": "Infinite alcometer", "description": "Prevents the alcometer from decreasing.", "writes": [{ "space": "mapped", "address": "65032", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "ant-attack", "title": "Ant Attack", "aliases": ["Ant Attack", "Ant Attack (Quicksilva)"], "models": ["48K", "128K"],
+      "sha256": ["35916ED85488664DA2D08A87FFBEDB72B192F02BCD1EEC8CF1DC5395DF803DF2", "1223DC2AC29BD718FC4C21EFC6E65700FDD9ED8251CF5F79194BEE9B637CF2F5", "98CE71D3CD79FB2FAAC8524428BA53492D05A5E62EFCAD340236ABD50D8D6F7F"],
+      "pokes": [
+        { "id": "infinite-rescuer-lives", "name": "Infinite rescuer lives", "description": "Prevents the rescuer from losing lives.", "writes": [{ "space": "mapped", "address": "36673", "value": "0" }] },
+        { "id": "infinite-rescuee-lives", "name": "Infinite rescuee lives", "description": "Prevents the rescuee from losing lives.", "writes": [{ "space": "mapped", "address": "36714", "value": "0" }] },
+        { "id": "infinite-bombs", "name": "Infinite bombs", "description": "Prevents bombs from being consumed.", "writes": [{ "space": "mapped", "address": "36122", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "description": "Stops the timer.", "writes": [{ "space": "mapped", "address": "36322", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "arkanoid-ii-48k", "title": "Arkanoid II (48K)", "aliases": ["Arkanoid II - 48k", "Arkanoid 2 48K"], "models": ["48K"],
+      "sha256": ["216970C229B3AAA28B30E9DA0E99B9A0705FDC9844984738D8D62B24F3C2C2DC"],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss in the 48K release.", "writes": [{ "space": "mapped", "address": "37484", "value": "182" }] },
+        { "id": "no-moving-bricks", "name": "No moving bricks", "description": "Disables both moving-brick update paths.", "writes": [{ "space": "mapped", "address": "33423", "value": "0" }, { "space": "mapped", "address": "33429", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "arkanoid-ii-128k", "title": "Arkanoid II (128K)", "aliases": ["Arkanoid II - 128k", "Arkanoid 2 128K"], "models": ["128K"],
+      "sha256": ["241EAD257FDB7FF6166082DC93C3B70C074D4F9C526C6060F974411A71BD4572"],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss in the 128K release.", "writes": [{ "space": "mapped", "address": "33875", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "athena", "title": "Athena", "aliases": ["Athena", "Athena (Imagine)"], "models": ["48K", "128K"],
+      "sha256": ["C0D3B33A96AB820105DFA159084EFD3178903A92F6CD49C6E1C9527BE9A6FAD8", "50014B9C9AD30206A40D5319D2BC68A91954EEB82908F18ABC28E32CEADB8C21", "6511A00F2CFE4322CC80AB87E9EBACEEA99B5E8B570FA106C606E5E640C3417A"],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "51212", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "description": "Stops the timer.", "writes": [{ "space": "mapped", "address": "55268", "value": "61" }] },
+        { "id": "mega-jumps", "name": "Mega jumps", "description": "Increases jump height.", "writes": [{ "space": "mapped", "address": "50267", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "garfield-big-fat-hairy-deal", "title": "Garfield: Big Fat Hairy Deal", "aliases": ["Garfield", "Garfield - Big Fat Hairy Deal", "Garfield (orig. release, Alcatraz prot.)"], "models": ["48K", "128K"],
+      "sha256": ["56D6C1947F38D3FB49692543E05BC89B34E77547C6130E64360ED0D89D73500D", "8C1D4A1516CDC37FB552E1ADFFCAB70A8DAED47713FC954013B5E0FB06C8EA5F"],
+      "pokes": [
+        { "id": "no-hunger", "name": "No hunger", "description": "Prevents hunger from increasing.", "writes": [{ "space": "mapped", "address": "33595", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "into-the-eagles-nest", "title": "Into the Eagle's Nest", "aliases": ["eaglenes", "Into The Eagle's Nest", "Into The Eagle's Nest (orig. release)"], "models": ["48K", "128K"],
+      "sha256": ["517A0BC4242DC558445D189B2A4BD8E94195E5F5141F0ABDAB87E4971D8632F9", "FBFAD6E962ABCDA9EA6E90CC80C4CCAE2CD6047C0218B9DC362BA6F53D8FEC24"],
+      "pokes": [
+        { "id": "infinite-ammunition", "name": "Infinite ammunition", "description": "Prevents ammunition from running out.", "writes": [{ "space": "mapped", "address": "36642", "value": "58" }] },
+        { "id": "infinite-keys", "name": "Infinite keys", "description": "Prevents keys from being consumed.", "writes": [{ "space": "mapped", "address": "40514", "value": "58" }] },
+        { "id": "no-injury", "name": "No injury", "description": "Prevents normal enemy damage.", "writes": [{ "space": "mapped", "address": "41138", "value": "58" }] },
+        { "id": "no-explosive-injury", "name": "No explosive injury", "description": "Prevents injury when explosives are shot.", "writes": [{ "space": "mapped", "address": "39946", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "nebulus", "title": "Nebulus", "aliases": ["Nebulus", "Nebulus (Hewson)"], "models": ["48K", "128K"],
+      "sha256": ["2CBF6A22115D6740895D9A216B6293DC8D791CCAC434C831B75231EC21D8B59B", "545AA19833F94F6BA1449D195C86D3CD1BA465F515DC00FF8EFE712B3F718B16"],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss.", "writes": [{ "space": "mapped", "address": "32921", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "description": "Stops the timer.", "writes": [{ "space": "mapped", "address": "43650", "value": "0" }] }
+      ]
     }
   ]
 }
