@@ -21,9 +21,12 @@ namespace Derby.Tests
             var reasonCodeProperty = planType.GetProperty("ReasonCode")!;
             try
             {
+                byte[] standardProgram = BuildBasicProgram(
+                    BuildBasicLine(10,
+                        Token(249), Ascii(" "), Token(192), Ascii("32768"), NumberMarker(32768)));
                 byte[] standardTape = BuildTap(
-                    BuildHeaderBlock(type: 0, fileName: "STD", dataLength: 4, parameter1: 10, parameter2: 4),
-                    BuildDataBlock(new byte[] { 1, 2, 3, 4 }),
+                    BuildHeaderBlock(type: 0, fileName: "STD", dataLength: (ushort)standardProgram.Length, parameter1: 10, parameter2: (ushort)standardProgram.Length),
+                    BuildDataBlock(standardProgram),
                     BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 2, parameter1: 0x8000, parameter2: 0),
                     BuildDataBlock(new byte[] { 0xAA, 0xBB }));
                 var standardBlocks = parseBlocks.Invoke(null, new object[] { standardTape })!;
@@ -31,6 +34,38 @@ namespace Derby.Tests
                 object standardPlan = createPlan.Invoke(null, new[] { standardMachine, standardBlocks })!;
                 Assert.Equal("FullFakeLoad", strategyProperty.GetValue(standardPlan)!.ToString());
                 Assert.Equal("StandardTapeFullyAccelerated", reasonCodeProperty.GetValue(standardPlan)!.ToString());
+
+                byte[] nonCanonicalProgram = BuildBasicProgram(
+                    BuildBasicLine(20, Token(249), Ascii(" "), Token(192), Ascii("32768"), NumberMarker(32768)),
+                    BuildBasicLine(10, Token(234)));
+                byte[] nonCanonicalStandardTape = BuildTap(
+                    BuildHeaderBlock(type: 0, fileName: "NONCANON", dataLength: (ushort)nonCanonicalProgram.Length, parameter1: 20, parameter2: (ushort)nonCanonicalProgram.Length),
+                    BuildDataBlock(nonCanonicalProgram),
+                    BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 1, parameter1: 0x8000, parameter2: 0),
+                    BuildDataBlock(new byte[] { 0xC9 }));
+                var nonCanonicalStandardBlocks = parseBlocks.Invoke(null, new object[] { nonCanonicalStandardTape })!;
+                var nonCanonicalStandardMachine = new SpectrumMachine(tempFolder);
+                object nonCanonicalStandardPlan = createPlan.Invoke(null, new[] { nonCanonicalStandardMachine, nonCanonicalStandardBlocks })!;
+                Assert.Equal("RomBootstrapMounted", strategyProperty.GetValue(nonCanonicalStandardPlan)!.ToString());
+                Assert.Equal("NonCanonicalBasicProgram", reasonCodeProperty.GetValue(nonCanonicalStandardPlan)!.ToString());
+
+                byte[] runAfterLoadProgram = BuildBasicProgram(
+                    BuildBasicLine(10,
+                        Token(253), Ascii("32767"), NumberMarker(32767),
+                        Colon(),
+                        Token(239), QuoteQuote(), Ascii(" "), Token(175),
+                        Colon(),
+                        Token(247)));
+                byte[] runAfterLoadTape = BuildTap(
+                    BuildHeaderBlock(type: 0, fileName: "LOADRUN", dataLength: (ushort)runAfterLoadProgram.Length, parameter1: 10, parameter2: (ushort)runAfterLoadProgram.Length),
+                    BuildDataBlock(runAfterLoadProgram),
+                    BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 1, parameter1: 0x8000, parameter2: 0),
+                    BuildDataBlock(new byte[] { 0xC9 }));
+                var runAfterLoadBlocks = parseBlocks.Invoke(null, new object[] { runAfterLoadTape })!;
+                var runAfterLoadMachine = new SpectrumMachine(tempFolder);
+                object runAfterLoadPlan = createPlan.Invoke(null, new[] { runAfterLoadMachine, runAfterLoadBlocks })!;
+                Assert.Equal("RomBootstrapMounted", strategyProperty.GetValue(runAfterLoadPlan)!.ToString());
+                Assert.Equal("UnsupportedStandardBootstrapControlFlow", reasonCodeProperty.GetValue(runAfterLoadPlan)!.ToString());
 
                 byte[] romDrivenProgram = BuildBasicProgram(
                     BuildBasicLine(10,

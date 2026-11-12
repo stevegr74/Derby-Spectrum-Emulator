@@ -17,7 +17,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Alien (Mind Games) | `.tzx` | Loading completes, ends the tape cleanly, and reaches the illustrated title screen |
 | 🟢 | Amaurote (MAD) | `.tzx` | Loading completes, ends the tape cleanly, and reaches the stable title screen |
 | 🟢 | Andy Capp (Alternative) | `.tzx` | Loading completes, ends the tape cleanly, and reaches the control-selection menu |
-| 🟠 | Ant Attack (Quicksilva original) | `.tap`, `.tzx` | The TZX completes loading, ends cleanly, and reaches the gender-selection prompt; the TAP fast-load path executes but leaves a black screen |
+| 🟢 | Ant Attack (Quicksilva original) | `.tap`, `.tzx` | Both editions complete loading and reach the gender-selection prompt; the TAP safely defers its `LOAD CODE : RUN` control flow to the real ROM path |
 | 🟢 | APB (Hit Squad) | `.tzx` | ROM-driven protected loading reaches the ownership prompt and advances to the complete APB title screen |
 | 🟢 | Arkanoid (Imagine) | `.tzx` | Protected loading completes and gameplay runs without the previously observed ship flicker; sound behavior and timing compare closely with JSspeccy, although JSspeccy has a slightly warmer timbre |
 | 🟢 | Arkanoid (Hit Squad) | `.tzx` | LOAD capability gating falls back to the real-ROM protected path; loading reaches gameplay and beam-aware rendering eliminates the previously observed ship flicker |

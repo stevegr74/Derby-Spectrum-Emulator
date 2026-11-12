@@ -25,6 +25,14 @@ namespace Derby.Tape
                     "Tape contains an internally inconsistent BASIC header/data pair that must be interpreted by the real ROM loader.");
             }
 
+            if (TapLoader.HasNonCanonicalLeadingBasicProgram(blocks))
+            {
+                return new TapeLoadPlan(
+                    TapeLoadStrategy.RomBootstrapMounted,
+                    TapeLoadPlanReason.NonCanonicalBasicProgram,
+                    "Tape begins with a noncanonical BASIC program whose exact line layout must be interpreted by the real ROM loader.");
+            }
+
             if (TapLoader.CanLoadAllStandardTapeBlocks(blocks))
             {
                 bool use128kMode = TapLoader.Use128kTapeLoadMode(machine);
@@ -56,14 +64,6 @@ namespace Derby.Tape
                     TapeLoadStrategy.FullFakeLoad,
                     TapeLoadPlanReason.StandardTapeFullyAccelerated,
                     "All blocks are standard header/data pairs and can be fully fake-loaded.");
-            }
-
-            if (TapLoader.HasNonCanonicalLeadingBasicProgram(blocks))
-            {
-                return new TapeLoadPlan(
-                    TapeLoadStrategy.RomBootstrapMounted,
-                    TapeLoadPlanReason.NonCanonicalBasicProgram,
-                    "Tape begins with a noncanonical BASIC program whose exact line layout must be interpreted by the real ROM loader.");
             }
 
             if (TapLoader.HasTwoStageBasicPrefixBeforeElectricallyDecodedProtectedStream(blocks))

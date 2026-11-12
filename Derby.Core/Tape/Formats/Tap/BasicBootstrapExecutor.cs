@@ -1008,7 +1008,7 @@ namespace Derby.Tape
                 return keyword is
                     "?" or "REM" or "BORDER" or "PAPER" or "INK" or "CLS" or "CLEAR" or
                     "POKE" or "LOAD" or "DATA" or "READ" or "FOR" or "NEXT" or
-                    "RANDOMIZE" or "PAUSE" or "RETURN" or "RESTORE" or "USR" or
+                    "RANDOMIZE" or "PAUSE" or "RUN" or "RETURN" or "RESTORE" or "USR" or
                     "LET" or "THEN" or
                     "CODE" or "PEEK" or "TO" or "PRINT";
             }
@@ -1390,9 +1390,9 @@ namespace Derby.Tape
                         if (keyword == "RANDOMIZE" && statement.IndexOf("USR") >= 0)
                             return false;
 
-                        // PAUSE may wait for a key (PAUSE 0) or preserve visible/timed
-                        // loader behavior. Keep such programs under the real ROM.
-                        if (keyword == "PAUSE")
+                        // PAUSE may wait for a key (PAUSE 0), while RUN restarts
+                        // arbitrary BASIC control flow. Keep both under the real ROM.
+                        if (keyword is "PAUSE" or "RUN")
                             return true;
 
                         if (keyword == "LOAD")
@@ -1954,6 +1954,7 @@ namespace Derby.Tape
                     175 => "CODE",
                     242 => "PAUSE",
                     243 => "NEXT",
+                    247 => "RUN",
                     203 => "THEN",
                     241 => "LET",
                     250 => "IF",
