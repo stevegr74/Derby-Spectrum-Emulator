@@ -190,6 +190,45 @@ namespace Derby.Tape
                 null);
         }
 
+        public static TapeBlock CreateTurboByteStreamData(
+            byte[] streamData,
+            ushort pilotPulseLength,
+            ushort pilotPulseCount,
+            ushort syncFirstPulseLength,
+            ushort syncSecondPulseLength,
+            ushort zeroBitPulseLength,
+            ushort oneBitPulseLength,
+            byte usedBitsInLastByte,
+            ushort pauseAfterBlockMs)
+        {
+            if (streamData == null)
+                throw new ArgumentNullException(nameof(streamData));
+            if (streamData.Length == 0)
+                throw new ArgumentException("Tape byte-stream blocks must contain at least one data byte.", nameof(streamData));
+
+            return new TapeBlock(
+                TapeBlockKind.Data,
+                isLoadableRomBlock: false,
+                canUseRomLoadTrap: false,
+                (byte[])streamData.Clone(),
+                payload: null,
+                checksum: 0,
+                pilotPulseLength,
+                pilotPulseCount,
+                syncFirstPulseLength,
+                syncSecondPulseLength,
+                zeroBitPulseLength,
+                oneBitPulseLength,
+                usedBitsInLastByte == 0 ? (byte)8 : usedBitsInLastByte,
+                pauseAfterBlockMs,
+                0,
+                0,
+                null,
+                null,
+                0,
+                null);
+        }
+
         public static TapeBlock ReclassifyAsByteStreamData(TapeBlock source)
         {
             if (source == null)

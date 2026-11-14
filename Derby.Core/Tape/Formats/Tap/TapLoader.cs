@@ -1171,6 +1171,29 @@ namespace Derby.Tape
                 use128kMode);
         }
 
+        internal static bool LeadingBasicProgramHasMachineCodeHandoff(IReadOnlyList<TapeBlock> blocks)
+        {
+            int index = 0;
+            while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                index++;
+
+            if (index + 1 >= blocks.Count ||
+                !IsStandardHeaderBlock(blocks[index]) ||
+                blocks[index + 1].Flag != DataFlag ||
+                blocks[index + 1].Payload == null)
+            {
+                return false;
+            }
+
+            TapHeaderInfo header = ParseHeaderInfo(blocks[index]);
+            return header.Type == ProgramType &&
+                   header.AutoStartLine < 32768 &&
+                   BasicBootstrapExecutor.HasMachineCodeHandoffData(
+                       blocks[index + 1].Payload!,
+                       header.ProgramLength,
+                       header.AutoStartLine);
+        }
+
         internal static bool CanSatisfyLeadingBasicLoadRequestsBeforeProtectedRemainder(
             SpectrumMachine machine,
             IReadOnlyList<TapeBlock> blocks,

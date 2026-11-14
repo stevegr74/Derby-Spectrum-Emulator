@@ -1258,5 +1258,27 @@ namespace Derby.Tests
             Assert.Equal(expectedA, cpu.Regs.A);
             Assert.Equal(expectedF & 0xD7, cpu.Regs.F & 0xD7);
         }
+
+        [Fact]
+        public void InstructionTrace_UsesNonInvasiveMemoryInspection()
+        {
+            var memory = new byte[65536];
+            memory[0] = 0x00; // NOP
+
+            var cpu = new Z80Cpu();
+            cpu.ReadMemory = address =>
+            {
+                cpu.AddTStates(2);
+                return memory[address];
+            };
+            cpu.InspectMemory = address => memory[address];
+            cpu.WriteMemory = (address, value) => memory[address] = value;
+            cpu.SetInstructionTraceCaptureEnabled(true);
+
+            cpu.Step();
+
+            Assert.Equal(6UL, cpu.TStates);
+            Assert.Single(cpu.GetRecentTraceSnapshot());
+        }
     }
 }

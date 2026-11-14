@@ -128,6 +128,15 @@ namespace Derby.Tape
             if (TapLoader.CanBootstrapBasicProgramAndMountRemaining(blocks))
             {
                 bool use128kMode = TapLoader.Use128kTapeLoadMode(machine);
+                if (TapeExecutionEngine.ContainsElectricallyDecodedProtectedStream(blocks) &&
+                    TapLoader.LeadingBasicProgramHasMachineCodeHandoff(blocks))
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.ProtectedBasicRequiresRom,
+                        "Tape begins with a BASIC loader whose machine-code handoff into protected playback requires authentic ROM state.");
+                }
+
                 if (TapLoader.StartsProtectedRemainderImmediatelyAfterLeadingBasic(blocks) &&
                     !TapLoader.CanExecuteLeadingBasicProgramWithBootstrap(machine, blocks, use128kMode))
                 {

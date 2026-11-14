@@ -180,6 +180,7 @@ namespace Derby
                 (bank, offset) => ramBanks[bank][offset]);
 
             cpu.ReadMemory = ReadMemoryWithContention;
+            cpu.InspectMemory = PeekMemory;
             cpu.ReadMemoryTimed = ReadMemoryWithContentionAtOffset;
             cpu.WriteMemory = WriteMemoryWithContention;
             cpu.WriteMemoryTimed = WriteMemoryWithContentionAtOffset;
@@ -1003,18 +1004,20 @@ namespace Derby
 
         internal void PrepareMountedLoadUsr0HardwareMode(Z80Cpu z80)
         {
-            MachineModel = SpectrumMachineModel.Spectrum128K;
+            bool use128kMode = MachineModel == SpectrumMachineModel.Spectrum128K;
             if (mountedTape != null && !mountedTape.HasMoreBlocks)
                 tapeTransport.CompleteIfCurrent(mountedTape);
             z80.ResetExecutionStatePreserveTiming();
             CurrentRomBank = 1;
-            PagingLocked = false;
-            memoryPaging.Uses48KMemoryMap = false;
-            frameTStates = FrameTStates128;
-            memoryPaging.Last7ffdValue = (byte)(
-                (PagedRamBank & 0x07) |
-                (ScreenBank == 7 ? 0x08 : 0x00) |
-                0x10);
+            PagingLocked = !use128kMode;
+            memoryPaging.Uses48KMemoryMap = !use128kMode;
+            frameTStates = use128kMode ? FrameTStates128 : FrameTStates48;
+            memoryPaging.Last7ffdValue = use128kMode
+                ? (byte)(
+                    (PagedRamBank & 0x07) |
+                    (ScreenBank == 7 ? 0x08 : 0x00) |
+                    0x10)
+                : (byte)0x10;
             speakerHigh = false;
             micHigh = false;
             SpeakerEdge = false;
@@ -1152,7 +1155,14 @@ namespace Derby
             {
                 byte keyboardValue = ReadKeyboardEarPort(port, sampleTStates);
                 if (debugEventCaptureEnabled)
-                    RecordPortEvent($"T={sampleTStates,10} IN  {port:X4}={keyboardValue:X2} PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4}");
+                {
+                    string tapeTiming = mountedTape == null
+                        ? string.Empty
+                        : " " + mountedTape.GetDebugEarTimingState(sampleTStates);
+                    RecordPortEvent(
+                        $"T={sampleTStates,10} IN  {port:X4}={keyboardValue:X2} " +
+                        $"PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4}{tapeTiming}");
+                }
                 return keyboardValue;
             }
 
@@ -1176,7 +1186,6 @@ namespace Derby
                 RecordPortEvent($"T={sampleTStates,10} IN  {port:X4}={value:X2} PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4}");
             return value;
         }
-
         private bool IsAyRegisterReadPort(ushort port) =>
             IsAyHardwareEnabled && (port & 0xC002) == 0xC000;
 
@@ -1202,7 +1211,9 @@ namespace Derby
             if (mountedTape != null)
             {
                 tapeActivity.RecordPortRead(keyboardOnlyRead);
-                TryAutomaticallyResumeTapeForRomLoaderRead(sampleTStates);
+                TryAutomaticallyResumeTapeForRomLoaderRead(
+                    sampleTStates,
+                    isEarSensitiveRead: !keyboardOnlyRead);
             }
 
             bool tapeEarHigh = mountedTape?.ReadEarBit(sampleTStates) ?? true;
@@ -1264,14 +1275,17 @@ namespace Derby
                 value = (byte)(value & ~(1 << bit));
         }
 
-        private void TryAutomaticallyResumeTapeForRomLoaderRead(ulong sampleTStates)
+        private void TryAutomaticallyResumeTapeForRomLoaderRead(
+            ulong sampleTStates,
+            bool isEarSensitiveRead)
         {
             MountedTape? activeTape = mountedTape;
             bool resumed = tapeActivity.TryAutomaticallyResume(
                 activeTape,
                 RomProfile.IsTapeInputRoutinePortRead(cpu.Regs.PC),
                 sampleTStates,
-                TapeLoaderSearchReadsBeforeAutomaticResume);
+                TapeLoaderSearchReadsBeforeAutomaticResume,
+                isEarSensitiveRead);
             if (resumed && activeTape != null)
             {
                 tapeTransport.MarkPlaying(activeTape);
@@ -1316,9 +1330,13 @@ namespace Derby
                 TapeLoaderHandoffFramesBeforeStop);
             if (stopped && activeTape != null)
             {
-                tapeTransport.MarkStopped(activeTape);
+                bool protectedSynchronizationHold = tapeActivity.AwaitingProtectedLoaderRead;
+                if (!protectedSynchronizationHold)
+                    tapeTransport.MarkStopped(activeTape);
                 Trace?.Invoke(
-                    $"[TapeTransport] Auto-stop frame={FrameCount} pc=0x{cpu.Regs.PC:X4} {activeTape.DebugPlaybackState}");
+                    protectedSynchronizationHold
+                        ? $"[TapeTransport] Sync-hold frame={FrameCount} pc=0x{cpu.Regs.PC:X4} {activeTape.DebugPlaybackState}"
+                        : $"[TapeTransport] Auto-stop frame={FrameCount} pc=0x{cpu.Regs.PC:X4} {activeTape.DebugPlaybackState}");
             }
         }
 

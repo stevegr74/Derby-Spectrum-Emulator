@@ -28,7 +28,10 @@ retain mutable tape objects for direct cross-thread control.
 ## Invariants
 
 1. `NoTape` means no tape is mounted.
-2. `Playing` means a tape is mounted and its playback cursor is not paused.
+2. `Playing` means a tape is mounted and the public transport remains engaged.
+   Pulse decoding may briefly hold an exact synchronization preamble internally;
+   this does not publish a stop/resume transition or change the user's transport
+   intent.
 3. `Stopped` retains the mounted tape and its exact cursor. The stop may be
    manual, automatic, or caused by a tape stop marker.
 4. `Ended` means the machine observed completion and released the mounted tape.
@@ -37,7 +40,9 @@ retain mutable tape objects for direct cross-thread control.
 6. A manual stop resets automatic-handoff tracking and must not be automatically
    resumed.
 7. Automatic resume is restricted to an automatic handoff followed by a
-   recognised ROM tape-read state; it must not override a stop marker.
+   recognised ROM tape-read state, or an internal protected-stream
+   synchronization hold followed by sustained EAR-sensitive reads; it must not
+   override a stop marker.
    Keyboard-wait evidence may span frames with no port reads, but any
    EAR-sensitive read cancels the pending automatic stop.
 8. Mounting media replaces the previous tape, configures it for the current
@@ -64,6 +69,7 @@ retain mutable tape objects for direct cross-thread control.
 | Stop marker | Cursor held before the next block, `Stopped` |
 | Recognised loader handoff | Cursor preserved, automatic stop may enter `Stopped` |
 | Recognised ROM tape read after automatic handoff | Playback may resume automatically |
+| Protected synchronization preamble reached before its loader begins reading | Pulse cursor held internally until sustained EAR-sensitive reads; public state remains `Playing` |
 | Playback completion | Tape released, `Ended` |
 | Eject | Tape released, `NoTape` |
 | Quick State restore | All captured transport and continuation state restored consistently |
@@ -89,6 +95,9 @@ focused checks for:
 - keyboard loops that discard EAR with either `AND` or `OR` are recognized;
 - automatic ROM resume requires a genuine automatic handoff and preserves the
   exact pulse/EAR cursor;
+- protected synchronization holds require a pure-tone/pulse-sequence/custom-data
+  chain, do not trigger after EAR reads begin, and remain invisible to the
+  public transport;
 - manual stops, stop markers, completion, replacement, reset, and Quick State
   restoration remain distinct transitions;
 - accelerated BASIC tokenization and execution preserve `INT`, division, and

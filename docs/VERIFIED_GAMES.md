@@ -22,7 +22,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Arkanoid (Imagine) | `.tzx` | Protected loading completes and gameplay runs without the previously observed ship flicker; sound behavior and timing compare closely with JSspeccy, although JSspeccy has a slightly warmer timbre |
 | 🟢 | Arkanoid (Hit Squad) | `.tzx` | LOAD capability gating falls back to the real-ROM protected path; loading reaches gameplay and beam-aware rendering eliminates the previously observed ship flicker |
 | 🟢 | Arkanoid II (Speedlock 4, 48K and 128K) | `.tzx` | Both editions complete protected loading, end the tape cleanly, and reach the stable high-score screen |
-| 🔴 | Athena (Imagine, 48K and 128K) | `.tzx` | The 48K image is rejected while parsing a zero-length data block; the 128K image consumes all blocks and stops at its final marker but remains on a black screen, including after a deliberate key press |
+| 🟢 | Athena (Imagine, 48K and 128K) | `.tzx` | Both protected editions complete pulse loading, stop at their final markers, and reach the stable title screen; loader synchronization holds remain internal rather than appearing as transport pauses |
 | 🟢 | Back to Skool (Alternative and Microsphere original) | `.tzx` | Both releases complete native ROM loading, end the tape cleanly, and reach their active demonstration screens |
 | 🟢 | Batman | `.tzx` | Chained BASIC and protected loading complete; game runs |
 | 🟢 | Bear Grud | `.tap` | Loading reaches the control-selection menu and remains stable through an extended execution soak |
