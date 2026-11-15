@@ -29,12 +29,19 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Booze Up | `.tzx` | Interactive BASIC loading remains under real-ROM control, reaches the loaded program, and detects the terminal tape state correctly |
 | 🟢 | Cabal | `48k.tzx`, `128k.tzx` | Both editions reach the player-selection menu through real-ROM bootstrap; 48K stops at its first multiload marker, while 128K completes and ends the tape cleanly |
 | 🟢 | Captain America | `.tzx` | Protected loader completes; game runs |
+| ⚪ | Captain Blood | `.tap` | Not yet tested |
+| ⚪ | Castlevania (Spanish translation v1.1) | `.tap` | Not yet tested |
 | 🟢 | Cauldron (original and Silverbird/Cyberlode 1.1 releases) | `.tzx` | Both releases reach their complete title/control screens; standard-speed custom flags below `0x80` retain the required long pilot tone |
 | 🟢 | Cauldron II (Erbe, original, and Silverbird/Cyberlode releases) | `.tzx` | All three releases reach the control-selection menu and remain stable; malformed accelerated expressions in the Cyberlode loader fall back before execution |
 | 🟢 | Chase HQ (Portuguese, sides 1 and 2) | `.tzx` | Its noncanonical protected BASIC layout starts through the native ROM in both machine modes. The 48K multiloader reaches active Stage 1 gameplay and loads Stage 2 after a manual tape resume. For the complete 128K load, manually resume side 1 at its explicit stage markers, replace it with side 2 after side 1 ends, and let the two leading 16K bank records load; transport then stops automatically and the stable title/options screen is reached |
 | 🟢 | Cliff Hanger | `.tzx` | Loading reaches the control-selection menu and remains stable |
 | 🟢 | Cobra (Hit Squad and Ocean original releases) | `.tzx` | Both releases complete loading and reach the stable opening credit sequence |
+| ⚪ | Dan Dare (original and Ricochet releases) | `.tzx` | Not yet tested |
+| ⚪ | Dan Dare II: Mekon's Revenge | `.tzx` | Not yet tested |
 | 🟢 | Donkey Kong (Erbe) | `.tzx` | Custom loader completes without corrupting the loading screen; game runs |
+| ⚪ | Donkey Kong (Ocean original, Alkatraz protection) | `.tzx` | Not yet tested |
+| ⚪ | Dynamite Dan (original release) | `.tzx` | Not yet tested |
+| ⚪ | Dynamite Dan II (Mirrorsoft original) | `.tzx` | Not yet tested |
 | 🟢 | Exolon | `.tap`, `.tzx` | Both tape formats load and reach the game |
 | 🟢 | Fairlight: A Prelude | `.tap` | Loading reaches the illustrated title screen and remains stable |
 | 🟢 | Feud (Bulldog original release) | `.tzx` | Loading reaches the control-selection menu and remains stable |
@@ -51,11 +58,20 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Indiana Jones and the Last Crusade | `128k.tap`, Kixx/US Gold original `.tzx` side sets | The TAP initial load auto-stops at the picture and resumes into gameplay; in 48K mode both TZX releases reach title/options, request side 2, preserve live state across tape replacement, load The Cross of Coronado into gameplay, and stop at the next marker |
 | 🟢 | Indiana Jones and the Temple of Doom (Kixx and US Gold original) | `.tzx` | Both releases reach the stop-tape prompt and advance to the complete quest-start screen; the US Gold release requires 48K mode |
 | 🟢 | Into the Eagle's Nest (original release) | `.tzx` | Loading reaches the valuables/control screen and automatically stops transport at the completed handoff |
+| ⚪ | Jack the Nipper (Kixx and original releases) | `.tzx` | Not yet tested |
+| ⚪ | Jack the Nipper II: In Coconut Capers (Kixx and original releases) | `.tzx` | Not yet tested |
+| ⚪ | Jack the Ripper (sides A and B) | `.tzx` | Not yet tested |
+| ⚪ | Jet Set Willy II (original and Ricochet releases) | `.tzx` | Not yet tested |
+| ⚪ | Joe Blade | `.tzx` | Not yet tested |
+| ⚪ | Joe Blade 2 (48K and 128K) | `.tzx` | Not yet tested |
+| ⚪ | Joe Blade 3 (48K and 128K) | `.tzx` | Not yet tested |
 | 🟢 | Kick Off 2 | `.tzx` | Loading reaches its complete title/menu prompt and remains stable |
 | 🟢 | Kung-Fu Master (Americana and US Gold/Ocean original) | `.tzx` | Both releases reach their complete illustrated title screens; the original accepts input into its start/demonstration menu after its padded two-stage BASIC prefix and protected loader complete |
 | 🟢 | Kwah! (Melbourne House original) | `.tzx` | In 48K mode, the ROM-driven continuation completes, ends the tape cleanly, accepts SPACE at the start prompt, and enters the game |
+| ⚪ | Lunar Jetman (Ultimate) | `.tap`, `.tzx` | Not yet tested |
 | 🟢 | Magician | `.tap` | Loading reaches the illustrated adventure opening and remains stable |
 | 🟢 | Manic Miner | `.tzx` | Standard header/data loading completes in 48K mode and reaches the stable animated game/attract screen |
+| ⚪ | Match Day II (original and Hit Squad releases) | `.tzx` | Not yet tested |
 | 🟢 | Nebulus (Hewson slow-load release) | `.tzx` | Loading completes, ends the tape cleanly, and reaches the stable title/high-score screen |
 | 🟢 | OutRun | `.tap` | Native ROM loading automatically stops at the complete loading picture with the first unclaimed level record preserved; a key reaches the game mode menu, selecting OutRun automatically resumes and loads Stage 1, then transport stops again at the untouched next-level record while gameplay continues |
 | 🟢 | Pac-Land | `.tzx` | In 48K mode, ROM-driven loading reaches the game/high-score screen and remains stable |
@@ -72,6 +88,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Scuba Dive (Durell) | `.tzx` | Nonstandard leading tape structure mounts and loads correctly |
 | 🟢 | Skool Daze (Microsphere original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the active demonstration screen |
 | 🟢 | Space Harrier (Elite original and Encore) | `.tzx` | Both releases reach the start/control menu and remain stable |
+| ⚪ | Star Trek (Mikro-Gen original) | `.tzx` | Not yet tested |
 | 🟢 | Star Wars (Hit Squad) | `.tzx` | Loading reaches the complete X-Wing control menu and remains stable |
 | 🟢 | Star Wars (Domark original, sides 1 and 2) | `.tzx` | The explicit stop/key/resume sequence reaches the complete title screen from both sides; side 2 requires 48K mode |
 | 🟢 | Starglider (48K original) | `.tzx` | Loading reaches the in-game control menu and automatically stops at the handoff boundary |
@@ -88,6 +105,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | The Way of the Exploding Fist (Melbourne House original and Ricochet) | `.tzx` | Both releases complete their multi-file load and reach the animated title screen; explicit BASIC CODE destinations override conflicting header addresses |
 | 🟢 | Turbo Esprit (Durell original, side 2) | `.tzx` | ROM-driven loading and the explicit copyright prompts advance to the city-selection menu |
 | 🟢 | Turbo Out Run | `.tap` | Native ROM loading reaches the start/continue screen and automatically stops with the remaining multiload tape retained |
+| ⚪ | Universal Hero (Mastertronic original) | `.tzx` | Not yet tested |
 | 🟢 | Uridium and Uridium Plus (Hewson original) | `.tzx` | Both releases preserve their intentionally malformed BASIC headers under native ROM loading and reach the animated title sequence from 48K and 128K startup; Uridium auto-stops at its completed handoff and Uridium Plus ends cleanly |
 | 🟢 | V (Ocean original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the control-selection menu |
 | 🟢 | Virus (Firebird original) | `.tzx` | Mounted protected loading completes, ends the tape cleanly, and reaches the title/input prompt |
@@ -113,13 +131,20 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Barry Burger | `hamburge.z80` | Snapshot reaches active gameplay and remains stable for 2,000 frames with sustained audio output |
 | 🟢 | Candy | `CANDY.Z80` | Snapshot reaches the illustrated title screen and remains stable |
 | 🟢 | Captain America Defies the Doom Tube | `.z80` | Snapshot reaches the complete title screen and remains stable |
+| ⚪ | Captain Blood | `Captain Blood.z80` | Not yet tested |
+| ⚪ | Castlevania (Spanish translation) | `Castlevania si en.z80` | Not yet tested |
 | 🟢 | Cauldron / Cauldron II | `.sna`, `.z80` | Both snapshots reach their control menus and remain stable |
 | 🟢 | CD Player | `cdplayer.sna` | Snapshot loads and runs responsively with good audio |
 | 🟢 | Chase HQ | `chasehq.z80` | Snapshot reaches the options prompt and remains stable |
 | 🟢 | Cliff Hanger | `.sna` | Snapshot reaches the control-selection menu and waits for deliberate input; an unassigned Kempston interface remains neutral |
 | 🟢 | Contact Sam Cruise | `.sna` | Snapshot reaches active gameplay and remains stable |
 | 🟢 | Cybernoid: The Fighting Machine | `.sna`, `Cybernoid_The_Fighting_Machine_1988_Hewson_Consultants_a_128K.z80` | Both snapshots reach the title/control screen; the 128K Z80 remains responsive with good AY audio |
+| ⚪ | Dan Dare | `dandare.sna` | Not yet tested |
+| ⚪ | Dan Dare III | `dandare3.sna` | Not yet tested |
 | 🟢 | Donkey Kong | `DONKKONG.Z80` | Snapshot reaches the control menu and remains stable |
+| ⚪ | Donkey Kong (Ocean) | `Donkey Kong (Ocean).sna` | Not yet tested |
+| ⚪ | Dynamite Dan | `dynamite-dan.sna` | Not yet tested |
+| ⚪ | Dynamite Dan II | `dynamite dan 2.sna` | Not yet tested |
 | 🟢 | Elite | `Elite.sna`, `Elite128.z80` | Both snapshots reach the commander prompt and remain stable |
 | 🟢 | Exolon | `.sna`, `.szx`, `.z80` | All three snapshot forms load and reach the title/control screen; the SNA and Z80 run with 128K audio |
 | 🟢 | Feud | `.z80` | Snapshot reaches the control menu and remains stable |
@@ -133,10 +158,16 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Hydrofool | `.z80` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
 | 🟢 | Ikari Warriors | `.sna`, `.z80` | Both snapshots reach the control/title screen and remain stable |
 | 🟢 | Into the Eagle's Nest | `eaglenes.sna` | Snapshot reaches the control screen and remains stable for 2,000 frames with sustained audio output |
+| ⚪ | Jack the Nipper | `Jach The Nipper.sna`, `Jack The Nipper.z80` | Not yet tested |
+| ⚪ | Jack the Nipper II: In Coconut Capers | `jacknip2.z80` | Not yet tested |
 | 🟢 | Jet Set Willy | `JETSETW1.Z80`, `jsw013 (2016 edition, bugfixed).sna`, `jswx.sna` | All three variants reach active title/game screens and remain stable |
 | 🟢 | Jet Set Willy April | `JSWAPRIL.Z80` | Snapshot loads and executes |
+| ⚪ | Jet Set Willy II | `jsw2.sna` | Not yet tested |
+| ⚪ | Joe Blade 3 | `joeblade3.sna`, `joblade3 (hacked).sna` | Not yet tested |
 | 🟢 | Kokotoni Wilf | `kokotoni_wilf.sna` | Snapshot reaches the complete Elite/Kokotoni Wilf title screen and remains stable for 2,000 frames |
+| ⚪ | Lunar Jetman | `Lunar Jetman (1983)(Ultimate).z80` | Not yet tested |
 | 🟢 | WEC Le Mans | `lemans.sna` | Snapshot reaches the control-selection menu and remains stable |
+| ⚪ | Match Day II | `matchda2.sna` | Not yet tested |
 | 🟢 | Mayhem | `MAYHEM.SNA` | Snapshot reaches the title screen and remains stable |
 | 🟢 | Nebulus | `nebulus.z80` | Snapshot reaches the stable title/high-score screen and remains stable for 2,000 frames with sustained audio output |
 | 🟢 | Oracle's Cave | `oracle.sna` | Snapshot reaches quest selection and remains stable |
@@ -160,6 +191,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | The Great Escape | `.sna`, `.z80` | Both snapshots reach the control-selection screen and remain stable |
 | 🟢 | The Thompson Twins | `ttwins.sna` | Snapshot reaches active gameplay and remains stable |
 | 🟢 | The Way of the Exploding Fist | `fist.sna` | Snapshot reaches active gameplay and remains stable |
+| ⚪ | Universal Hero | `unihero.sna` | Not yet tested |
 | 🟢 | Uridium / Uridium Plus | `Uridium.sna`, `uridplus.z80` | Both snapshots reach stable title/game screens |
 | 🟢 | V | `v.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
 | 🟢 | Virus | `virus.sna` | Snapshot reaches the title/input prompt and remains stable for 2,000 frames |
@@ -173,6 +205,7 @@ that every level, control path, or hardware edge case has been tested.
 
 | Status | Title / release | Format | Verified checkpoint and notes |
 | :---: | --- | --- | --- |
+| ⚪ | Captain Blood (Exxos) | `.dsk` | Not yet tested; reserved for +3 disk validation |
 | ⚪ | Garfield | `.dsk` | Structurally valid sparse Extended CPC DSK container; reserved for +3 validation because DERBY does not yet implement the +3 disk controller or drive |
 | ⚪ | Into the Eagle's Nest (original release) | `.dsk` | Structurally valid sparse Extended CPC DSK container; reserved for +3 validation because DERBY does not yet implement the +3 disk controller or drive |
 
