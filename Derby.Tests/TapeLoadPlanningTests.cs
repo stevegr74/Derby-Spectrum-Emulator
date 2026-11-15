@@ -186,6 +186,71 @@ namespace Derby.Tests
             }
         }
 
+        [Fact]
+        public void CreateExecutionPlan_UsesRomBootstrap_For128kMixedMachineCodeHandoff()
+        {
+            string tempFolder = CreateTempRoms();
+            Type tapLoaderType = typeof(TapLoader);
+            MethodInfo parseBlocks = tapLoaderType.GetMethod("ParseBlocks", BindingFlags.NonPublic | BindingFlags.Static)!;
+            MethodInfo createPlan = tapLoaderType.GetMethod("CreateExecutionPlan", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+            try
+            {
+                byte[] program = BuildBasicProgram(
+                    BuildBasicLine(10,
+                        Token(253), Ascii("24063"), NumberMarker(24063),
+                        Colon(),
+                        Token(239), QuoteQuote(), Ascii(" "), Token(170),
+                        Colon(),
+                        Token(218), Ascii("0"), NumberMarker(0),
+                        Colon(),
+                        Token(217), Ascii("0"), NumberMarker(0),
+                        Colon(),
+                        Token(245), Token(172), Ascii("18"), NumberMarker(18), Ascii(","), Ascii("0"), NumberMarker(0),
+                        Colon(),
+                        Token(239), QuoteQuote(), Ascii(" "), Token(175), Ascii("24064 "), NumberMarker(24064),
+                        Colon(),
+                        Token(249), Ascii(" "), Token(192), Ascii("52261"), NumberMarker(52261)));
+                byte[] standardPrefix = BuildTap(
+                    BuildHeaderBlock(type: 0, fileName: "MIXED", dataLength: (ushort)program.Length, parameter1: 10, parameter2: (ushort)program.Length),
+                    BuildDataBlock(program),
+                    BuildHeaderBlock(type: 3, fileName: "SCREEN", dataLength: 1, parameter1: 0x4000, parameter2: 0),
+                    BuildDataBlock(new byte[] { 0x00 }),
+                    BuildHeaderBlock(type: 3, fileName: "CODE", dataLength: 1, parameter1: 0x5E00, parameter2: 0),
+                    BuildDataBlock(new byte[] { 0xC9 }));
+                var blocks = new List<TapeBlock>(
+                    (IReadOnlyList<TapeBlock>)parseBlocks.Invoke(null, new object[] { standardPrefix })!)
+                {
+                    TapeBlock.CreateStopTape(),
+                    TapeBlock.CreateData(
+                        new byte[] { 0x80, 0x00, 0x80 },
+                        pilotPulseLength: 2168,
+                        pilotPulseCount: 3223,
+                        syncFirstPulseLength: 667,
+                        syncSecondPulseLength: 735,
+                        zeroBitPulseLength: 855,
+                        oneBitPulseLength: 1710,
+                        usedBitsInLastByte: 8,
+                        pauseAfterBlockMs: 1000)
+                };
+
+                var machine48k = new SpectrumMachine(tempFolder);
+                machine48k.Reset(SpectrumMachineModel.Spectrum48K);
+                var plan48k = (TapeLoadPlan)createPlan.Invoke(null, new object[] { machine48k, blocks })!;
+                Assert.Equal(TapeLoadStrategy.BootstrapHybrid, plan48k.Strategy);
+                Assert.Equal(TapeLoadPlanReason.BasicBootstrapMounted, plan48k.ReasonCode);
+
+                var machine128k = new SpectrumMachine(tempFolder);
+                var plan128k = (TapeLoadPlan)createPlan.Invoke(null, new object[] { machine128k, blocks })!;
+                Assert.Equal(TapeLoadStrategy.RomBootstrapMounted, plan128k.Strategy);
+                Assert.Equal(TapeLoadPlanReason.MachineCodeHandoffRequiresRom, plan128k.ReasonCode);
+            }
+            finally
+            {
+                Directory.Delete(tempFolder, true);
+            }
+        }
+
         [Theory]
         [InlineData(TapeLoadPlanReason.UnsupportedMixedBootstrapControlFlow)]
         [InlineData(TapeLoadPlanReason.UnsupportedStandardBootstrapControlFlow)]
