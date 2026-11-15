@@ -1300,6 +1300,12 @@ namespace Derby.Tape
 
             bool use128kMode = Use128kTapeLoadMode(machine);
             InitializeMachineForRomDrivenTapeLoad(machine, use128kMode);
+            if (use128kMode)
+            {
+                // ROM-driven BASIC can hand paging-aware machine code directly
+                // into live execution. Keep BANK_M aligned with the ROM-1 latch.
+                machine.PokeMemory(Spectrum128TapeLoadBankSelectAddress, 0x10);
+            }
 
             int consumedBlockCount = 0;
             while (consumedBlockCount < blocks.Count && blocks[consumedBlockCount].Kind == TapeBlockKind.Metadata)
@@ -1390,6 +1396,10 @@ namespace Derby.Tape
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
 
+            // Mode detection executes candidate BASIC loaders. Keep that probe
+            // isolated so it cannot reset or reconfigure the live machine.
+            var probeMachine = new SpectrumMachine(machine.RomSet);
+
             for (int index = 0; index + 1 < blocks.Count; index++)
             {
                 if (!IsStandardHeaderBlock(blocks[index]) || blocks[index + 1].Flag != DataFlag)
@@ -1401,10 +1411,10 @@ namespace Derby.Tape
 
                 try
                 {
-                    InitializeMachineForFakeTapeLoad(machine, use128kMode: false);
-                    LoadBasicProgram(machine, header, blocks[index + 1].Payload!);
+                    InitializeMachineForFakeTapeLoad(probeMachine, use128kMode: false);
+                    LoadBasicProgram(probeMachine, header, blocks[index + 1].Payload!);
                     if (BasicBootstrapExecutor.Requires128kTapeLoadMode(
-                        machine,
+                        probeMachine,
                         BasicProgramStart,
                         header.ProgramLength,
                         header.AutoStartLine))

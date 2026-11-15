@@ -300,11 +300,11 @@ namespace Derby.Tape
             if (loadLength == 0)
                 return;
 
-            const int stackWindowSize = 0x100;
             ushort stackStart = cpu.Regs.SP;
+            int stackWindowSize = GetActiveStackWindowSize(machine, stackStart);
             uint loadStart = loadAddress;
             uint loadEndExclusive = (uint)loadAddress + loadLength;
-            uint stackEndExclusive = (uint)stackStart + stackWindowSize;
+            uint stackEndExclusive = (uint)stackStart + (uint)stackWindowSize;
             if (stackEndExclusive <= loadStart || stackStart >= loadEndExclusive)
                 return;
 
@@ -320,6 +320,17 @@ namespace Derby.Tape
                 machine.PokeMemory((ushort)(relocatedStackStart + i), stackBytes[i]);
 
             cpu.Regs.SP = relocatedStackStart;
+        }
+
+        private static int GetActiveStackWindowSize(SpectrumMachine machine, ushort stackStart)
+        {
+            ushort ramTop = PeekWord(machine, SpectrumRomWorkspace.RamTopAddress);
+            if (ramTop >= stackStart && ramTop >= 0x4000)
+                return (ramTop - stackStart) + 1;
+
+            // Machine-code loaders may maintain a private stack without BASIC's
+            // RAMTOP boundary. Retain the conservative fallback for those cases.
+            return 0x100;
         }
 
         private static ushort FindSafeStackRelocationAddress(ushort loadAddress, ushort loadLength, int stackWindowSize)
