@@ -34,6 +34,7 @@ if (args.Length > 0)
     int focusedTraceMaxEntries = 2048;
     ushort? focusedTraceStopPc = null;
     ushort? breakProgramCounter = null;
+    ushort? preloadBreakProgramCounter = null;
     string executionMode = "frame";
     List<ScheduledKeyEvent> scheduledKeyEvents = new();
     List<ScheduledPcEvent> scheduledPcEvents = new();
@@ -144,6 +145,10 @@ if (args.Length > 0)
         {
             breakProgramCounter = ParseAddress(arg["breakpc=".Length..]);
         }
+        else if (arg.StartsWith("preloadbreakpc=", StringComparison.OrdinalIgnoreCase))
+        {
+            preloadBreakProgramCounter = ParseAddress(arg["preloadbreakpc=".Length..]);
+        }
         else if (arg.StartsWith("tracestoppc=", StringComparison.OrdinalIgnoreCase))
         {
             focusedTraceStopPc = ParseAddress(arg["tracestoppc=".Length..]);
@@ -186,7 +191,9 @@ if (args.Length > 0)
 
     if (forcedMachineModel.HasValue)
     {
-        machine.Reset(forcedMachineModel.Value);
+        machine = forcedMachineModel.Value == SpectrumMachineModel.Spectrum48K
+            ? new SpectrumMachine(SpectrumRomSet.Bundled48K(romFolder))
+            : new SpectrumMachine(SpectrumRomSet.Bundled128K(romFolder));
         Console.WriteLine($"Machine model: {forcedMachineModel.Value}");
     }
 
@@ -196,53 +203,78 @@ if (args.Length > 0)
         Console.WriteLine("Machine trace enabled.");
     }
 
+    if (preloadBreakProgramCounter.HasValue)
+    {
+        ushort breakpoint = preloadBreakProgramCounter.Value;
+        machine.Cpu.StopBeforeInstruction = cpu =>
+        {
+            if (cpu.Regs.PC == breakpoint)
+                throw new PreloadExecutionBreakpointException();
+            return false;
+        };
+        Console.WriteLine($"Pre-load execution breakpoint: pc=0x{breakpoint:X4}");
+    }
+
     if (dumpTapeBlocks)
     {
         DumpTapeBlocks(snapshotPath, machine.FrameTStates == SpectrumMachine.FrameTStates48);
         return;
     }
 
-    string extension = Path.GetExtension(snapshotPath);
-    if (extension.Equals(".sna", StringComparison.OrdinalIgnoreCase))
+    try
     {
-        if (forcedMachineModel.HasValue)
-            SnapshotLoader.Load(machine, snapshotPath, forcedMachineModel.Value);
+        string extension = Path.GetExtension(snapshotPath);
+        if (extension.Equals(".sna", StringComparison.OrdinalIgnoreCase))
+        {
+            if (forcedMachineModel.HasValue)
+                SnapshotLoader.Load(machine, snapshotPath, forcedMachineModel.Value);
+            else
+                SnapshotLoader.Load(machine, snapshotPath);
+        }
+        else if (extension.Equals(".z80", StringComparison.OrdinalIgnoreCase))
+        {
+            if (forcedMachineModel.HasValue)
+                Z80SnapshotLoader.Load(machine, snapshotPath, forcedMachineModel.Value);
+            else
+                Z80SnapshotLoader.Load(machine, snapshotPath);
+        }
+        else if (extension.Equals(".szx", StringComparison.OrdinalIgnoreCase))
+        {
+            SzxSnapshotLoader.Load(machine, snapshotPath);
+        }
+        else if (extension.Equals(".tap", StringComparison.OrdinalIgnoreCase))
+        {
+            TapeExecutionResult result = forcedTapeStrategy.HasValue
+                ? LoadTapeWithForcedStrategy(machine, snapshotPath, forcedTapeStrategy.Value, isTzx: false)
+                : TapLoader.LoadWithPolicy(machine, snapshotPath);
+            Console.WriteLine(DescribeTapeExecution("TAP", result));
+        }
+        else if (extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase))
+        {
+            TapeExecutionResult result = forcedTapeStrategy.HasValue
+                ? LoadTapeWithForcedStrategy(machine, snapshotPath, forcedTapeStrategy.Value, isTzx: true)
+                : TzxLoader.LoadWithPolicy(machine, snapshotPath);
+            Console.WriteLine(DescribeTapeExecution("TZX", result));
+        }
+        else if (extension.Equals(".rzx", StringComparison.OrdinalIgnoreCase))
+        {
+            RzxLoader.Load(machine, snapshotPath);
+            Console.WriteLine($"RZX playback loaded: {Path.GetFileName(snapshotPath)}");
+        }
         else
-            SnapshotLoader.Load(machine, snapshotPath);
+        {
+            throw new InvalidOperationException($"Unsupported image extension: {extension}");
+        }
     }
-    else if (extension.Equals(".z80", StringComparison.OrdinalIgnoreCase))
+    catch (PreloadExecutionBreakpointException)
     {
-        if (forcedMachineModel.HasValue)
-            Z80SnapshotLoader.Load(machine, snapshotPath, forcedMachineModel.Value);
-        else
-            Z80SnapshotLoader.Load(machine, snapshotPath);
-    }
-    else if (extension.Equals(".szx", StringComparison.OrdinalIgnoreCase))
-    {
-        SzxSnapshotLoader.Load(machine, snapshotPath);
-    }
-    else if (extension.Equals(".tap", StringComparison.OrdinalIgnoreCase))
-    {
-        TapeExecutionResult result = forcedTapeStrategy.HasValue
-            ? LoadTapeWithForcedStrategy(machine, snapshotPath, forcedTapeStrategy.Value, isTzx: false)
-            : TapLoader.LoadWithPolicy(machine, snapshotPath);
-        Console.WriteLine(DescribeTapeExecution("TAP", result));
-    }
-    else if (extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase))
-    {
-        TapeExecutionResult result = forcedTapeStrategy.HasValue
-            ? LoadTapeWithForcedStrategy(machine, snapshotPath, forcedTapeStrategy.Value, isTzx: true)
-            : TzxLoader.LoadWithPolicy(machine, snapshotPath);
-        Console.WriteLine(DescribeTapeExecution("TZX", result));
-    }
-    else if (extension.Equals(".rzx", StringComparison.OrdinalIgnoreCase))
-    {
-        RzxLoader.Load(machine, snapshotPath);
-        Console.WriteLine($"RZX playback loaded: {Path.GetFileName(snapshotPath)}");
-    }
-    else
-    {
-        throw new InvalidOperationException($"Unsupported image extension: {extension}");
+        string breakpointDump = machine.BuildDebugDump(
+            $"Manual harness pre-load execution breakpoint at PC=0x{machine.Cpu.Regs.PC:X4}.");
+        foreach ((ushort address, int length) in memoryDumpRequests)
+            breakpointDump += BuildMemoryDump(machine, address, length);
+        WriteHarnessArtifacts(machine, breakpointDump, "preload-breakpoint");
+        Console.WriteLine($"Pre-load execution stopped at PC=0x{machine.Cpu.Regs.PC:X4} frame={machine.FrameCount}.");
+        return;
     }
 
     if (initialInterruptDelay.HasValue)
@@ -305,7 +337,10 @@ if (args.Length > 0)
     if (breakProgramCounter.HasValue)
     {
         ushort breakpoint = breakProgramCounter.Value;
-        machine.Cpu.StopBeforeInstruction = cpu => cpu.Regs.PC == breakpoint;
+        machine.Cpu.StopBeforeInstruction = cpu =>
+        {
+            return cpu.Regs.PC == breakpoint;
+        };
         Console.WriteLine($"Execution breakpoint: pc=0x{breakpoint:X4}");
     }
 
@@ -593,7 +628,7 @@ static void DumpBlockList(IReadOnlyList<TapeBlock> blocks)
     {
         TapeBlock block = blocks[index];
         int byteCount = block.StreamByteCount;
-        int previewCount = Math.Min(byteCount, 16);
+        int previewCount = Math.Min(byteCount, 32);
         Span<string> preview = previewCount == 0 ? [] : new string[previewCount];
         for (int i = 0; i < previewCount; i++)
             preview[i] = $"{block.GetStreamByte(i):X2}";
@@ -602,8 +637,20 @@ static void DumpBlockList(IReadOnlyList<TapeBlock> blocks)
             $"[{index}] Kind={block.Kind} Rom={block.IsLoadableRomBlock} Trap={block.CanUseRomLoadTrap} " +
             $"Bytes={byteCount} Flag={block.Flag:X2} UsedBits={block.UsedBitsInLastByte} Pause={block.PauseAfterBlockMs} " +
             $"Pilot={block.PilotPulseCount}@{block.PilotPulseLength} Zero={block.ZeroBitPulseLength} One={block.OneBitPulseLength} " +
+            $"Tone={block.PureTonePulseCount}@{block.PureTonePulseLength} " +
+            $"Pulses={FormatPulseSequence(block.PulseSequence)} " +
             $"Head={(previewCount == 0 ? "-" : string.Join(' ', preview.ToArray()))}");
     }
+}
+
+static string FormatPulseSequence(int[]? pulses)
+{
+    if (pulses == null || pulses.Length == 0)
+        return "-";
+
+    const int previewLimit = 64;
+    string preview = string.Join(',', pulses.Take(previewLimit));
+    return pulses.Length <= previewLimit ? preview : $"{preview},...({pulses.Length})";
 }
 
 Console.WriteLine("Manual smoke harness starting...");
@@ -966,3 +1013,4 @@ readonly record struct ScheduledRegisterEvent(int Frame, string RegisterName, us
 readonly record struct ScheduledMemoryWriteEvent(int Frame, ushort Address, byte Value);
 readonly record struct ScheduledFrameTimingEvent(int Frame, int FrameTStates);
 readonly record struct ScheduledTapeReplacementEvent(int Frame, string Path);
+sealed class PreloadExecutionBreakpointException : Exception { }

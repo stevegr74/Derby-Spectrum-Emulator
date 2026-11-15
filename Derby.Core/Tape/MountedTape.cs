@@ -121,11 +121,23 @@ namespace Derby.Tape
         public string DebugPlaybackState =>
             $"NextBlock={nextBlockIndex}/{blocks.Count} EarBlock={earPlaybackBlockIndex}/{blocks.Count} " +
             $"State={state} EarState={earPlaybackState} Byte={earStreamByteIndex} Bit={earBitIndex} " +
-            $"Pilot={earPilotPulsesRemaining} PulseLen={earPulseLengthTStates} PulseSeq={earPulseSequenceIndex} " +
+            $"Pilot={earPilotPulsesRemaining} PulseLen={earPulseLengthTStates} PulseAt={lastEarSampleTStates} PulseSeq={earPulseSequenceIndex} " +
             $"EarLevel={(earLevel ? 1 : 0)} Started={(earPlaybackStarted ? 1 : 0)} Retained={(retainedByteStreamTrapAvailable ? 1 : 0)} " +
             $"Paused={(playbackPaused ? 1 : 0)} Marker={(pausedByStopMarker ? 1 : 0)} Complete={(playbackCompleted ? 1 : 0)} " +
             $"RomTrapBlock={romStreamTrapBlockIndex} RomTrapByte={romStreamTrapByteIndex} " +
             $"CompletedRomBlock={completedRomLoadableBlockIndex}";
+        internal string GetDebugEarTimingState(ulong sampleTStates)
+        {
+            ulong elapsed = earPlaybackStarted && sampleTStates >= lastEarSampleTStates
+                ? sampleTStates - lastEarSampleTStates
+                : 0;
+            ulong remaining = earPulseLengthTStates > 0 && elapsed < (ulong)earPulseLengthTStates
+                ? (ulong)earPulseLengthTStates - elapsed
+                : 0;
+
+            return $"EAR={(earLevel ? 1 : 0)} Block={earPlaybackBlockIndex} State={earPlaybackState} " +
+                   $"Byte={earStreamByteIndex} Bit={earBitIndex} Elapsed={elapsed} Remaining={remaining}";
+        }
         public bool IsActivelyDrivingEarLine => !playbackPaused && earPlaybackState != EarPlaybackState.Idle;
         public bool HasCompletedPlayback => playbackCompleted;
         public bool IsExhaustedAndIdle =>
@@ -147,6 +159,30 @@ namespace Derby.Tape
             TryGetActivePlaybackBlock(out TapeBlock? block) && block != null &&
             (block.Kind == TapeBlockKind.DirectRecording ||
              (block.Kind == TapeBlockKind.Data && !block.CanUseRomLoadTrap));
+        internal bool IsAtProtectedSynchronizationPreamble
+        {
+            get
+            {
+                if (earPlaybackState != EarPlaybackState.PureTone ||
+                    earPlaybackBlockIndex < 0 ||
+                    earPlaybackBlockIndex >= blocks.Count)
+                {
+                    return false;
+                }
+
+                int pulseSequenceIndex = FindNextPlaybackBlockIndex(earPlaybackBlockIndex + 1);
+                if (pulseSequenceIndex >= blocks.Count ||
+                    blocks[pulseSequenceIndex].Kind != TapeBlockKind.PulseSequence)
+                {
+                    return false;
+                }
+
+                int dataIndex = FindNextPlaybackBlockIndex(pulseSequenceIndex + 1);
+                return dataIndex < blocks.Count &&
+                       blocks[dataIndex].Kind == TapeBlockKind.Data &&
+                       !blocks[dataIndex].CanUseRomLoadTrap;
+            }
+        }
         public bool IsStreamingRomLoadableStandardData =>
             TryGetActivePlaybackBlock(out TapeBlock? block) && block != null &&
             block.Kind == TapeBlockKind.Data &&
@@ -401,6 +437,15 @@ namespace Derby.Tape
                 if (header.Type > 3 && index + 1 < blocks.Count && blocks[index + 1].Kind == TapeBlockKind.Data)
                     index++;
             }
+
+            return index;
+        }
+
+        private int FindNextPlaybackBlockIndex(int startIndex)
+        {
+            int index = startIndex;
+            while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                index++;
 
             return index;
         }

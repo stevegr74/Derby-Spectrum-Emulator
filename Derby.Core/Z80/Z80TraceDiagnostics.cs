@@ -14,9 +14,10 @@ namespace Derby.Z80
             if (!instructionTraceCaptureEnabled)
                 return;
 
-            byte next0 = ReadMemory((ushort)(pcBefore + 1));
-            byte next1 = ReadMemory((ushort)(pcBefore + 2));
-            ushort stackTop = (ushort)(ReadMemory(Regs.SP) | (ReadMemory((ushort)(Regs.SP + 1)) << 8));
+            Func<ushort, byte> inspectMemory = InspectMemory ?? ReadMemory;
+            byte next0 = inspectMemory((ushort)(pcBefore + 1));
+            byte next1 = inspectMemory((ushort)(pcBefore + 2));
+            ushort stackTop = (ushort)(inspectMemory(Regs.SP) | (inspectMemory((ushort)(Regs.SP + 1)) << 8));
 
             string line =
                 $"T={TStates,10} PC={pcBefore:X4} OP={op:X2} N={next0:X2} {next1:X2} " +
@@ -42,7 +43,7 @@ namespace Derby.Z80
                     bytes.Append(' ');
 
                 ushort addr = (ushort)(start + i);
-                bytes.Append(ReadMemory(addr).ToString("X2"));
+                bytes.Append((InspectMemory ?? ReadMemory)(addr).ToString("X2"));
             }
 
             return bytes.ToString();

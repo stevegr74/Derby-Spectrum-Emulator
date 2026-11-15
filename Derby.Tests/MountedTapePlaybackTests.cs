@@ -177,6 +177,30 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void MountedTape_AdjacentPartialPureDataBlocks_ContinueWithoutGapOrPhaseReset()
+        {
+            var tape = new MountedTape(
+                "adjacent-pure-data",
+                new[]
+                {
+                    TapeBlock.CreateByteStreamData(new byte[] { 0xE8 }, 10, 20, 6, 0),
+                    TapeBlock.CreateByteStreamData(new byte[] { 0x00 }, 10, 20, 8, 0)
+                },
+                initialEarLevelHigh: false,
+                skipCustomHeaderForEarPlayback: false);
+
+            // E8 contributes six bits (111010): 200 T-states and twelve edges.
+            Assert.False(tape.ReadEarBit(0));
+            Assert.True(tape.ReadEarBit(20));
+            Assert.False(tape.ReadEarBit(200));
+
+            // The following zero bit starts immediately and retains the low phase.
+            Assert.False(tape.ReadEarBit(209));
+            Assert.True(tape.ReadEarBit(210));
+            Assert.False(tape.ReadEarBit(220));
+        }
+
+        [Fact]
         public void BootstrapTapeBlocksAndMountRemaining_Preserves_LeadingDataPause_Before_LivePlayback()
         {
             string tempFolder = CreateTempRoms();

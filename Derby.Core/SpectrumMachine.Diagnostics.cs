@@ -104,7 +104,13 @@ namespace Derby
 
             sb.AppendLine("=== CPU STATE ===");
             sb.AppendLine($"TStates={cpu.TStates}");
-            sb.AppendLine($"PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4} AF={cpu.Regs.AF:X4} AF'={((cpu.Regs.A_ << 8) | cpu.Regs.F_):X4} BC={cpu.Regs.BC:X4} DE={cpu.Regs.DE:X4} HL={cpu.Regs.HL:X4} IX={cpu.Regs.IX:X4} IY={cpu.Regs.IY:X4}");
+            sb.AppendLine(
+                $"PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4} " +
+                $"AF={cpu.Regs.AF:X4} AF'={((cpu.Regs.A_ << 8) | cpu.Regs.F_):X4} " +
+                $"BC={cpu.Regs.BC:X4} BC'={((cpu.Regs.B_ << 8) | cpu.Regs.C_):X4} " +
+                $"DE={cpu.Regs.DE:X4} DE'={((cpu.Regs.D_ << 8) | cpu.Regs.E_):X4} " +
+                $"HL={cpu.Regs.HL:X4} HL'={((cpu.Regs.H_ << 8) | cpu.Regs.L_):X4} " +
+                $"IX={cpu.Regs.IX:X4} IY={cpu.Regs.IY:X4}");
             sb.AppendLine($"I={cpu.Regs.I:X2} R={cpu.Regs.R:X2} IM={cpu.InterruptMode} IFF1={(cpu.IFF1 ? 1 : 0)} IFF2={(cpu.IFF2 ? 1 : 0)} HALT={(cpu.IsHalted ? 1 : 0)} INTP={(cpu.InterruptPending ? 1 : 0)}");
             sb.AppendLine();
 

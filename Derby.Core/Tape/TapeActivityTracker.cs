@@ -11,6 +11,7 @@ namespace Derby.Tape
             int HandoffFrames,
             bool AutoPausedAtHandoff,
             bool AwaitingPostResumeHandoff,
+            bool AwaitingProtectedLoaderRead,
             int AutomaticResumeReads);
 
         public ulong PortReadCount { get; set; }
@@ -21,6 +22,7 @@ namespace Derby.Tape
         public int HandoffFrames { get; set; }
         public bool AutoPausedAtHandoff { get; set; }
         public bool AwaitingPostResumeHandoff { get; set; }
+        public bool AwaitingProtectedLoaderRead { get; set; }
         public int AutomaticResumeReads { get; set; }
 
         public void RecordPortRead(bool keyboardOnly)
@@ -39,7 +41,8 @@ namespace Derby.Tape
             MountedTape? tape,
             bool isRecognizedRomTapeRead,
             ulong sampleTStates,
-            int requiredReadCount)
+            int requiredReadCount,
+            bool isEarSensitiveRead = false)
         {
             if (tape == null ||
                 !AutoPausedAtHandoff ||
@@ -50,7 +53,9 @@ namespace Derby.Tape
                 return false;
             }
 
-            if (!isRecognizedRomTapeRead)
+            bool recognizedResumeRead = isRecognizedRomTapeRead ||
+                                        (AwaitingProtectedLoaderRead && isEarSensitiveRead);
+            if (!recognizedResumeRead)
             {
                 AutomaticResumeReads = 0;
                 return false;
@@ -60,9 +65,10 @@ namespace Derby.Tape
             if (AutomaticResumeReads < requiredReadCount)
                 return false;
 
+            bool resumingProtectedLoader = AwaitingProtectedLoaderRead;
             bool resumed = tape.ResumePlayback(sampleTStates);
             Reset();
-            AwaitingPostResumeHandoff = resumed;
+            AwaitingPostResumeHandoff = resumed && !resumingProtectedLoader;
             return resumed;
         }
 
@@ -90,6 +96,22 @@ namespace Derby.Tape
                 LoaderActivityObserved = false;
                 HandoffFrames = 0;
                 return false;
+            }
+
+            if (tape.IsAtProtectedSynchronizationPreamble &&
+                earSensitiveReadsThisFrame == 0)
+            {
+                bool held = tape.PausePlaybackAtCurrentBlockStart(currentTStates);
+                if (held)
+                {
+                    AutoPausedAtHandoff = true;
+                    AwaitingPostResumeHandoff = false;
+                    AwaitingProtectedLoaderRead = true;
+                    AutomaticResumeReads = 0;
+                    HandoffFrames = 0;
+                }
+
+                return held;
             }
 
             if (earSensitiveReadsThisFrame > (ulong)activityReadsPerFrame)
@@ -156,6 +178,7 @@ namespace Derby.Tape
             HandoffFrames = 0;
             AutoPausedAtHandoff = false;
             AwaitingPostResumeHandoff = false;
+            AwaitingProtectedLoaderRead = false;
             AutomaticResumeReads = 0;
         }
 
@@ -168,6 +191,7 @@ namespace Derby.Tape
             HandoffFrames,
             AutoPausedAtHandoff,
             AwaitingPostResumeHandoff,
+            AwaitingProtectedLoaderRead,
             AutomaticResumeReads);
 
         public void RestoreQuickState(QuickState state)
@@ -180,6 +204,7 @@ namespace Derby.Tape
             HandoffFrames = state.HandoffFrames;
             AutoPausedAtHandoff = state.AutoPausedAtHandoff;
             AwaitingPostResumeHandoff = state.AwaitingPostResumeHandoff;
+            AwaitingProtectedLoaderRead = state.AwaitingProtectedLoaderRead;
             AutomaticResumeReads = state.AutomaticResumeReads;
         }
     }

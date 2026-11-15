@@ -291,18 +291,30 @@ namespace Derby.Tape
                             zeroBit,
                             oneBit,
                             usedBits);
-                        blocks.Add(RawTzxBlock.FromTapeBlock(TapeBlock.CreateData(
-                            streamData,
-                            pilotPulseLength,
-                            pilotCount,
-                            syncFirst,
-                            syncSecond,
-                            zeroBit,
-                            oneBit,
-                            usedBits,
-                            pauseMs,
-                            canUseRomLoadTrap,
-                            romRecordByteCount: FindLogicalRomRecordByteCount(streamData, canUseRomLoadTrap))));
+                        TapeBlock turboBlock = canUseRomLoadTrap
+                            ? TapeBlock.CreateData(
+                                streamData,
+                                pilotPulseLength,
+                                pilotCount,
+                                syncFirst,
+                                syncSecond,
+                                zeroBit,
+                                oneBit,
+                                usedBits,
+                                pauseMs,
+                                canUseRomLoadTrap: true,
+                                romRecordByteCount: FindLogicalRomRecordByteCount(streamData, canUseRomLoadTrap: true))
+                            : TapeBlock.CreateTurboByteStreamData(
+                                streamData,
+                                pilotPulseLength,
+                                pilotCount,
+                                syncFirst,
+                                syncSecond,
+                                zeroBit,
+                                oneBit,
+                                usedBits,
+                                pauseMs);
+                        blocks.Add(RawTzxBlock.FromTapeBlock(turboBlock));
                         break;
                     }
 

@@ -243,7 +243,7 @@ Use `F3` before mounting the tape when you want to test the other machine model.
 
 Use `F5` to stop or resume the mounted tape without ejecting it. Resume only when the game asks for more tape input.
 
-The emulator also handles supported TZX pauses, stop markers, tape end, and detected loader handoffs automatically. A stopped tape remains mounted and can be resumed.
+The emulator also handles supported TZX pauses, stop markers, tape end, and detected loader handoffs automatically. A stopped tape remains mounted and can be resumed. Brief pulse-synchronization holds used by protected loaders remain internal, so they do not flash misleading stop/play feedback.
 
 ### If A Multi-load Fails
 

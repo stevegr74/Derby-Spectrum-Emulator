@@ -1683,6 +1683,33 @@ namespace Derby.Tape
                 return TouchesProtectedInterpreterHandoff(parsedLines, startLineIndex);
             }
 
+            public static bool HasMachineCodeHandoffData(
+                byte[] programData,
+                ushort programLength,
+                ushort autoStartLine)
+            {
+                if (programLength == 0)
+                    return false;
+
+                List<BasicLine> parsedLines = ParseLinesFromData(programData, programLength);
+                int startLineIndex = autoStartLine == 0
+                    ? 0
+                    : parsedLines.FindIndex(line => line.Number == autoStartLine);
+                if (startLineIndex < 0)
+                    return false;
+
+                for (int lineIndex = startLineIndex; lineIndex < parsedLines.Count; lineIndex++)
+                {
+                    foreach (List<string> statement in parsedLines[lineIndex].Statements)
+                    {
+                        if (statement.Contains("USR"))
+                            return true;
+                    }
+                }
+
+                return false;
+            }
+
             public static bool Requires128kTapeLoadMode(
                 SpectrumMachine machine,
                 ushort programStart,

@@ -775,6 +775,31 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void MountedLoadUsr0Mode_Preserves_Selected_48k_Hardware()
+        {
+            string tempFolder = CreateTempRoms();
+
+            try
+            {
+                var machine = new SpectrumMachine(tempFolder);
+                machine.Reset(SpectrumMachineModel.Spectrum48K);
+
+                machine.PrepareMountedLoadUsr0HardwareMode(machine.Cpu);
+
+                Assert.Equal(SpectrumMachineModel.Spectrum48K, machine.MachineModel);
+                Assert.Equal(SpectrumMachine.FrameTStates48, machine.FrameTStates);
+                Assert.Equal(1, machine.CurrentRomBank);
+                Assert.True(machine.PagingLocked);
+                machine.DebugWritePort(0x7FFD, 0x03);
+                Assert.Equal(0, machine.PagedRamBank);
+            }
+            finally
+            {
+                Directory.Delete(tempFolder, true);
+            }
+        }
+
+        [Fact]
         public void PendingMountedLoadUsrContinuation_Evaluates_Safe_Live_IfThen_Usr_Clause_Directly()
         {
             string tempFolder = CreateTempRoms();

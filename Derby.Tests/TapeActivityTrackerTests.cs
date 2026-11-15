@@ -74,6 +74,70 @@ namespace Derby.Tests
             Assert.True(tracker.AwaitingPostResumeHandoff);
         }
 
+        [Fact]
+        public void ProtectedSynchronization_WaitsForEarSensitiveLoaderReads()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateProtectedSynchronizationTape();
+
+            for (int read = 0; read < 65; read++)
+                tracker.RecordPortRead(keyboardOnly: true);
+
+            Assert.True(RecordActiveFrame(tracker, tape));
+            Assert.True(tape.IsPlaybackPaused);
+            Assert.True(tracker.AwaitingProtectedLoaderRead);
+
+            Assert.False(tracker.TryAutomaticallyResume(
+                tape,
+                isRecognizedRomTapeRead: false,
+                sampleTStates: 500,
+                requiredReadCount: 64,
+                isEarSensitiveRead: false));
+
+            for (int read = 1; read < 64; read++)
+            {
+                Assert.False(tracker.TryAutomaticallyResume(
+                    tape,
+                    isRecognizedRomTapeRead: false,
+                    sampleTStates: 500,
+                    requiredReadCount: 64,
+                    isEarSensitiveRead: true));
+            }
+
+            Assert.True(tracker.TryAutomaticallyResume(
+                tape,
+                isRecognizedRomTapeRead: false,
+                sampleTStates: 500,
+                requiredReadCount: 64,
+                isEarSensitiveRead: true));
+            Assert.False(tape.IsPlaybackPaused);
+            Assert.False(tracker.AwaitingProtectedLoaderRead);
+        }
+
+        [Fact]
+        public void ProtectedSynchronization_DoesNotPauseAfterLoaderStartsReadingEar()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateProtectedSynchronizationTape();
+
+            tracker.RecordPortRead(keyboardOnly: false);
+
+            Assert.False(RecordActiveFrame(tracker, tape));
+            Assert.False(tape.IsPlaybackPaused);
+            Assert.False(tracker.AwaitingProtectedLoaderRead);
+        }
+
+        [Fact]
+        public void OrdinaryTone_DoesNotTriggerProtectedSynchronizationPause()
+        {
+            var tracker = new TapeActivityTracker();
+            MountedTape tape = CreateDrivingTape();
+
+            Assert.False(RecordActiveFrame(tracker, tape));
+            Assert.False(tape.IsPlaybackPaused);
+            Assert.False(tracker.AwaitingProtectedLoaderRead);
+        }
+
         [Theory]
         [InlineData(false, true, 0x8000, false)]
         [InlineData(true, false, 0x8000, false)]
@@ -126,6 +190,7 @@ namespace Derby.Tests
             tracker.RecordPortRead(keyboardOnly: true);
             tracker.ObserveLoaderActivity();
             tracker.AwaitingPostResumeHandoff = true;
+            tracker.AwaitingProtectedLoaderRead = true;
             TapeActivityTracker.QuickState state = tracker.CaptureQuickState();
 
             tracker.Reset();
@@ -135,6 +200,7 @@ namespace Derby.Tests
             Assert.Equal((ulong)1, tracker.KeyboardOnlyPortReadCount);
             Assert.True(tracker.LoaderActivityObserved);
             Assert.True(tracker.AwaitingPostResumeHandoff);
+            Assert.True(tracker.AwaitingProtectedLoaderRead);
         }
 
         [Fact]
@@ -228,6 +294,26 @@ namespace Derby.Tests
             var tape = new MountedTape(
                 "policy.tap",
                 new[] { TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 4) });
+            tape.ReadEarBit(0);
+            return tape;
+        }
+
+        private static MountedTape CreateProtectedSynchronizationTape()
+        {
+            var tape = new MountedTape(
+                "protected.tzx",
+                new TapeBlock[]
+                {
+                    TapeBlock.CreatePureTone(pulseLength: 100, pulseCount: 40),
+                    TapeBlock.CreatePulseSequence(new[] { 20, 40, 20 }),
+                    TapeBlock.CreateByteStreamData(
+                        new byte[] { 0xA0 },
+                        zeroBitPulseLength: 10,
+                        oneBitPulseLength: 20,
+                        usedBitsInLastByte: 4,
+                        pauseAfterBlockMs: 0)
+                },
+                initialEarLevelHigh: false);
             tape.ReadEarBit(0);
             return tape;
         }

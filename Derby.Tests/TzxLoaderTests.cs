@@ -149,6 +149,31 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void ParseBlocks_CustomTurboFragment_PreservesExactPulseEncoding()
+        {
+            Tape.TapeBlock block = Assert.Single(Tape.TzxLoader.ParseBlocks(BuildTzx(
+                BuildTurboDataBlock(
+                    new byte[] { 0b1010_0000 },
+                    pilotLength: 2111,
+                    pilotCount: 17,
+                    zeroLength: 583,
+                    oneLength: 1165,
+                    usedBits: 4))));
+
+            Assert.False(block.CanUseRomLoadTrap);
+            Assert.False(block.IsLoadableRomBlock);
+            Assert.Equal(new byte[] { 0b1010_0000 }, block.StreamData);
+            Assert.Null(block.Payload);
+            Assert.Equal((ushort)2111, block.PilotPulseLength);
+            Assert.Equal((ushort)17, block.PilotPulseCount);
+            Assert.Equal((ushort)667, block.SyncFirstPulseLength);
+            Assert.Equal((ushort)735, block.SyncSecondPulseLength);
+            Assert.Equal((ushort)583, block.ZeroBitPulseLength);
+            Assert.Equal((ushort)1165, block.OneBitPulseLength);
+            Assert.Equal((byte)4, block.UsedBitsInLastByte);
+        }
+
+        [Fact]
         public void ParseBlocks_Parses_DirectRecording_Csw_And_SetSignalLevel()
         {
             byte[] tzx = BuildTzx(
