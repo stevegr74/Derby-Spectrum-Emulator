@@ -21,7 +21,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
 - `.tap` and `.tzx` parsing, fast bootstrap, ROM-driven loading, protected/mounted playback, VERIFY, and multi-block sequencing
 - Manual/resumable tape transport with 48K stop-marker support and persistent status feedback
-- Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings plus automatic or explicit controller selection and configurable raw-axis, hat, fire-button, and dead-zone mapping
+- Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
 - Platform-neutral headless core with Windows presentation/audio adapters
 - Paused `F6` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
 - Paused `F7` Quick State Manager with eight persistent slots, clean thumbnails, metadata, and complete live-session machine/media restoration
@@ -96,7 +96,8 @@ Current limitations and active work:
   copied snapshots and uses nested pause leases for safe inspection or mutation.
 - Windows keyboard and controller adapters produce platform-neutral input
   state. Matrix ownership, simultaneous Interface II input, RZX precedence,
-  focus-loss cleanup, and host-state exclusion from Quick State are explicit.
+  focus-loss cleanup, per-device controller profiles, USB-port reconnection,
+  and host-state exclusion from Quick State are explicit.
 - Snapshot loaders validate supported state before replacing the running
   machine and reject hardware they cannot represent. The Poke Manager similarly
   pauses before atomic writes and guards restoration against later program
@@ -395,7 +396,7 @@ compatibility; completed milestones remain regression baselines.
 | 19 | Complete | Bank-aware inspection, labels, conservative control/data cross-references, persistent code/data marking, and hexadecimal memory navigation |
 | 20 | Complete | Tape state ownership, transition coverage, structured diagnostics, and behavior-preserving subsystem decomposition |
 | 21 | Complete | Accepted bank-aware Poke Manager with one-off writes, guarded restore, and an 82-game catalogue with 53 checksum-scoped entries |
-| 22 | Complete | Two-channel USB joystick input with selectable Kempston, Cursor, and Interface II mappings through a Windows-only host adapter and platform-neutral core state |
+| 22 | Complete | Two-channel USB joystick input with selectable Kempston, Cursor, and Interface II mappings, per-device profiles, stable hardware matching, and live identification through a Windows-only host adapter and platform-neutral core state |
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
 | 24 | Planned | Pop-up on-screen keyboard with selectable authentic 48K and 128K layouts |
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |

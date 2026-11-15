@@ -21,7 +21,12 @@ namespace Derby
         int AxisCount,
         int ButtonCount,
         int SwitchCount,
-        string? LegacyId = null);
+        string? LegacyId = null,
+        ushort HardwareVendorId = 0,
+        ushort HardwareProductId = 0)
+    {
+        public string ProfileId => HostJoystickDeviceIdentity.CreateProfileId(this);
+    }
 
     public sealed class HostJoystickReading
     {
@@ -60,7 +65,8 @@ namespace Derby
         bool Enabled = true,
         string? PreferredDeviceId = null,
         HostJoystickMapping? Mapping = null,
-        SpectrumJoystickInterface? Interface = null)
+        SpectrumJoystickInterface? Interface = null,
+        string? PreferredDeviceProfileId = null)
     {
         [System.Text.Json.Serialization.JsonIgnore]
         public HostJoystickMapping EffectiveMapping => Mapping ?? new HostJoystickMapping();
@@ -69,12 +75,22 @@ namespace Derby
         public SpectrumJoystickInterface EffectiveInterface => Interface ?? SpectrumJoystickInterface.Kempston;
     }
 
+    public sealed record HostJoystickDeviceProfile(
+        string ProfileId,
+        HostJoystickMapping? Mapping = null)
+    {
+        [System.Text.Json.Serialization.JsonIgnore]
+        public HostJoystickMapping EffectiveMapping => Mapping ?? new HostJoystickMapping();
+    }
+
     public sealed record HostJoystickSettings(
         bool Enabled = true,
         string? PreferredDeviceId = null,
         HostJoystickMapping? Mapping = null,
         SpectrumJoystickInterface? Interface = null,
-        HostJoystickChannelSettings? Controller2 = null)
+        HostJoystickChannelSettings? Controller2 = null,
+        string? PreferredDeviceProfileId = null,
+        Dictionary<string, HostJoystickDeviceProfile>? DeviceProfiles = null)
     {
         [System.Text.Json.Serialization.JsonIgnore]
         public HostJoystickMapping EffectiveMapping => Mapping ?? new HostJoystickMapping();
@@ -85,7 +101,7 @@ namespace Derby
 
         [System.Text.Json.Serialization.JsonIgnore]
         public HostJoystickChannelSettings Controller1Settings =>
-            new(Enabled, PreferredDeviceId, Mapping, Interface);
+            new(Enabled, PreferredDeviceId, Mapping, Interface, PreferredDeviceProfileId);
 
         [System.Text.Json.Serialization.JsonIgnore]
         public HostJoystickChannelSettings Controller2Settings =>
@@ -99,8 +115,17 @@ namespace Derby
                 Enabled = settings.Enabled,
                 PreferredDeviceId = settings.PreferredDeviceId,
                 Mapping = settings.Mapping,
-                Interface = settings.Interface
+                Interface = settings.Interface,
+                PreferredDeviceProfileId = settings.PreferredDeviceProfileId
             };
+
+        public HostJoystickMapping GetMapping(
+            HostJoystickDevice device,
+            HostJoystickChannelSettings channel) =>
+            DeviceProfiles != null &&
+            DeviceProfiles.TryGetValue(device.ProfileId, out HostJoystickDeviceProfile? profile)
+                ? profile.EffectiveMapping
+                : channel.EffectiveMapping;
     }
 
     public static class HostJoystickMapper

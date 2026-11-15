@@ -300,12 +300,20 @@ controllers...** for the full mapping window.
 ### Device Selection
 
 - **Off:** disconnect that controller channel from the emulated machine.
-- **Automatic:** use the first available USB controller not claimed by the other channel.
-- **Named device:** use only that specific connected controller.
+- **Automatic:** keep the controller already serving that channel when possible. After reconnection, prefer the same hardware profile; otherwise use the first unclaimed controller.
+- **Named device:** use that selected controller. If it moves to another USB port, reconnect it by its hardware profile rather than treating it as a new mapping.
 
-Automatic channels claim different devices. A named device is not silently
-replaced if it disappears, and unavailable input becomes neutral so no direction
-or Fire remains stuck.
+Automatic channels claim different devices, and the resolved controller name is
+shown in both the menu and configuration dialog. A named device is not replaced
+by unrelated hardware if it disappears; unavailable input becomes neutral so no
+direction or Fire remains stuck.
+
+Windows does not expose a permanent serial number for every USB game
+controller. DERBY therefore combines the hardware vendor/product IDs and the
+reported control layout into a portable device profile. This preserves mappings
+when a controller changes USB port. If two truly identical, serial-less devices
+are moved at the same time, Windows cannot prove which physical unit is which;
+use **Identify** or move a control while watching the live preview before saving.
 
 ### Spectrum Interface
 
@@ -343,10 +351,17 @@ The configuration dialog lets you choose:
 - Fire button.
 - Axis dead zone.
 
+Generic Windows controller names are replaced with a known product name where
+available, with `VID/PID` and control counts shown beneath the selector. Select
+**Identify**, then move a stick or press a button to confirm the physical device.
+
 Move each controller and press Fire while the dialog is open. Its live preview
-shows the interface, direction, and Fire state. **Save mappings** stores both
-channels for the current Windows user. Existing single-controller settings are
-retained as Controller 1 and Controller 2 starts disabled.
+shows the interface, direction, and Fire state. **Save mappings** stores the
+controller slots and reusable device profiles for the current Windows user.
+Axis, hat, Fire, and dead-zone settings follow the device; enabled state and the
+chosen Spectrum interface remain specific to Controller 1 or Controller 2.
+Existing single-controller settings are retained as Controller 1 and Controller
+2 starts disabled.
 
 The default mapping is axes 1/2 as displayed by the UI, hat 1 where available, button 1, and a 25% dead zone. Device hardware may expose different counts or ordering, so use the preview rather than relying on labels alone.
 
