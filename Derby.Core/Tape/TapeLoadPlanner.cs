@@ -155,6 +155,16 @@ namespace Derby.Tape
                         "Tape loader cannot complete its LOAD sequence through the safe bootstrap path, so autorun must remain under ROM control.");
                 }
 
+                if (use128kMode &&
+                    TapLoader.HasStandardHeaderDataPairAfterLeadingBasic(blocks) &&
+                    TapLoader.LeadingBasicProgramHasMachineCodeHandoff(blocks))
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.MachineCodeHandoffRequiresRom,
+                        "Tape loads standard data before a machine-code handoff whose 128K paging state must be established by the ROM interpreter.");
+                }
+
                 return new TapeLoadPlan(
                     TapeLoadStrategy.BootstrapHybrid,
                     TapeLoadPlanReason.BasicBootstrapMounted,

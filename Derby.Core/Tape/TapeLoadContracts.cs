@@ -75,6 +75,7 @@ namespace Derby.Tape
         UnsupportedMixedBootstrapControlFlow,
         MixedTapeBootstrap,
         ProtectedBasicRequiresRom,
+        MachineCodeHandoffRequiresRom,
         BasicBootstrapMounted,
         NoSafeAccelerationPath
     }
