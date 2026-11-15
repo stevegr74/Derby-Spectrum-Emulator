@@ -13,6 +13,8 @@ namespace Derby
                 return RawGameController.RawGameControllers
                     .Select(ToDevice)
                     .OrderBy(device => device.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                    .ThenBy(device => device.ProfileId, StringComparer.Ordinal)
+                    .ThenBy(device => device.Id, StringComparer.Ordinal)
                     .ToArray();
             }
             catch
@@ -73,7 +75,9 @@ namespace Derby
                 controller.AxisCount,
                 controller.ButtonCount,
                 controller.SwitchCount,
-                GetLegacyControllerId(controller));
+                GetLegacyControllerId(controller),
+                controller.HardwareVendorId,
+                controller.HardwareProductId);
 
         private static string GetControllerId(RawGameController controller) =>
             controller.NonRoamableId;

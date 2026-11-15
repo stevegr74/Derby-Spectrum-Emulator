@@ -95,6 +95,144 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void DeviceProfileId_SurvivesUsbPortAndRuntimeIdChanges()
+        {
+            var firstPort = new HostJoystickDevice(
+                "runtime-port-a",
+                "HID-compliant game controller",
+                4,
+                12,
+                1,
+                HardwareVendorId: 0x1234,
+                HardwareProductId: 0x5678);
+            var secondPort = firstPort with { Id = "runtime-port-b" };
+
+            Assert.Equal(firstPort.ProfileId, secondPort.ProfileId);
+            Assert.Equal("1234:5678:4:12:1", firstPort.ProfileId);
+        }
+
+        [Fact]
+        public void DisplayLabels_IdentifyDuplicateGenericControllers()
+        {
+            HostJoystickDevice[] devices =
+            [
+                new("second", "HID-compliant game controller", 2, 8, 1,
+                    HardwareVendorId: 0x0810, HardwareProductId: 0xE501),
+                new("first", "HID-compliant game controller", 2, 8, 1,
+                    HardwareVendorId: 0x0810, HardwareProductId: 0xE501)
+            ];
+
+            IReadOnlyDictionary<string, string> labels =
+                HostJoystickDeviceIdentity.CreateDisplayLabels(devices);
+
+            Assert.Equal("Game controller [0810:E501] #1", labels["first"]);
+            Assert.Equal("Game controller [0810:E501] #2", labels["second"]);
+            Assert.Contains("VID 0810 / PID E501", HostJoystickDeviceIdentity.DescribeHardware(devices[0]));
+        }
+
+        [Fact]
+        public void DisplayLabels_UseKnownProductNamesForGenericWindowsLabels()
+        {
+            HostJoystickDevice[] devices =
+            [
+                new("dualshock", "HID-compliant game controller", 6, 14, 1,
+                    HardwareVendorId: 0x054C, HardwareProductId: 0x09CC),
+                new("speedlink", "HID-compliant game controller", 2, 4, 0,
+                    HardwareVendorId: 0x0738, HardwareProductId: 0x2217)
+            ];
+
+            IReadOnlyDictionary<string, string> labels =
+                HostJoystickDeviceIdentity.CreateDisplayLabels(devices);
+
+            Assert.Equal("Sony DualShock 4", labels["dualshock"]);
+            Assert.Equal("Speedlink Competition Pro", labels["speedlink"]);
+        }
+
+        [Fact]
+        public void Identification_UsesDeviceBaselineInsteadOfAssumedAxisCentre()
+        {
+            var baseline = new HostJoystickReading(
+                "dualshock",
+                [false, false],
+                [HostJoystickHatPosition.Centered],
+                [0.5, 0.5, 0.0, 0.0]);
+
+            Assert.False(HostJoystickIdentification.HasMeaningfulChange(baseline, baseline));
+            Assert.False(HostJoystickIdentification.HasMeaningfulChange(
+                baseline,
+                new HostJoystickReading(
+                    "dualshock",
+                    [false, false],
+                    [HostJoystickHatPosition.Centered],
+                    [0.51, 0.49, 0.0, 0.0])));
+        }
+
+        [Fact]
+        public void Identification_DetectsButtonHatAndAxisChanges()
+        {
+            var baseline = new HostJoystickReading(
+                "pad",
+                [false],
+                [HostJoystickHatPosition.Centered],
+                [0.5]);
+
+            Assert.True(HostJoystickIdentification.HasMeaningfulChange(
+                baseline,
+                new HostJoystickReading("pad", [true], [HostJoystickHatPosition.Centered], [0.5])));
+            Assert.True(HostJoystickIdentification.HasMeaningfulChange(
+                baseline,
+                new HostJoystickReading("pad", [false], [HostJoystickHatPosition.Left], [0.5])));
+            Assert.True(HostJoystickIdentification.HasMeaningfulChange(
+                baseline,
+                new HostJoystickReading("pad", [false], [HostJoystickHatPosition.Centered], [0.75])));
+        }
+
+        [Fact]
+        public void Resolver_ReconnectsExplicitDeviceByPortableProfile()
+        {
+            var reconnected = new HostJoystickDevice(
+                "new-port-id",
+                "Controller",
+                2,
+                8,
+                1,
+                HardwareVendorId: 0x1111,
+                HardwareProductId: 0x2222);
+            var channel = new HostJoystickChannelSettings(
+                PreferredDeviceId: "old-port-id",
+                PreferredDeviceProfileId: reconnected.ProfileId);
+
+            HostJoystickDevice? resolved = HostJoystickDeviceResolver.Resolve(
+                channel,
+                [reconnected],
+                new HashSet<string>());
+
+            Assert.Same(reconnected, resolved);
+        }
+
+        [Fact]
+        public void Resolver_AutomaticKeepsPreviousThenClaimsNextDevice()
+        {
+            var first = new HostJoystickDevice("first", "Pad A", 2, 8, 1);
+            var second = new HostJoystickDevice("second", "Pad B", 2, 8, 1);
+            var claimed = new HashSet<string>(StringComparer.Ordinal);
+
+            HostJoystickDevice? controller1 = HostJoystickDeviceResolver.Resolve(
+                new HostJoystickChannelSettings(),
+                [second, first],
+                claimed,
+                previousAutomaticDeviceId: "first");
+            claimed.Add(controller1!.Id);
+            HostJoystickDevice? controller2 = HostJoystickDeviceResolver.Resolve(
+                new HostJoystickChannelSettings(),
+                [second, first],
+                claimed);
+
+            Assert.Same(first, controller1);
+            Assert.Same(second, controller2);
+        }
+
+        [Fact]
         public void SettingsStore_RoundTripsAndRecoversFromInvalidJson()
         {
             string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
@@ -117,6 +255,37 @@ namespace Derby.Tests
 
                 File.WriteAllText(path, "not json");
                 Assert.Equal(new HostJoystickSettings(), store.Load());
+            }
+            finally
+            {
+                if (Directory.Exists(folder))
+                    Directory.Delete(folder, true);
+            }
+        }
+
+        [Fact]
+        public void SettingsStore_RoundTripsDeviceProfiles()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            string path = Path.Combine(folder, "joystick.json");
+            try
+            {
+                const string profileId = "1234:5678:2:8:1";
+                var settings = new HostJoystickSettings(
+                    PreferredDeviceId: "port-a",
+                    PreferredDeviceProfileId: profileId,
+                    DeviceProfiles: new Dictionary<string, HostJoystickDeviceProfile>
+                    {
+                        [profileId] = new(profileId, new HostJoystickMapping(1, 0, -1, 3, 0.4))
+                    });
+
+                var store = new JoystickSettingsStore(path);
+                store.Save(settings);
+                HostJoystickSettings loaded = store.Load();
+
+                Assert.Equal(profileId, loaded.PreferredDeviceProfileId);
+                HostJoystickDeviceProfile profile = Assert.Single(loaded.DeviceProfiles!).Value;
+                Assert.Equal(new HostJoystickMapping(1, 0, -1, 3, 0.4), profile.EffectiveMapping);
             }
             finally
             {
@@ -202,6 +371,52 @@ namespace Derby.Tests
                     Assert.Equal(SpectrumJoystickInterface.SinclairKeys1To5, form.Controller1Settings.EffectiveInterface);
                     Assert.Equal("stable-pad-id", form.Controller1Settings.PreferredDeviceId);
                     Assert.False(form.Controller2Settings.Enabled);
+                }
+                catch (Exception exception)
+                {
+                    failure = exception;
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            Assert.True(thread.Join(TimeSpan.FromSeconds(10)), "The joystick configuration test timed out.");
+            if (failure != null)
+                throw new Xunit.Sdk.XunitException(failure.ToString());
+        }
+
+        [Fact]
+        public void ConfigurationForm_LoadsMappingFromDeviceProfile()
+        {
+            Exception? failure = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    var expected = new HostJoystickMapping(2, 3, -1, 5, 0.45);
+                    var device = new HostJoystickDevice(
+                        "new-port-id",
+                        "HID-compliant game controller",
+                        4,
+                        8,
+                        1,
+                        HardwareVendorId: 0x1234,
+                        HardwareProductId: 0x5678);
+                    var profiles = new Dictionary<string, HostJoystickDeviceProfile>
+                    {
+                        [device.ProfileId] = new(device.ProfileId, expected)
+                    };
+                    using var form = new JoystickConfigurationForm(
+                        new HostJoystickChannelSettings(
+                            PreferredDeviceId: "old-port-id",
+                            PreferredDeviceProfileId: device.ProfileId),
+                        new HostJoystickChannelSettings(Enabled: false),
+                        [device],
+                        deviceProfiles: profiles);
+
+                    Assert.Equal("new-port-id", form.Controller1Settings.PreferredDeviceId);
+                    Assert.Equal(device.ProfileId, form.Controller1Settings.PreferredDeviceProfileId);
+                    Assert.Equal(expected, form.Controller1Settings.EffectiveMapping);
+                    Assert.Equal(expected, form.DeviceProfiles[device.ProfileId].EffectiveMapping);
                 }
                 catch (Exception exception)
                 {
