@@ -393,11 +393,43 @@ namespace Derby.Tests
                     "Requires128kTapeLoadModeForStandardTape",
                     BindingFlags.NonPublic | BindingFlags.Static)!;
 
+                var machine = new SpectrumMachine(tempFolder);
+                machine.Reset(SpectrumMachineModel.Spectrum128K);
                 bool use128kMode = (bool)requires128k.Invoke(
                     null,
-                    new object[] { new SpectrumMachine(tempFolder), blocks })!;
+                    new object[] { machine, blocks })!;
 
                 Assert.True(use128kMode);
+                Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
+                Assert.False(machine.PagingLocked);
+                Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
+            }
+            finally
+            {
+                Directory.Delete(tempFolder, true);
+            }
+        }
+
+        [Fact]
+        public void RomTrapStackRelocation_DoesNotMoveBasicStackBelowRamTopAdjacentLoad()
+        {
+            string tempFolder = CreateTempRoms();
+
+            try
+            {
+                var machine = new SpectrumMachine(tempFolder);
+                machine.Cpu.Regs.SP = 0x62C8;
+                machine.PokeMemory(23730, 0xD3);
+                machine.PokeMemory(23731, 0x62);
+                MethodInfo relocateStack = typeof(MountedTape).GetMethod(
+                    "RelocateActiveStackIfLoadWouldOverlap",
+                    BindingFlags.NonPublic | BindingFlags.Static)!;
+
+                relocateStack.Invoke(
+                    null,
+                    new object[] { machine, machine.Cpu, (ushort)0x62D4, (ushort)300 });
+
+                Assert.Equal((ushort)0x62C8, machine.Cpu.Regs.SP);
             }
             finally
             {

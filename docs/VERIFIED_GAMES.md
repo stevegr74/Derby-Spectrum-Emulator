@@ -29,7 +29,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Booze Up | `.tzx` | Interactive BASIC loading remains under real-ROM control, reaches the loaded program, and detects the terminal tape state correctly |
 | 🟢 | Cabal | `48k.tzx`, `128k.tzx` | Both editions reach the player-selection menu through real-ROM bootstrap; 48K stops at its first multiload marker, while 128K completes and ends the tape cleanly |
 | 🟢 | Captain America | `.tzx` | Protected loader completes; game runs |
-| 🔴 | Captain Blood | `.tap` | In both 48K and 128K modes the ROM loader consumes the first two records, then remains at the copyright screen without advancing to the next tape record |
+| 🟢 | Captain Blood | `.tap` | Verified in both 48K and 128K modes; the complete tape loads, transport ends automatically, and the game reaches its cockpit screen |
 | 🟠 | Castlevania (Spanish translation v1.1) | `.tap` | The 128K path consumes all 24 records and preserves the complete loading artwork, but does not enter the game; the 48K path does not complete and leaves a corrupted loading display |
 | 🟢 | Cauldron (original and Silverbird/Cyberlode 1.1 releases) | `.tzx` | Both releases reach their complete title/control screens; standard-speed custom flags below `0x80` retain the required long pilot tone |
 | 🟢 | Cauldron II (Erbe, original, and Silverbird/Cyberlode releases) | `.tzx` | All three releases reach the control-selection menu and remain stable; malformed accelerated expressions in the Cyberlode loader fall back before execution |

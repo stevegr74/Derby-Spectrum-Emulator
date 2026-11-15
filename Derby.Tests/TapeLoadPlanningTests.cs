@@ -638,6 +638,7 @@ namespace Derby.Tests
                 Assert.Equal("rom-driven.tap", machine.MountedTapeName);
                 Assert.Equal((ushort)10, ReadWord(machine, 23618));
                 Assert.Equal((byte)0, machine.PeekMemory(23620));
+                Assert.Equal((byte)0x10, machine.PeekMemory(23388));
                 MountedTape mountedTape = Assert.IsType<MountedTape>(machine.MountedTape);
                 Assert.Equal("Pause", GetPrivateField(mountedTape, "earPlaybackState").ToString());
                 Assert.Equal(3546900, (int)GetPrivateField(mountedTape, "earPulseLengthTStates"));
