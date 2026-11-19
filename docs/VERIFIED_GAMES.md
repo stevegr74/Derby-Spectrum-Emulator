@@ -205,9 +205,9 @@ that every level, control path, or hardware edge case has been tested.
 
 | Status | Title / release | Format | Verified checkpoint and notes |
 | :---: | --- | --- | --- |
-| ⚪ | Captain Blood (Exxos) | `.dsk` | Not yet tested; reserved for +3 disk validation |
-| ⚪ | Garfield | `.dsk` | Structurally valid sparse Extended CPC DSK container; reserved for +3 validation because DERBY does not yet implement the +3 disk controller or drive |
-| ⚪ | Into the Eagle's Nest (original release) | `.dsk` | Structurally valid sparse Extended CPC DSK container; reserved for +3 validation because DERBY does not yet implement the +3 disk controller or drive |
+| 🟢 | Captain Blood (Exxos) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
+| 🟢 | Garfield | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
+| 🟢 | Into the Eagle's Nest (original release) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 
 ## Replay Images
 

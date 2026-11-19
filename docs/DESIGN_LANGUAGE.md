@@ -10,8 +10,8 @@ This document is the visual and interaction specification for the Windows fronte
 
 Use `DERBY` in uppercase for the product mark, window identity, and prominent
 headings. Use `Derby` for namespaces, assemblies, executable names, paths, and
-ordinary prose. The full descriptive name is **DERBY - ZX Spectrum 48K / 128K / +2A
-Emulator**. The compact `D` mark uses only `Ink`, `Paper`, and the mint brand
+ordinary prose. The full descriptive name is **DERBY - ZX Spectrum Emulator**.
+The compact `D` mark uses only `Ink`, `Paper`, and the mint brand
 accent; do not add rainbow stripes, horse imagery, gradients, or unrelated
 nostalgia motifs.
 
@@ -204,6 +204,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 - Temporary action feedback, such as tape transport, may use a translucent near-black surface and matching outline where the stronger separation is useful.
 - Present diagnostic values in Consolas with one labelled value per line.
 - Anchor persistent status at the top-right and transport feedback at the top-left.
+- Show +3 disk access with a small transient mint `A:` badge at the bottom-left, separate from tape feedback.
 - Move or stack overlays when their bounds would collide; never allow status, tape, or Quick State feedback to obscure each other.
 - Keep overlays optional or temporary so the Spectrum display remains the primary content.
 

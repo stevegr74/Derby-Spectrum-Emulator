@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/stevegr74/Derby-Spectrum-Emulator/actions/workflows/ci.yml/badge.svg)](https://github.com/stevegr74/Derby-Spectrum-Emulator/actions/workflows/ci.yml)
 
-**DERBY - ZX Spectrum 48K / 128K / +2A Emulator**
+**DERBY - ZX Spectrum Emulator**
 
 A from-scratch ZX Spectrum emulator written in C# with no third-party runtime dependencies. The name honours Derby, the development codename used for Sinclair's Spectrum 128.
 
@@ -15,7 +15,8 @@ This project focuses on correctness, clean architecture, and incremental develop
 ## Features
 
 - Z80 CPU with passing ZEXDOC and ZEXALL instruction groups
-- Explicit 48K, 128K/grey +2, and +2A profiles with standard or `1FFD` special paging, keyboard matrix, interrupts, and a model-specific timing baseline
+- Explicit 48K, 128K/grey +2, +2A, and +3 profiles with standard or `1FFD` special paging, keyboard matrix, interrupts, and a model-specific timing baseline
+- Read-only +3 drive A: for standard and Extended CPC `.dsk` images, with native ROM loading
 - Beam-latched Spectrum display with INK, PAPER, BRIGHT, FLASH, timestamped borders, and fixed 1x/Scale2x/Scale3x modes
 - 48K beeper and AY-3-8912 tone, noise, envelope, and mixing through a clock-driven audio pipeline
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
@@ -51,7 +52,7 @@ For operation and controls, see the [User Guide](docs/USER_GUIDE.md). UI changes
 ## Current Status
 
 `master` is a stable, playable baseline for the original 48K, 128K, grey +2,
-and +2A.
++2A, and +3 with read-only disk support.
 It includes beam-aware video, clock-driven audio, resumable tape transport,
 snapshot and replay loading, USB joystick support, the eight-slot Quick State Manager, a bank-aware
 debugger, and a checksum-aware Poke Manager. ZEXDOC and ZEXALL pass in the
@@ -63,8 +64,8 @@ Manually tested titles, formats, and reached checkpoints are tracked in
 
 Current limitations and active work:
 
-- +3 disk hardware and disk-image loading are not yet implemented; +2A uses the
-  shared four-ROM firmware and paging hardware without claiming floppy support.
+- +3 disk support is read-only and limited to drive A:. Formatting, full
+  controller timing, and +3 Quick State are not supported. +2A has no drive.
 - Protected and custom tape compatibility continues to expand as new media is
   tested.
 - Broader timing-sensitive software and subjective title-by-title audio
@@ -111,7 +112,6 @@ Current limitations and active work:
 Active work remains deliberately incremental:
 
 - Continue structure-driven tape compatibility under Milestone 6.
-- Complete Milestone 26 with +3 disk-controller, drive, and media support.
 - Add the planned on-screen keyboard and mouse peripherals in Milestones 24 and 25.
 - Keep the verified-media matrix, focused regressions, and ZEXDOC/ZEXALL as
   compatibility gates throughout structural work.
@@ -203,12 +203,10 @@ Expected ROMs:
 - `plus3-3.rom`
 
 The right-click `F3 - Machine` submenu presents hardware and firmware together:
-the original 128K, original 48K, grey +2, and +2A are complete selectable
-machine profiles. Pressing `F3` resets and cycles through those four profiles in
-that order; the submenu selects one directly. DERBY does not expose custom ROM
-loading. The +2A profile provides four-ROM and special all-RAM paging; a full
-+3 profile remains deferred until the uPD765-compatible FDC and drive/media
-model exist.
+the original 128K, original 48K, grey +2, +2A, and +3 are selectable.
+Pressing `F3` resets and cycles in that order; the submenu selects one directly.
+DERBY does not expose custom ROM loading. The +2A and +3 share four-ROM and
+special all-RAM paging, but only the +3 exposes a disk controller.
 
 The bundled ROM images retain their Sinclair/Amstrad copyright. Amstrad have
 kindly given permission for redistribution for emulator use but retain that
@@ -223,11 +221,12 @@ that do not consume a function key.
 | --- | --- |
 | `F1` | Open the control reference; emulation pauses while it is open |
 | `F2` | Toggle compact mint top-right FPS, model, tape, and display diagnostics |
-| `F3` | Reset and cycle 128K, 48K, grey +2, and +2A machine profiles |
+| `F3` | Reset and cycle 128K, 48K, grey +2, +2A, and +3 machine profiles |
 | `F4` | Cycle fixed display size |
 | `F5` | Stop or resume the mounted tape without ejecting it |
 | `F6` | Open the debugger and disassembler, paused on an immutable machine capture |
-| `F7` | Open the paused eight-slot Quick State Manager |
+| `F7` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F8` | Insert, replace, or eject a read-only +3 disk |
 | `F9` | Load a 48K or 128K `.sna` snapshot |
 | `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
 | `F11` | Mount a `.tap` or `.tzx` tape image |
@@ -400,7 +399,7 @@ compatibility; completed milestones remain regression baselines.
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
 | 24 | Planned | Pop-up on-screen keyboard with selectable authentic 48K and 128K layouts |
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
-| 26 | In progress | Unified 48K/128K/grey +2/+2A profiles and genuine +2A paging complete; +3 disk hardware remains |
+| 26 | Complete | 48K/128K/grey +2/+2A/+3 profiles and verified read-only +3 drive A: |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
 | 28 | Planned | Advanced tape transport with pause/stop bookmarks, rewind, and manual seeking |
 
@@ -423,16 +422,19 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 - Preserve emulated mouse counters and peripheral state in Quick State and supported SZX snapshots while excluding transient host capture state
 - Add port-decoding, counter-wrap, scaling, button, capture/release, focus-loss, interrupt-ordering, save/restore, and peripheral-conflict tests plus acceptance checks with The Artist II
 
-### Milestone 26 - Machine Profiles And Later Spectrum Models In Progress
+### Milestone 26 - Machine Profiles And Read-Only +3 Disk Support
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
-- Unified hardware and firmware selection under `F3 - Machine`; plain `F3` cycles the four bundled profiles in menu order while the submenu selects one directly
-- Added verified original 48K, original 128K, grey +2, and +2A production ROM profiles, with no unsupported custom-ROM loading exposed by the frontend
+- Unified hardware and firmware selection under `F3 - Machine`; plain `F3` cycles the bundled profiles in menu order while the submenu selects one directly
+- Added original 48K, original 128K, grey +2, +2A, and +3 profiles without exposing custom-ROM loading
 - Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
 - Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
 - Added the +2A four-ROM map, normal ROM selection, every documented `1FFD` all-RAM configuration, revised `7FFD`/`1FFD` partial decoding, shared paging lock, physical-bank contention, machine-profile-aware Quick State restoration, diagnostics, and debugger capture
 - Fingerprints the complete bundled four-ROM set while deliberately keeping address-based tape traps disabled for +2A ROM internals
 - Validated the production +2A ROM through automated boot/display smoke coverage and a live startup/debugger acceptance pass
-- Defers the +3 machine claim until a uPD765-compatible FDC and drive/media model are implemented; the shared ROM and paging foundation is now present
+- The distinct +3 profile provides a read-only, polled uPD765 controller subset and standard/Extended CPC DSK media. Drive A: is driven by the native +3 ROM and games, not the host tape transport.
+- Use `F8 - Disk Drive` for Insert, Replace, and Eject. Disk swaps preserve the running machine; switching to +3 from another model requires confirmation. `F5`, `F11`, and `Shift+F11` remain tape-only.
+- Use the ROM's **Loader** to boot after inserting a disk. A small transient `A:` badge shows disk activity without adding a title-bar status.
+- Captain Blood (Exxos), Garfield, and Into the Eagle's Nest load through the native Loader and enter gameplay. Disk writes, formatting, additional drives, full controller fidelity, and +3 Quick State are outside this read-only scope.
 
 ### Milestone 28 - Advanced Tape Transport Planned
 - Remember positions at manual pauses and automatic pauses or stops, and show them as bookmarks for the mounted tape side

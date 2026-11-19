@@ -67,6 +67,9 @@ namespace Derby
 
         public QuickState CaptureQuickState()
         {
+            if (RomSet.HasPlus3DiskDrive)
+                throw new NotSupportedException("Quick State does not capture the +3 disk controller.");
+
             var state = new QuickState(DateTime.UtcNow, MachineModel, cpu.Regs.PC)
             {
                 CpuState = cpu.CaptureQuickState(),

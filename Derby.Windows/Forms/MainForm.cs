@@ -72,6 +72,7 @@ namespace Derby
         private SpectrumRomSet bundled48RomSet = null!;
         private SpectrumRomSet bundledPlus2RomSet = null!;
         private SpectrumRomSet bundledPlus2ARomSet = null!;
+        private SpectrumRomSet bundledPlus3RomSet = null!;
         private SpectrumRomSet selectedRomSet = null!;
         private readonly EmulationSession emulationSession;
         private SpectrumMachine machine
@@ -158,6 +159,7 @@ namespace Derby
             bundled48RomSet = SpectrumRomSet.Bundled48K(romFolder);
             bundledPlus2RomSet = SpectrumRomSet.BundledPlus2(romFolder);
             bundledPlus2ARomSet = SpectrumRomSet.BundledPlus2A(romFolder);
+            bundledPlus3RomSet = SpectrumRomSet.BundledPlus3(romFolder);
             selectedRomSet = bundled128RomSet;
             emulationSession = new EmulationSession(CreateConfiguredMachine(), CreateAudioPipeline());
             joystickSettings = joystickSettingsStore.Load();
@@ -229,6 +231,7 @@ namespace Derby
             displayContextMenu.Items.Add(quickStateManagerMenuItem);
 
             displayContextMenu.Items.Add(new ToolStripSeparator());
+            displayContextMenu.Items.Add("F8 - Disk Drive...", null, (_, _) => OpenDiskDrive());
             displayContextMenu.Items.Add("F9 - Load .sna Snapshot", null, (_, _) => LoadSnaSnapshotFromDialog());
             displayContextMenu.Items.Add("F10 - Load .z80/.szx Snapshot / Play .rzx", null, (_, _) => LoadSnapshotOrRecordingFromDialog());
             displayContextMenu.Items.Add("F11 - Mount .tap or .tzx Tape Image", null, (_, _) => MountTapFromDialog());
@@ -585,6 +588,8 @@ namespace Derby
 
         private string GetDebuggerMachineProfileName()
         {
+            if (SameRomSet(selectedRomSet, bundledPlus3RomSet))
+                return "+3";
             if (SameRomSet(selectedRomSet, bundled48RomSet))
                 return "48K";
             if (SameRomSet(selectedRomSet, bundledPlus2RomSet))
@@ -622,7 +627,8 @@ namespace Derby
                 bundled128RomSet,
                 bundled48RomSet,
                 bundledPlus2RomSet,
-                bundledPlus2ARomSet
+                bundledPlus2ARomSet,
+                bundledPlus3RomSet
             ];
             int current = Array.FindIndex(profiles, profile => SameRomSet(selectedRomSet, profile));
             ApplyRomSet(profiles[(current + 1) % profiles.Length]);
@@ -926,6 +932,8 @@ namespace Derby
             else
                 SpectrumRenderer.RenderScaledToBitmap(presentationBitmap, presentationFrameBuffer, layout.Scale);
             tapeTransportOverlay.Draw(presentationBitmap, layout.Scale, now);
+            if (snapshot.IsDiskAccessActive)
+                DrawDiskActivity(presentationBitmap, layout.Scale);
             DrawStatusOverlay(presentationBitmap, layout.Scale, now);
             quickStateFeedbackOverlay.Draw(
                 presentationBitmap,
@@ -1104,10 +1112,12 @@ namespace Derby
 
             TapeTransportState tapeState;
             bool markerStop;
+            bool plus3;
             lock (machineLock)
             {
                 tapeState = machine.TapeTransportState;
                 markerStop = machine.IsTapeStoppedAtMarker;
+                plus3 = machine.HasPlus3DiskDrive;
             }
 
             var data = new SpectrumStatusOverlayData(
@@ -1115,7 +1125,8 @@ namespace Derby
                 selectedMachineModel,
                 tapeState,
                 markerStop,
-                SpectrumDisplayModes.GetLayout(displayMode).Label);
+                SpectrumDisplayModes.GetLayout(displayMode).Label,
+                plus3 ? "+3" : null);
             SpectrumStatusOverlay.Draw(
                 bitmap,
                 scale,

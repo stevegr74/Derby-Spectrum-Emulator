@@ -7,7 +7,8 @@ namespace Derby
         SpectrumMachineModel MachineModel,
         TapeTransportState TapeState,
         bool TapeStoppedAtMarker,
-        string DisplayMode);
+        string DisplayMode,
+        string? ModelLabel = null);
 
     public readonly record struct SpectrumStatusOverlayMetrics(
         int Width,
@@ -23,7 +24,7 @@ namespace Derby
         public static string[] FormatLines(SpectrumStatusOverlayData data) =>
         [
             $"FPS: {data.FramesPerSecond}",
-            $"Model: {(data.MachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : "128K")}",
+            $"Model: {data.ModelLabel ?? (data.MachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : "128K")}",
             $"Tape: {FormatTapeState(data.TapeState, data.TapeStoppedAtMarker)}",
             $"Display: {data.DisplayMode}"
         ];
