@@ -36,7 +36,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Chase HQ (Portuguese, sides 1 and 2) | `.tzx` | Its noncanonical protected BASIC layout starts through the native ROM in both machine modes. The 48K multiloader reaches active Stage 1 gameplay and loads Stage 2 after a manual tape resume. For the complete 128K load, manually resume side 1 at its explicit stage markers, replace it with side 2 after side 1 ends, and let the two leading 16K bank records load; transport then stops automatically and the stable title/options screen is reached |
 | 🟢 | Cliff Hanger | `.tzx` | Loading reaches the control-selection menu and remains stable |
 | 🟢 | Cobra (Hit Squad and Ocean original releases) | `.tzx` | Both releases complete loading and reach the stable opening credit sequence |
-| 🟠 | Dan Dare (original and Ricochet releases) | `.tzx` | The original release reaches its stable high-score screen; the Ricochet release reports a complete load but remains on a black screen in both machine modes |
+| 🟢 | Dan Dare (original and Ricochet releases) | `.tzx` | Both releases stop tape playback and enter gameplay in 48K and 128K. Ricochet uses the native ROM tape loader in 128K, so it takes longer to load |
 | 🔴 | Dan Dare II: Mekon's Revenge | `.tzx` | Loading remains at a red-border, black-screen state and does not complete |
 | 🟢 | Donkey Kong (Erbe) | `.tzx` | Custom loader completes without corrupting the loading screen; game runs |
 | 🟢 | Donkey Kong (Ocean original, Alkatraz protection) | `.tzx` | Protected loading reaches the stable game/control menu |

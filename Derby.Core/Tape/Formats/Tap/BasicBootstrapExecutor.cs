@@ -1372,9 +1372,8 @@ namespace Derby.Tape
                     return false;
 
                 List<BasicLine> parsedLines = ParseLines(machine, programStart, programLength);
-                int startLineIndex = autoStartLine == 0
-                    ? 0
-                    : parsedLines.FindIndex(line => line.Number == autoStartLine);
+                // The ROM starts at the first line at or after the saved line number.
+                int startLineIndex = parsedLines.FindIndex(line => line.Number >= autoStartLine);
                 if (startLineIndex < 0)
                     return false;
 

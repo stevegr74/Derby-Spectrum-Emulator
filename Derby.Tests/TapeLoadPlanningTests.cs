@@ -9,6 +9,37 @@ namespace Derby.Tests
 {
     public partial class TapLoaderTests
     {
+        [Theory]
+        [InlineData(SpectrumMachineModel.Spectrum48K)]
+        [InlineData(SpectrumMachineModel.Spectrum128K)]
+        public void CreateExecutionPlan_UsesRomWhenNextBasicLineRequiresMountedLoad(SpectrumMachineModel model)
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] program = BuildBasicProgram(
+                    BuildBasicLine(10,
+                        Token(239), QuoteQuote(), Token(175), Colon(),
+                        Token(247), Token(192), Ascii("32768"), NumberMarker(32768)));
+                IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                    BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 1, (ushort)program.Length),
+                    BuildDataBlock(program),
+                    BuildHeaderBlock(3, "CODE", 1, 0x8000, 0),
+                    BuildDataBlock(new byte[] { 0xC9 })));
+                var machine = new SpectrumMachine(romFolder);
+                machine.Reset(model);
+
+                TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+
+                Assert.Equal(TapeLoadStrategy.RomBootstrapMounted, plan.Strategy);
+                Assert.Equal(TapeLoadPlanReason.UnsupportedStandardBootstrapControlFlow, plan.ReasonCode);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
         [Fact]
         public void CreateExecutionPlan_Classifies_Standard_CustomAndMounted_Tapes()
         {
