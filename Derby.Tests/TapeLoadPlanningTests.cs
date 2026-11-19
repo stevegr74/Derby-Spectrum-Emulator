@@ -10,6 +10,38 @@ namespace Derby.Tests
     public partial class TapLoaderTests
     {
         [Theory]
+        [InlineData(0x8000, TapeLoadStrategy.RomBootstrapMounted, TapeLoadPlanReason.TrailingCodeOverlapsBootstrapEntry)]
+        [InlineData(0x9000, TapeLoadStrategy.FullFakeLoad, TapeLoadPlanReason.StandardTapeFullyAccelerated)]
+        public void CreateExecutionPlan_DoesNotPreloadTrailingCodeOverBootstrapEntry(
+            int trailingAddress, TapeLoadStrategy expectedStrategy, TapeLoadPlanReason expectedReason)
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] program = BuildBasicProgram(BuildBasicLine(10,
+                    Token(239), QuoteQuote(), Token(175), Colon(),
+                    Token(249), Token(192), Ascii("32768"), NumberMarker(32768)));
+                IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                    BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                    BuildDataBlock(program),
+                    BuildHeaderBlock(3, "GAME", 1, 0x8000, 0),
+                    BuildDataBlock(new byte[] { 0xC9 }),
+                    BuildHeaderBlock(3, "EXTRA", 1, (ushort)trailingAddress, 0),
+                    BuildDataBlock(new byte[] { 0x00 })));
+                var machine = new SpectrumMachine(romFolder);
+
+                TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+
+                Assert.Equal(expectedStrategy, plan.Strategy);
+                Assert.Equal(expectedReason, plan.ReasonCode);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
+        [Theory]
         [InlineData(SpectrumMachineModel.Spectrum48K)]
         [InlineData(SpectrumMachineModel.Spectrum128K)]
         public void CreateExecutionPlan_UsesRomWhenNextBasicLineRequiresMountedLoad(SpectrumMachineModel model)

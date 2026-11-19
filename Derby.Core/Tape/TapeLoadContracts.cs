@@ -77,7 +77,8 @@ namespace Derby.Tape
         ProtectedBasicRequiresRom,
         MachineCodeHandoffRequiresRom,
         BasicBootstrapMounted,
-        NoSafeAccelerationPath
+        NoSafeAccelerationPath,
+        TrailingCodeOverlapsBootstrapEntry
     }
 
     public sealed class TapeLoadPlan

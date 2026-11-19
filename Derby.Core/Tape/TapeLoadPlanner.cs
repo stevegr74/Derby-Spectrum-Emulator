@@ -60,6 +60,14 @@ namespace Derby.Tape
                         "Standard tape contains a protected or chained loader stage that requires mounted LOAD semantics.");
                 }
 
+                if (TapLoader.HasTrailingCodeOverlappingBootstrapEntry(machine, blocks, use128kMode))
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.TrailingCodeOverlapsBootstrapEntry,
+                        "Preloading trailing CODE records would overwrite the BASIC loader's machine-code entry point.");
+                }
+
                 return new TapeLoadPlan(
                     TapeLoadStrategy.FullFakeLoad,
                     TapeLoadPlanReason.StandardTapeFullyAccelerated,

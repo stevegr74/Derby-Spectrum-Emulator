@@ -315,6 +315,54 @@ namespace Derby.Tape
             return sawProgram;
         }
 
+        internal static bool HasTrailingCodeOverlappingBootstrapEntry(
+            SpectrumMachine machine, IReadOnlyList<TapeBlock> blocks, bool use128kMode)
+        {
+            int index = 0;
+            while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                index++;
+
+            if (index + 1 >= blocks.Count || !IsStandardHeaderBlock(blocks[index]))
+                return false;
+
+            TapHeaderInfo header = ParseHeaderInfo(blocks[index]);
+            if (header.Type != ProgramType || header.AutoStartLine >= 32768 || blocks[index + 1].Payload == null)
+                return false;
+
+            int loadCount;
+            try
+            {
+                InitializeMachineForFakeTapeLoad(machine, use128kMode);
+                LoadBasicProgram(machine, header, blocks[index + 1].Payload!);
+                loadCount = ExecuteBootstrapBasicAutoStart(machine, BasicProgramStart,
+                    header.ProgramLength, header.AutoStartLine, ignoreLoadStatements: true).IgnoredLoadCount;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+
+            ushort entryPoint = machine.Cpu.Regs.PC;
+            if (loadCount == 0 || entryPoint < 0x4000)
+                return false;
+
+            index = SkipSatisfiedStandardLoads(blocks, index + 2, loadCount);
+            for (; index + 1 < blocks.Count; index++)
+            {
+                if (!IsStandardHeaderBlock(blocks[index]))
+                    continue;
+
+                TapHeaderInfo code = ParseHeaderInfo(blocks[index]);
+                int offset = (ushort)(entryPoint - code.StartAddress);
+                if (code.Type == CodeType && offset < (blocks[index + 1].Payload?.Length ?? 0))
+                    return true;
+
+                index++;
+            }
+
+            return false;
+        }
+
         internal static bool CanBootstrapBasicProgramAndMountRemaining(IReadOnlyList<TapeBlock> blocks)
         {
             if (blocks == null || blocks.Count < 2)

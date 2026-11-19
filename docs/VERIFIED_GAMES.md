@@ -59,7 +59,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Indiana Jones and the Temple of Doom (Kixx and US Gold original) | `.tzx` | Both releases reach the stop-tape prompt and advance to the complete quest-start screen; the US Gold release requires 48K mode |
 | 🟢 | Into the Eagle's Nest (original release) | `.tzx` | Loading reaches the valuables/control screen and automatically stops transport at the completed handoff |
 | 🟢 | Jack the Nipper (Kixx and original releases) | `.tzx` | Both releases reach their stable title/control screens |
-| 🟠 | Jack the Nipper II: In Coconut Capers (Kixx and original releases) | `.tzx` | The original release reaches its stable title/control menu; the Kixx release reports a complete load but remains blank in both machine modes |
+| 🟢 | Jack the Nipper II: In Coconut Capers (Kixx and original releases) | `.tzx` | Both releases reach the title menu and enter gameplay in 48K and 128K. Kixx leaves the extra graphics records on the mounted tape, which ends automatically after they play through |
 | 🟢 | Jack the Ripper (sides A and B) | `.tzx` | Both sides reach their distinct stable title/part screens |
 | 🟢 | Jet Set Willy II (original and Ricochet releases) | `.tzx` | The Ricochet release reaches active gameplay; the original reaches its copy-protection code-entry screen after the expected ENTER prompt |
 | 🟢 | Joe Blade | `.tzx` | Loading reaches the stable title/options screen |
