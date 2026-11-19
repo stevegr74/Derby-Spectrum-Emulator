@@ -131,13 +131,21 @@ namespace Derby.Tape
                 AwaitingPostResumeHandoff &&
                 programCounter >= 0x4000 &&
                 earSensitiveReadsThisFrame <= (ulong)activityReadsPerFrame;
+            // A BASIC USR may never return when the game hands control to a
+            // keyboard prompt. Hold the final record before its signal starts.
+            bool finalRecordKeyboardWait =
+                tape.IsInPrePlaybackPauseBeforeFinalRomBlock &&
+                lowRateHaltLoop &&
+                keyboardOnlyReadsThisFrame != 0 &&
+                earSensitiveReadsThisFrame == 0 &&
+                programCounter >= 0x4000;
             bool loaderHasRelinquishedTape =
                 ((LoaderActivityObserved &&
                   (sustainedKeyboardOnlyWait || lowRateHaltLoop) &&
                   (programCounter >= 0x4000 || isRecognizedRomWait)) ||
                  postResumeRamHandoff) &&
                 tape.IsActivelyDrivingEarLine &&
-                !hasPendingContinuation;
+                (!hasPendingContinuation || finalRecordKeyboardWait);
             if (!loaderHasRelinquishedTape)
             {
                 // Game loops often interleave keyboard polling with several frames of

@@ -191,7 +191,8 @@ namespace Derby.Tape
                             ShouldApplyStructuredBasicProgramLoadSideEffects(callerReturnAddress))
                         {
                             appliedStructuredBasicProgramSideEffects = true;
-                            RelocateActiveStackIfLoadWouldOverlap(machine, cpu, 23755, (ushort)block.Payload!.Length);
+                            RelocateActiveStackIfLoadWouldOverlap(
+                                machine, cpu, 23755, (ushort)block.Payload!.Length, machineCodeCaller: false);
                             TapLoader.LoadBasicProgram(machine, pendingHeaderInfo, block.Payload!, preserveInterpreterWorkspace: true);
                             if (TapLoader.ShouldReloadStructuredMountedBasicProgramWithoutPreservingInterpreterWorkspace(
                                 machine,
@@ -224,7 +225,8 @@ namespace Derby.Tape
                         }
                         else
                         {
-                            RelocateActiveStackIfLoadWouldOverlap(machine, cpu, destination, (ushort)block.Payload.Length);
+                            RelocateActiveStackIfLoadWouldOverlap(
+                                machine, cpu, destination, (ushort)block.Payload.Length, callerReturnAddress >= 0x4000);
                             for (int i = 0; i < block.Payload.Length; i++)
                                 machine.PokeMemory((ushort)(destination + i), block.Payload[i]);
                         }
@@ -295,13 +297,18 @@ namespace Derby.Tape
             SpectrumMachine machine,
             Z80Cpu cpu,
             ushort loadAddress,
-            ushort loadLength)
+            ushort loadLength,
+            bool machineCodeCaller)
         {
             if (loadLength == 0)
                 return;
 
             ushort stackStart = cpu.Regs.SP;
             int stackWindowSize = GetActiveStackWindowSize(machine, stackStart);
+            // Don't infer that a RAM caller's fixed stack extends into a
+            // switchable bank. Still account for a straddling return word.
+            if (machineCodeCaller && !machine.PagingLocked && stackStart < 0xC000)
+                stackWindowSize = Math.Max(2, Math.Min(stackWindowSize, 0xC000 - stackStart));
             uint loadStart = loadAddress;
             uint loadEndExclusive = (uint)loadAddress + loadLength;
             uint stackEndExclusive = (uint)stackStart + (uint)stackWindowSize;
