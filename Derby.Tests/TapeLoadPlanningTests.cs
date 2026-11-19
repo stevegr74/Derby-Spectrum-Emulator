@@ -9,6 +9,64 @@ namespace Derby.Tests
 {
     public partial class TapLoaderTests
     {
+        [Fact]
+        public void WorkspaceReplacingLoad_UsesNative48BasicWithoutSwitching128kModel()
+        {
+            string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
+            var machine = new SpectrumMachine(romFolder);
+            machine.Reset(SpectrumMachineModel.Spectrum128K);
+            byte[] program = BuildBasicProgram(BuildBasicLine(10,
+                Token(239), QuoteQuote(), Token(175), Ascii("23552"), NumberMarker(23552)));
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program),
+                BuildHeaderBlock(3, "CODE", 1, 0x8000, 0),
+                BuildDataBlock(new byte[] { 0xC9 })));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            TapeExecutionResult result = TapLoader.ExecutePlan(machine, "workspace.tap", blocks, plan);
+
+            Assert.Equal(TapeLoadPlanReason.CodeLoadReplacesRomWorkspace, result.ReasonCode);
+            Assert.Equal(0, result.ConsumedBlockCount);
+            Assert.Equal(SpectrumMachineModel.Spectrum128K, machine.MachineModel);
+            Assert.Equal(SpectrumMachine.FrameTStates128, machine.FrameTStates);
+            Assert.Equal(1, machine.CurrentRomBank);
+            Assert.Equal(TapeTransportState.Playing, machine.TapeTransportState);
+        }
+
+        [Theory]
+        [InlineData(SpectrumMachineModel.Spectrum48K, 23552, TapeLoadPlanReason.CodeLoadReplacesRomWorkspace)]
+        [InlineData(SpectrumMachineModel.Spectrum128K, 23552, TapeLoadPlanReason.CodeLoadReplacesRomWorkspace)]
+        [InlineData(SpectrumMachineModel.Spectrum48K, 32768, TapeLoadPlanReason.StandardTapeRequiresMountedSemantics)]
+        public void CreateExecutionPlan_UsesExactRomForCodeLoadsIntoLiveWorkspace(
+            SpectrumMachineModel model, int destination, TapeLoadPlanReason expectedReason)
+        {
+            string romFolder = CreateTempRoms();
+            try
+            {
+                byte[] program = BuildBasicProgram(BuildBasicLine(10,
+                    Token(239), QuoteQuote(), Token(175), Ascii(destination.ToString()), NumberMarker(destination),
+                    Colon(), Token(249), Token(192), Ascii("32768"), NumberMarker(32768)));
+                IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                    BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                    BuildDataBlock(program),
+                    BuildHeaderBlock(3, "CODE", 1, 0x8000, 0),
+                    BuildDataBlock(new byte[] { 0xC9 })));
+                var machine = new SpectrumMachine(romFolder);
+                machine.Reset(model);
+
+                TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+
+                Assert.Equal(expectedReason, plan.ReasonCode);
+                Assert.Equal(destination == 23552 ? TapeLoadStrategy.RomBootstrapMounted : TapeLoadStrategy.BootstrapHybrid,
+                    plan.Strategy);
+            }
+            finally
+            {
+                Directory.Delete(romFolder, true);
+            }
+        }
+
         [Theory]
         [InlineData(0x8000, TapeLoadStrategy.RomBootstrapMounted, TapeLoadPlanReason.TrailingCodeOverlapsBootstrapEntry)]
         [InlineData(0x9000, TapeLoadStrategy.FullFakeLoad, TapeLoadPlanReason.StandardTapeFullyAccelerated)]

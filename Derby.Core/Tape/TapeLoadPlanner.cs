@@ -35,6 +35,14 @@ namespace Derby.Tape
 
             if (TapLoader.CanLoadAllStandardTapeBlocks(blocks))
             {
+                if (TapLoader.LeadingBasicLoadsCodeIntoRomWorkspace(blocks))
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.CodeLoadReplacesRomWorkspace,
+                        "BASIC loads CODE into the live ROM workspace, which requires native tape execution.");
+                }
+
                 bool use128kMode = TapLoader.Use128kTapeLoadMode(machine);
                 if (TapLoader.RequiresRomDrivenBootstrapForStandardTape(machine, blocks, use128kMode))
                 {

@@ -315,6 +315,21 @@ namespace Derby.Tape
             return sawProgram;
         }
 
+        internal static bool LeadingBasicLoadsCodeIntoRomWorkspace(IReadOnlyList<TapeBlock> blocks)
+        {
+            int index = 0;
+            while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                index++;
+
+            if (index + 1 >= blocks.Count || !IsStandardHeaderBlock(blocks[index]) ||
+                blocks[index + 1].Payload is not byte[] program)
+                return false;
+
+            TapHeaderInfo header = ParseHeaderInfo(blocks[index]);
+            return header.Type == ProgramType && header.AutoStartLine < 32768 &&
+                BasicBootstrapExecutor.HasExplicitCodeLoadIntoRomWorkspace(program, header.ProgramLength, header.AutoStartLine);
+        }
+
         internal static bool HasTrailingCodeOverlappingBootstrapEntry(
             SpectrumMachine machine, IReadOnlyList<TapeBlock> blocks, bool use128kMode)
         {

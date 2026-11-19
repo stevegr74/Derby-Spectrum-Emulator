@@ -88,7 +88,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Scuba Dive (Durell) | `.tzx` | Nonstandard leading tape structure mounts and loads correctly |
 | 🟢 | Skool Daze (Microsphere original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the active demonstration screen |
 | 🟢 | Space Harrier (Elite original and Encore) | `.tzx` | Both releases reach the start/control menu and remain stable |
-| 🔴 | Star Trek (Mikro-Gen original) | `.tzx` | Loading falls into a BASIC listing/edit screen and does not reach the game |
+| 🟢 | Star Trek (Mikro-Gen original) | `.tzx` | Loads through the native 48 BASIC tape path, stops tape playback automatically, and enters gameplay in both 48K and 128K |
 | 🟢 | Star Wars (Hit Squad) | `.tzx` | Loading reaches the complete X-Wing control menu and remains stable |
 | 🟢 | Star Wars (Domark original, sides 1 and 2) | `.tzx` | The explicit stop/key/resume sequence reaches the complete title screen from both sides; side 2 requires 48K mode |
 | 🟢 | Starglider (48K original) | `.tzx` | Loading reaches the in-game control menu and automatically stops at the handoff boundary |

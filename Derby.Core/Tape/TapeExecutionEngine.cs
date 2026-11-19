@@ -50,7 +50,8 @@ namespace Derby.Tape
                 {
                     bool requiresNativeRomLoader =
                         plan.ReasonCode is TapeLoadPlanReason.InconsistentStandardBasicPair or
-                            TapeLoadPlanReason.NonCanonicalBasicProgram;
+                            TapeLoadPlanReason.NonCanonicalBasicProgram or
+                            TapeLoadPlanReason.CodeLoadReplacesRomWorkspace;
                     bool requiresNative128Basic =
                         machine.MachineModel == SpectrumMachineModel.Spectrum128K &&
                         !ReferenceEquals(machine.RomProfile, SpectrumRomProfile.SyntheticTest) &&
@@ -64,7 +65,8 @@ namespace Derby.Tape
                             blocks,
                             nonRomTimingDivisor,
                             loadableTimingDivisor,
-                            initialEarLevelHigh)
+                            initialEarLevelHigh,
+                            use48Basic: plan.ReasonCode == TapeLoadPlanReason.CodeLoadReplacesRomWorkspace)
                         : requiresNative128Basic
                         ? TapLoader.StartNative128kRomTapeLoader(
                             machine,
