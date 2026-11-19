@@ -3,6 +3,7 @@ namespace Derby.Tape
     internal static class SpectrumRomWorkspace
     {
         internal const ushort BasicProgramStart = 23755;
+        internal const ushort SystemVariablePageStart = 0x5C00;
         internal const ushort DefaultStackPointer = 0xFF58;
         internal const ushort RomSystemVariablesBase = 0x5C3A;
         internal const ushort ErrorNumberSystemVariableAddress = RomSystemVariablesBase;

@@ -12,9 +12,12 @@ namespace Derby.Tape
             IReadOnlyList<TapeBlock> blocks,
             int nonRomTimingDivisor,
             int loadableTimingDivisor,
-            bool initialEarLevelHigh)
+            bool initialEarLevelHigh,
+            bool use48Basic = false)
         {
-            return machine.MachineModel == SpectrumMachineModel.Spectrum128K
+            bool use128kMode = Use128kTapeLoadMode(machine);
+            // Some tapes restore a 48 BASIC workspace without requiring 48K hardware.
+            return use128kMode && !use48Basic
                 ? StartNative128kRomTapeLoader(
                     machine,
                     displayName,
@@ -22,24 +25,26 @@ namespace Derby.Tape
                     nonRomTimingDivisor,
                     loadableTimingDivisor,
                     initialEarLevelHigh)
-                : StartNative48kRomTapeLoader(
+                : StartNative48BasicTapeLoader(
                     machine,
                     displayName,
                     blocks,
                     nonRomTimingDivisor,
                     loadableTimingDivisor,
-                    initialEarLevelHigh);
+                    initialEarLevelHigh,
+                    use128kMode);
         }
 
-        private static TapBootstrapResult StartNative48kRomTapeLoader(
+        private static TapBootstrapResult StartNative48BasicTapeLoader(
             SpectrumMachine machine,
             string displayName,
             IReadOnlyList<TapeBlock> blocks,
             int nonRomTimingDivisor,
             int loadableTimingDivisor,
-            bool initialEarLevelHigh)
+            bool initialEarLevelHigh,
+            bool use128kMode)
         {
-            InitializeMachineForRomDrivenTapeLoad(machine, use128kMode: false);
+            InitializeMachineForRomDrivenTapeLoad(machine, use128kMode);
 
             PressRomKey(machine, row: 6, bit: 3); // J: LOAD keyword in K mode.
             PressRomKeyChord(machine, (7, 1), (5, 0)); // Symbol Shift+P: quote.

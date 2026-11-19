@@ -1362,6 +1362,30 @@ namespace Derby.Tape
 
             private static bool IsAsciiLetterOrDigit(char c) => IsAsciiLetter(c) || IsAsciiDigit(c);
 
+            public static bool HasExplicitCodeLoadIntoRomWorkspace(byte[] program, ushort programLength, ushort autoStartLine)
+            {
+                List<BasicLine> lines = ParseLinesFromData(program, programLength);
+                int start = lines.FindIndex(line => line.Number >= autoStartLine);
+                if (start < 0)
+                    return false;
+
+                for (int i = start; i < lines.Count; i++)
+                {
+                    foreach (List<string> statement in lines[i].Statements)
+                    {
+                        if (statement.Count == 0 || statement[0] != "LOAD")
+                            continue;
+
+                        if (statement.Count >= 3 && statement[^2] == "CODE" &&
+                            int.TryParse(statement[^1], out int address) &&
+                            address is >= SystemVariablePageStart and < BasicProgramStart)
+                            return true;
+                    }
+                }
+
+                return false;
+            }
+
             public static bool RequiresMountedLoadSemantics(
                 SpectrumMachine machine,
                 ushort programStart,
