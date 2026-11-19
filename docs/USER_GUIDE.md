@@ -1,7 +1,7 @@
 # DERBY User Guide
 
 **Windows edition**  
-**Covers:** 48K, 128K, grey +2, and +2A operation, snapshots, tape images, Quick State, controllers, pokes, and debugging
+**Covers:** 48K, 128K, grey +2, +2A, and +3 operation, snapshots, tape and disk images, Quick State, controllers, pokes, and debugging
 
 ![DERBY at the 128K ROM menu](images/emulator-128k-basic.png)
 
@@ -28,7 +28,7 @@ This manual describes the emulator as it operates today. It begins with normal l
 ## Chapter 1 - Getting Started
 
 The emulator models original Spectrum 48K hardware, original 128K/grey +2
-hardware, and +2A four-ROM paging. The chosen model affects ROM behaviour,
+hardware, +2A/+3 four-ROM paging, and a read-only +3 disk drive. The chosen model affects ROM behaviour,
 memory, timing, sound, and how some games divide their tape content. Select the
 intended model before mounting a tape.
 
@@ -59,17 +59,16 @@ Right-click the display and open **F3 - Machine** to choose:
 - **ZX Spectrum 48K:** original 48K hardware and 1982 ROM.
 - **ZX Spectrum +2 (Grey):** original 128K-family hardware and grey +2 ROM pair.
 - **ZX Spectrum +2A:** the four-ROM +2A profile with normal and special all-RAM paging.
+- **ZX Spectrum +3:** shared four-ROM paging with a read-only disk drive A:.
 
-Pressing `F3` resets and cycles through 128K, 48K, +2 Grey, and +2A in menu
+Pressing `F3` resets and cycles through 128K, 48K, +2 Grey, +2A, and +3 in menu
 order. The submenu selects any profile directly. Changing profile clears the
-loaded media. Custom ROM loading is not exposed. +3 disk operation is not yet
-available because it additionally requires a disk controller, drive, and media
-model.
+loaded media. Custom ROM loading is not exposed.
 
 ### First Use
 
 1. Press `F1` to open the built-in control reference.
-2. Press `F9`, `F10`, or `F11` depending on the media type you want to load.
+2. Press `F8` for +3 disk images, `F9` or `F10` for snapshots or recordings, or `F11` for tapes.
 3. Use the PC keyboard as the Spectrum keyboard, or configure a USB controller from the right-click menu.
 4. Right-click the display whenever you prefer menus to function keys.
 
@@ -89,11 +88,12 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | --- | --- |
 | `F1` | Open or close Help; emulation pauses while Help is open |
 | `F2` | Show or hide the status overlay |
-| `F3` | Reset and cycle 128K, 48K, +2 Grey, and +2A machine profiles |
+| `F3` | Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles |
 | `F4` | Cycle 1x Native, 2x Enhanced, and 3x Enhanced display sizes |
 | `F5` | Stop or resume the mounted tape |
 | `F6` | Open or close the paused debugger and disassembler |
-| `F7` | Open the paused eight-slot Quick State Manager |
+| `F7` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F8` | Open the read-only +3 disk drive dialog |
 | `F9` | Load a `.sna` snapshot |
 | `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
 | `F11` | Mount a `.tap` or `.tzx` tape image |
@@ -252,6 +252,18 @@ The emulator also handles supported TZX pauses, stop markers, tape end, and dete
 3. If the game requests another tape side, press `Shift+F11` and select it.
 4. Press `F5` once to resume if the mounted tape did not start automatically.
 5. If the game immediately errors, do not repeatedly toggle transport; record the displayed error and media filename for diagnosis.
+
+### +3 Disk Images
+
+1. Press `F8` or choose **F8 - Disk Drive**, the first item in the right-click menu's media group.
+2. Choose **Insert** and select a `.dsk` image. If another model is selected, confirm the reset to +3.
+3. Close the dialog and press Enter on **Loader** in the Spectrum +3 menu.
+
+Drive A: is read-only. **Replace** and **Eject** work without resetting the +3.
+Use **Replace** if a running game asks for a different disk. The dialog pauses
+the emulator while open. Disks have no Play, Stop, Pause, or Rewind controls;
+the +3 reads them directly. A small on-screen `A:` badge indicates access.
+`F5`, `F11`, and `Shift+F11` still control tapes only.
 
 ## Chapter 7 - Quick State
 
@@ -465,7 +477,7 @@ The **Memory View** selector distinguishes:
 The four paging blocks show which ROM/RAM occupies `0000-3FFF`, `4000-7FFF`,
 `8000-BFFF`, and `C000-FFFF`. This includes +2A all-RAM configurations. The
 display-bank label identifies the RAM bank currently scanned by the ULA. The
-summary retains the selected 48K, 128K, grey +2, or +2A profile name. Selecting
+summary retains the selected 48K, 128K, grey +2, +2A, or +3 profile name. Selecting
 a physical ROM or RAM view highlights a paging block only when that bank is
 actually present in the captured logical map.
 
@@ -546,7 +558,7 @@ Press `F5` once. If loading fails immediately, capture the exact error rather th
 ## Appendix A - Current Limitations
 
 - SZX support currently targets exact 48K and original 128K machine state; peripheral-bearing snapshots and other Spectrum models are not yet supported.
-- +3 floppy-controller, drive, and disk-image support is not yet implemented; select +2A for the shared four-ROM and paging environment.
+- +3 emulates one read-only drive. Disk writes, formatting, and +3 Quick State are not supported.
 - An on-screen 48K/128K keyboard is planned but not implemented.
 - Kempston Mouse and AMX Mouse are planned but not implemented.
 - Broader protected/custom TZX compatibility remains ongoing.

@@ -224,7 +224,13 @@ if (args.Length > 0)
     try
     {
         string extension = Path.GetExtension(snapshotPath);
-        if (extension.Equals(".sna", StringComparison.OrdinalIgnoreCase))
+        if (extension.Equals(".dsk", StringComparison.OrdinalIgnoreCase))
+        {
+            machine = new SpectrumMachine(SpectrumRomSet.BundledPlus3(romFolder));
+            machine.InsertDisk(Derby.Disk.DskImage.Load(snapshotPath), Path.GetFileName(snapshotPath));
+            Console.WriteLine("Inserted read-only disk in +3 drive A:.");
+        }
+        else if (extension.Equals(".sna", StringComparison.OrdinalIgnoreCase))
         {
             if (forcedMachineModel.HasValue)
                 SnapshotLoader.Load(machine, snapshotPath, forcedMachineModel.Value);

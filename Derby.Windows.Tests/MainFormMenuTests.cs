@@ -36,6 +36,7 @@ namespace Derby.Tests
                             "F6 - Debugger / Disassembler",
                             "F7 - Quick State Manager...",
                             "---",
+                            "F8 - Disk Drive...",
                             "F9 - Load .sna Snapshot",
                             "F10 - Load .z80/.szx Snapshot / Play .rzx",
                             "F11 - Mount .tap or .tzx Tape Image",
@@ -52,7 +53,7 @@ namespace Derby.Tests
                         .OfType<ToolStripMenuItem>()
                         .Single(item => item.Text == "F3 - Machine");
                     Assert.Equal(
-                        ["ZX Spectrum 128K", "ZX Spectrum 48K", "ZX Spectrum +2 (Grey)", "ZX Spectrum +2A"],
+                        ["ZX Spectrum 128K", "ZX Spectrum 48K", "ZX Spectrum +2 (Grey)", "ZX Spectrum +2A", "ZX Spectrum +3"],
                         machineMenu.DropDownItems.Cast<ToolStripItem>()
                             .Select(item => item is ToolStripSeparator ? "---" : item.Text ?? string.Empty));
                     Assert.True(machineMenu.DropDownItems.OfType<ToolStripMenuItem>()
@@ -87,9 +88,10 @@ namespace Derby.Tests
                         "Sinclair ZX Spectrum 48K (bundled)",
                         "Sinclair ZX Spectrum +2 Grey (bundled)",
                         "Sinclair ZX Spectrum +2A (bundled)",
+                        "Sinclair ZX Spectrum +3 (bundled)",
                         "Sinclair ZX Spectrum 128K (bundled)"
                     ];
-                    string[] expectedDebuggerNames = ["48K", "+2", "+2A", "128K"];
+                    string[] expectedDebuggerNames = ["48K", "+2", "+2A", "+3", "128K"];
 
                     for (int index = 0; index < expected.Length; index++)
                     {
@@ -161,6 +163,7 @@ namespace Derby.Tests
         }
 
         [Theory]
+        [InlineData(Keys.F8)]
         [InlineData(Keys.F9)]
         [InlineData(Keys.F10)]
         [InlineData(Keys.F11)]

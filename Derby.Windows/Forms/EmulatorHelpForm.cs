@@ -12,7 +12,7 @@ namespace Derby
             [
                 ("F1", "Show or close this help window"),
                 ("F2", "Show or hide compact FPS, model, tape, and display diagnostics"),
-                ("F3", "Reset and cycle 128K, 48K, +2 Grey, and +2A machine profiles"),
+                ("F3", "Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles"),
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
                 ("F5", "Stop or resume tape; its state appears in the on-screen transport badge"),
                 ("F6", "Open or close the paused debugger and disassembler"),
@@ -21,6 +21,7 @@ namespace Derby
             ]),
             new("Loading and diagnostics",
             [
+                ("F8", "Insert, replace, or eject a read-only +3 disk. Use Loader in the +3 menu to start a disk game."),
                 ("F9", "Load a 48K or 128K .sna snapshot"),
                 ("F10", "Load a .z80 or .szx snapshot, or play an .rzx recording"),
                 ("F11", "Mount a .tap or .tzx tape image"),

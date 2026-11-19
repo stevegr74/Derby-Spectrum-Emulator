@@ -17,6 +17,7 @@ namespace Derby
         public string Name { get; }
         public SpectrumMachineModel Model { get; }
         public SpectrumMemoryPagingModel PagingModel { get; }
+        public bool HasPlus3DiskDrive { get; private init; }
         public IReadOnlyList<string> RomPaths { get; }
         public string Rom0Path => RomPaths[0];
         public string Rom1Path => RomPaths[1];
@@ -45,6 +46,13 @@ namespace Derby
                 Path.Combine(romFolder, "plus3-1.rom"),
                 Path.Combine(romFolder, "plus3-2.rom"),
                 Path.Combine(romFolder, "plus3-3.rom"));
+
+        public static SpectrumRomSet BundledPlus3(string romFolder)
+        {
+            SpectrumRomSet shared = BundledPlus2A(romFolder);
+            return new SpectrumRomSet("Sinclair ZX Spectrum +3 (bundled)", shared.Model, shared.PagingModel,
+                shared.RomPaths.ToArray()) { HasPlus3DiskDrive = true };
+        }
 
         public static SpectrumRomSet Create48K(string name, string romPath)
         {

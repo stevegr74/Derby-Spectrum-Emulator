@@ -6,6 +6,7 @@ namespace Derby
         private ToolStripMenuItem bundled48RomMenuItem = null!;
         private ToolStripMenuItem bundledPlus2RomMenuItem = null!;
         private ToolStripMenuItem bundledPlus2ARomMenuItem = null!;
+        private ToolStripMenuItem bundledPlus3RomMenuItem = null!;
 
         private void InitializeMachineMenu()
         {
@@ -30,6 +31,9 @@ namespace Derby
             machineMenuItem.DropDownItems.Add(bundled48RomMenuItem);
             machineMenuItem.DropDownItems.Add(bundledPlus2RomMenuItem);
             machineMenuItem.DropDownItems.Add(bundledPlus2ARomMenuItem);
+            bundledPlus3RomMenuItem = new ToolStripMenuItem(
+                "ZX Spectrum +3", null, (_, _) => ApplyRomSet(bundledPlus3RomSet));
+            machineMenuItem.DropDownItems.Add(bundledPlus3RomMenuItem);
             machineMenuItem.DropDownOpening += (_, _) => UpdateMachineMenu();
             UpdateMachineMenu();
         }
@@ -43,11 +47,13 @@ namespace Derby
             bundled48RomMenuItem.Checked = SameRomSet(selectedRomSet, bundled48RomSet);
             bundledPlus2RomMenuItem.Checked = SameRomSet(selectedRomSet, bundledPlus2RomSet);
             bundledPlus2ARomMenuItem.Checked = SameRomSet(selectedRomSet, bundledPlus2ARomSet);
+            bundledPlus3RomMenuItem.Checked = SameRomSet(selectedRomSet, bundledPlus3RomSet);
         }
 
         private static bool SameRomSet(SpectrumRomSet left, SpectrumRomSet right) =>
             left.Model == right.Model &&
             left.PagingModel == right.PagingModel &&
+            left.HasPlus3DiskDrive == right.HasPlus3DiskDrive &&
             left.RomPaths.Select(Path.GetFullPath).SequenceEqual(
                 right.RomPaths.Select(Path.GetFullPath),
                 StringComparer.OrdinalIgnoreCase);

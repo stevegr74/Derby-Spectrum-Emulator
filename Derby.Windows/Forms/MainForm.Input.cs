@@ -91,6 +91,14 @@ namespace Derby
                 return;
             }
 
+            if (IsPlainShortcut(e, Keys.F8))
+            {
+                OpenDiskDrive();
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                return;
+            }
+
             if (IsPlainShortcut(e, Keys.F9))
             {
                 LoadSnaSnapshotFromDialog();
@@ -155,7 +163,7 @@ namespace Derby
 
             if (IsPlainShortcut(e, Keys.F1) || IsPlainShortcut(e, Keys.F2) ||
                 IsPlainShortcut(e, Keys.F3) || IsPlainShortcut(e, Keys.F5) ||
-                IsPlainShortcut(e, Keys.F6) || IsPlainShortcut(e, Keys.F7))
+                IsPlainShortcut(e, Keys.F6) || IsPlainShortcut(e, Keys.F7) || IsPlainShortcut(e, Keys.F8))
             {
                 e.Handled = true;
                 e.SuppressKeyPress = true;

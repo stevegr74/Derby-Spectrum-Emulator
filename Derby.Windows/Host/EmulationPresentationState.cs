@@ -8,6 +8,7 @@ namespace Derby
         private BorderFrame? borderFrame;
         private UlaFrame? ulaFrame;
         private bool flashPhase;
+        private bool isDiskAccessActive;
         private bool hasValue;
 
         public bool HasValue
@@ -32,6 +33,7 @@ namespace Derby
                 borderFrame = machine.LastCompletedBorderFrame;
                 ulaFrame = machine.LastCompletedUlaFrame;
                 flashPhase = machine.FlashPhase;
+                isDiskAccessActive = machine.IsDiskAccessActive;
                 hasValue = true;
             }
         }
@@ -51,7 +53,8 @@ namespace Derby
                     borderColor,
                     borderFrame,
                     ulaFrame,
-                    flashPhase);
+                    flashPhase,
+                    isDiskAccessActive);
                 return true;
             }
         }
@@ -62,5 +65,6 @@ namespace Derby
         int BorderColor,
         BorderFrame? BorderFrame,
         UlaFrame? UlaFrame,
-        bool FlashPhase);
+        bool FlashPhase,
+        bool IsDiskAccessActive = false);
 }

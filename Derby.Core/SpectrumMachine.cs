@@ -264,6 +264,7 @@ namespace Derby
 
         public void Reset(SpectrumMachineModel model)
         {
+            diskController.Reset();
             MachineModel = model;
             ayHardwareEnabled = model == SpectrumMachineModel.Spectrum128K;
             PagedRamBank = 0;
@@ -1124,6 +1125,8 @@ namespace Derby
             byte value;
             if ((port & 0x0001) == 0)
                 value = ReadKeyboardEarPort(port, cpu.TStates);
+            else if (TryReadDiskPort(port, cpu.TStates, out byte diskValue))
+                value = diskValue;
             else if (IsKempstonJoystickPort(port))
                 value = (byte)GetJoystickState(SpectrumJoystickInterface.Kempston);
             else if (IsAyRegisterReadPort(port))
@@ -1167,7 +1170,11 @@ namespace Derby
             }
 
             byte value;
-            if (IsKempstonJoystickPort(port))
+            if (TryReadDiskPort(port, sampleTStates, out byte diskValue))
+            {
+                value = diskValue;
+            }
+            else if (IsKempstonJoystickPort(port))
             {
                 value = (byte)GetJoystickState(SpectrumJoystickInterface.Kempston);
             }
@@ -1597,8 +1604,16 @@ namespace Derby
 
             HandleAyPortWrite(port, value, writeTStates);
 
+            if (HasPlus3DiskDrive && (port & 0xF002) == 0x3000)
+            {
+                diskController.WriteData(value, writeTStates);
+                return;
+            }
+
             if (IsPlus3PagingPort(port))
             {
+                if (HasPlus3DiskDrive)
+                    diskController.MotorOn = (value & 0x08) != 0;
                 if (PagingLocked)
                     return;
 
