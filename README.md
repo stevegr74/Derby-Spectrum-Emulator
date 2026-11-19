@@ -402,6 +402,7 @@ compatibility; completed milestones remain regression baselines.
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
 | 26 | In progress | Unified 48K/128K/grey +2/+2A profiles and genuine +2A paging complete; +3 disk hardware remains |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
+| 28 | Planned | Advanced tape transport with pause/stop bookmarks, rewind, and manual seeking |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
@@ -432,6 +433,12 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 - Fingerprints the complete bundled four-ROM set while deliberately keeping address-based tape traps disabled for +2A ROM internals
 - Validated the production +2A ROM through automated boot/display smoke coverage and a live startup/debugger acceptance pass
 - Defers the +3 machine claim until a uPD765-compatible FDC and drive/media model are implemented; the shared ROM and paging foundation is now present
+
+### Milestone 28 - Advanced Tape Transport Planned
+- Remember positions at manual pauses and automatic pauses or stops, and show them as bookmarks for the mounted tape side
+- Allow rewinding to the start of the side, returning to a bookmark, or selecting a known block boundary while leaving the running game and machine state intact
+- Keep the tape stopped after repositioning until Play is pressed. Preserve exact pulse and EAR state when returning to a captured position; start at a valid playback boundary when seeking to a block
+- Validate with Impossamole, where levels can be selected out of order and may require a side change. The player chooses the side and position; the emulator does not guess which level was requested
 
 ---
 
