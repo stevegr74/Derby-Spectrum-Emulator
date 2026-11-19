@@ -427,9 +427,43 @@ namespace Derby.Tests
 
                 relocateStack.Invoke(
                     null,
-                    new object[] { machine, machine.Cpu, (ushort)0x62D4, (ushort)300 });
+                    new object[] { machine, machine.Cpu, (ushort)0x62D4, (ushort)300, false });
 
                 Assert.Equal((ushort)0x62C8, machine.Cpu.Regs.SP);
+            }
+            finally
+            {
+                Directory.Delete(tempFolder, true);
+            }
+        }
+
+        [Fact]
+        public void RomTrap_LoadIntoPagedRam_PreservesMachineCodeStackInFixedRam()
+        {
+            string tempFolder = CreateTempRoms();
+            try
+            {
+                var machine = new SpectrumMachine(tempFolder);
+                machine.ConfigureFor128kTapeLoad(borderColor: 0);
+                var tape = new MountedTape("bank-load", new[]
+                {
+                    TapeBlock.CreateData(BuildDataBlock(new byte[] { 0xAB }),
+                        2168, 3223, 667, 735, 855, 1710, 8, 1000)
+                });
+                machine.MountTape(tape);
+                machine.Cpu.Regs.PC = machine.RomProfile.LoadBytesTrapAddress;
+                machine.Cpu.Regs.SP = 0xBFFB;
+                machine.PokeMemory(0xBFFB, 0x00);
+                machine.PokeMemory(0xBFFC, 0x80);
+                machine.Cpu.Regs.IX = 0xC000;
+                machine.Cpu.Regs.DE = 1;
+                machine.Cpu.Regs.A = 0xFF;
+                machine.Cpu.Regs.F = 1;
+
+                Assert.True(machine.TryServiceTapeTrap());
+                Assert.Equal((ushort)0xBFFD, machine.Cpu.Regs.SP);
+                Assert.Equal((ushort)0x8000, machine.Cpu.Regs.PC);
+                Assert.Equal(0xAB, machine.PeekMemory(0xC000));
             }
             finally
             {

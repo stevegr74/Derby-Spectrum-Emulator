@@ -209,6 +209,39 @@ namespace Derby.Tests
             Assert.True(tape.IsPlaybackPaused);
         }
 
+        [Theory]
+        [InlineData(false, true, false, true)]
+        [InlineData(true, true, false, false)]
+        [InlineData(false, false, false, false)]
+        [InlineData(false, true, true, false)]
+        public void PendingContinuation_OnlyStopsAtFinalRecordKeyboardWait(
+            bool hasFollowingBlock, bool readsKeyboard, bool readsEar, bool shouldStop)
+        {
+            var tracker = new TapeActivityTracker();
+            tracker.ObserveLoaderActivity();
+            TapeBlock block = TapeBlock.CreateData(
+                new byte[] { 0xFF, 0x12, 0xED }, 2168, 3223, 667, 735, 855, 1710, 8, 1000);
+            var tape = new MountedTape("final-record.tap", hasFollowingBlock ? new[] { block, block } : new[] { block },
+                initialPrePlaybackPauseTStates: 1000);
+            tape.ReadEarBit(0);
+
+            for (int frame = 1; frame <= 3; frame++)
+            {
+                if (readsKeyboard)
+                    tracker.RecordPortRead(keyboardOnly: true);
+                if (readsEar)
+                    tracker.RecordPortRead(keyboardOnly: false);
+
+                Assert.Equal(shouldStop && frame == 3, tracker.TryAutomaticallyStop(
+                    tape, cpuIsHalted: true, programCounter: 0x8000, isRecognizedRomWait: false,
+                    hasPendingContinuation: true, currentTStates: (ulong)frame * 100,
+                    activityReadsPerFrame: 64, requiredHandoffFrames: 3));
+            }
+
+            Assert.Equal(shouldStop, tape.IsPlaybackPaused);
+            Assert.Equal(0, tape.CaptureQuickState().NextBlockIndex);
+        }
+
         [Fact]
         public void QuickState_RestoresAllActivityAndHandoffCounters()
         {

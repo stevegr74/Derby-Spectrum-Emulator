@@ -109,6 +109,13 @@ namespace Derby.Tape
         public string DisplayName { get; }
         public bool HasRemainingBlocks => nextBlockIndex < blocks.Count;
         public bool HasMoreBlocks => HasRemainingBlocks;
+        internal bool IsInPrePlaybackPauseBeforeFinalRomBlock =>
+            nextBlockIndex >= 0 && nextBlockIndex < blocks.Count &&
+            nextBlockIndex == blocks.Count - 1 &&
+            earPlaybackBlockIndex == nextBlockIndex &&
+            earPlaybackState == EarPlaybackState.Pause &&
+            earNextBlockIndexAfterPause == earPlaybackBlockIndex &&
+            blocks[nextBlockIndex].IsLoadableRomBlock;
         public bool IsAtMountedLoadUsrContinuationBoundary =>
             !playbackPaused &&
             !retainedByteStreamTrapAvailable &&
