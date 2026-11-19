@@ -105,7 +105,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | The Way of the Exploding Fist (Melbourne House original and Ricochet) | `.tzx` | Both releases complete their multi-file load and reach the animated title screen; explicit BASIC CODE destinations override conflicting header addresses |
 | 🟢 | Turbo Esprit (Durell original, side 2) | `.tzx` | ROM-driven loading and the explicit copyright prompts advance to the city-selection menu |
 | 🟢 | Turbo Out Run | `.tap` | Native ROM loading reaches the start/continue screen and automatically stops with the remaining multiload tape retained |
-| 🔴 | Universal Hero (Mastertronic original) | `.tzx` | Hybrid loading advances through its early stages but then remains on a blank grey display in both machine modes; the snapshot version works |
+| 🟢 | Universal Hero (Mastertronic original) | `.tzx` | Loads, stops tape playback automatically, and enters gameplay in both 48K and 128K. Raw loads that require real ROM behavior run through the tape signal |
 | 🟢 | Uridium and Uridium Plus (Hewson original) | `.tzx` | Both releases preserve their intentionally malformed BASIC headers under native ROM loading and reach the animated title sequence from 48K and 128K startup; Uridium auto-stops at its completed handoff and Uridium Plus ends cleanly |
 | 🟢 | V (Ocean original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the control-selection menu |
 | 🟢 | Virus (Firebird original) | `.tzx` | Mounted protected loading completes, ends the tape cleanly, and reaches the title/input prompt |
