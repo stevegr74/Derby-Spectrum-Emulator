@@ -140,7 +140,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 
 ![Complete emulator context menu](images/context-menu.png)
 
-*Figure 3. The context menu follows function-key order, uses separators to group related tasks, shows disabled commands in place, and places non-function-key tools last.*
+*Figure 3. The context menu follows function-key order, starts the media group with Disk Drive (F8), shows disabled commands in place, and places non-function-key tools last.*
 
 - Retain native Windows menu rendering and submenu arrows.
 - Put keyboard shortcuts at the start of the label where the current menu does so.

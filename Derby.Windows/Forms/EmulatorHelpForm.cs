@@ -16,8 +16,8 @@ namespace Derby
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
                 ("F5", "Stop or resume tape; its state appears in the on-screen transport badge"),
                 ("F6", "Open or close the paused debugger and disassembler"),
-                ("F7", "Open the paused eight-slot Quick State Manager to save, replace, or load a persistent state"),
-                ("Right-click", "Open the quick menu for joystick selection and the Poke Manager")
+                ("F7", "Open the paused eight-slot Quick State Manager (not available on +3)"),
+                ("Right-click", "Open the full emulator menu, including media, joystick settings, and the Poke Manager")
             ]),
             new("Loading and diagnostics",
             [
@@ -61,7 +61,7 @@ namespace Derby
             [
                 ("Controller 1 / 2", "Configure and monitor two independent host controllers"),
                 ("Off", "Disconnect that controller channel from the emulated machine"),
-                ("Automatic", "Use the first host controller not claimed by the other channel"),
+                ("Automatic", "Keep the current device, then prefer its profile or use an unclaimed device"),
                 ("Kempston", "Expose active-high directions and Fire through port 1FH"),
                 ("Cursor", "Map directions and Fire to keys 5, 8, 6, 7, and 0"),
                 ("Sinclair", "Sinclair 1 uses keys 1-5 (socket 2); Sinclair 2 uses keys 6-0 (socket 1)"),

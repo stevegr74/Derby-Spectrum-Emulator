@@ -1,6 +1,6 @@
 # ULA Timing Validation
 
-Milestone 16 is checked against the published diagnostic programs in the
+ULA timing is checked against the published diagnostic programs in the
 [ZX-M8XXX test collection](https://github.com/Bedazzle/ZX-M8XXX):
 
 - Patrik Rak's Timing Test 0.3, based on Jan Bobrowski's zxtests

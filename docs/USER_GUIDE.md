@@ -105,7 +105,7 @@ The context menu presents assigned function-key actions in order, followed by jo
 
 ![Complete right-click context menu](images/context-menu.png)
 
-*Figure 2.2. The complete menu mirrors the function-key order and keeps unavailable actions visible but disabled.*
+*Figure 2.2. Disk Drive (F8) starts the media group, followed by snapshot, replay, and tape commands. Unavailable actions remain visible but disabled.*
 
 ## Chapter 3 - Display And Status
 
@@ -121,7 +121,7 @@ The enhanced modes use pixel-art scaling rather than smoothing the image as an o
 
 ### Status Overlay
 
-Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, the active 48K/128K timing family, tape state, and display mode appear on separate right-aligned lines, moving below full tape feedback when necessary. The diagnostics can remain hidden during normal play.
+Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, model, tape state, and display mode appear on separate right-aligned lines, moving below full tape feedback when necessary. The model line shows `+3` for the +3 and the 48K/128K timing family for other profiles.
 
 ### Window Title
 
@@ -258,6 +258,10 @@ The emulator also handles supported TZX pauses, stop markers, tape end, and dete
 1. Press `F8` or choose **F8 - Disk Drive**, the first item in the right-click menu's media group.
 2. Choose **Insert** and select a `.dsk` image. If another model is selected, confirm the reset to +3.
 3. Close the dialog and press Enter on **Loader** in the Spectrum +3 menu.
+
+![Read-only +3 Disk Drive dialog with drive A: empty](images/plus3-disk-drive.png)
+
+*Figure 6.1. The drive dialog pauses emulation and shows whether a disk is inserted.*
 
 Drive A: is read-only. **Replace** and **Eject** work without resetting the +3.
 Use **Replace** if a running game asks for a different disk. The dialog pauses
@@ -432,7 +436,7 @@ The debugger includes:
 - Mapped 64K, every ROM bank in the selected profile, and all eight physical RAM banks.
 - Current paging map and active display bank.
 - Main and alternate registers.
-- Individual flags, interrupt state, HALT state, and T-states.
+- Individual flags, interrupt state, HALT state, the `WZ` latch, and T-states.
 - Four stack words and the instruction at `PC`.
 - Disassembly listing, targets, breakpoints, cross-references, and memory inspection.
 
@@ -475,7 +479,7 @@ The **Memory View** selector distinguishes:
 - Individual 16K RAM banks.
 
 The four paging blocks show which ROM/RAM occupies `0000-3FFF`, `4000-7FFF`,
-`8000-BFFF`, and `C000-FFFF`. This includes +2A all-RAM configurations. The
+`8000-BFFF`, and `C000-FFFF`. This includes +2A and +3 all-RAM configurations. The
 display-bank label identifies the RAM bank currently scanned by the ULA. The
 summary retains the selected 48K, 128K, grey +2, +2A, or +3 profile name. Selecting
 a physical ROM or RAM view highlights a paging block only when that bank is

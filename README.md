@@ -25,7 +25,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
 - Platform-neutral headless core with Windows presentation/audio adapters
 - Paused `F6` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
-- Paused `F7` Quick State Manager with eight persistent slots, clean thumbnails, metadata, and complete live-session machine/media restoration
+- Paused `F7` Quick State Manager with eight persistent slots, thumbnails, metadata, and live-session restoration for supported models (not +3)
 - Paused Poke Manager with an editable validated library, checksum-aware suggestions, mapped or physical-bank one-off writes, previews, and guarded restoration
 - Headless manual diagnostics and Z80 compliance runners
 
