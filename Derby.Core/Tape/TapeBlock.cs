@@ -77,6 +77,7 @@ namespace Derby.Tape
         public ushort PureTonePulseLength { get; }
         public ushort PureTonePulseCount { get; }
         public int[]? PulseSequence { get; }
+        internal bool RequiresExactPulseTiming { get; private init; }
         public byte[]? DirectRecordingSamples { get; }
         public ushort DirectRecordingSampleTStates { get; }
         public bool? SignalLevel { get; }
@@ -339,7 +340,10 @@ namespace Derby.Tape
                 null);
         }
 
-        public static TapeBlock CreatePulseSequence(int[] pulseSequence, ushort pauseAfterBlockMs = 0)
+        public static TapeBlock CreatePulseSequence(int[] pulseSequence, ushort pauseAfterBlockMs = 0) =>
+            CreatePulseSequence(pulseSequence, pauseAfterBlockMs, requiresExactPulseTiming: false);
+
+        internal static TapeBlock CreatePulseSequence(int[] pulseSequence, ushort pauseAfterBlockMs, bool requiresExactPulseTiming)
         {
             if (pulseSequence == null)
                 throw new ArgumentNullException(nameof(pulseSequence));
@@ -364,7 +368,7 @@ namespace Derby.Tape
                 (int[])pulseSequence.Clone(),
                 null,
                 0,
-                null);
+                null) { RequiresExactPulseTiming = requiresExactPulseTiming };
         }
 
         public static TapeBlock CreateDirectRecording(

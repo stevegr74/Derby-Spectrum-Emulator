@@ -196,6 +196,37 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void GeneralizedData_PreservesPulseTimingUnderProtectedPlaybackPolicy()
+        {
+            byte[] generalizedBlock =
+            {
+                0x19, 31, 0, 0, 0,
+                20, 0, 1, 0, 0, 0, 1, 1, 2, 0, 0, 0, 2, 2,
+                0, 0x78, 0x08, // Pilot symbol: one 2168-T-state pulse.
+                0, 2, 0, // Repeat the pilot symbol twice.
+                0, 0x2B, 0x02, 0x2B, 0x02, // Data symbol 0: two 555-T-state pulses.
+                0, 0x56, 0x04, 0x56, 0x04, // Data symbol 1: two 1110-T-state pulses.
+                0x40 // Symbols 0 and 1, most significant bit first.
+            };
+            var blocks = Tape.TzxLoader.ParseBlocks(BuildTzx(generalizedBlock));
+
+            Assert.Equal(4, blocks.Count);
+            Assert.All(blocks, block => Assert.True(block.RequiresExactPulseTiming));
+            Assert.Equal(new[] { 2168 }, blocks[0].PulseSequence);
+            Assert.Equal(new[] { 555, 555 }, blocks[2].PulseSequence);
+            Assert.Equal(new[] { 1110, 1110 }, blocks[3].PulseSequence);
+            int divisor = Tape.TapeExecutionEngine.GetProtectedLiveTapeTimingDivisor(
+                Tape.TapeLoadStrategy.RomBootstrapMounted, blocks);
+            var tape = new Tape.MountedTape("generalized.tzx", blocks, nonRomTimingDivisor: divisor);
+            tape.ReadEarBit(0);
+
+            Assert.Equal(1, divisor);
+            Assert.Equal(2168, tape.CaptureQuickState().EarPulseLengthTStates);
+            tape.ReadEarBit(2 * 2168);
+            Assert.Equal(555, tape.CaptureQuickState().EarPulseLengthTStates);
+        }
+
+        [Fact]
         public void ParseBlocks_Resolves_Jump_Loop_And_Call_Control_Flow()
         {
             byte[] dataA = BuildStandardSpeedDataBlock(new byte[] { 0x00, 0xAA, 0xAA }, pauseMs: 0);

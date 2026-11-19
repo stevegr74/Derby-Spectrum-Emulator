@@ -132,6 +132,12 @@ namespace Derby.Tape
             if (ContainsElectricallyDecodedProtectedStream(blocks))
                 return 1;
 
+            foreach (TapeBlock block in blocks)
+            {
+                if (block.RequiresExactPulseTiming)
+                    return 1;
+            }
+
             int protectedTimingDivisor = strategy == TapeLoadStrategy.LeadingStandardChainFakeLoad
                 ? ProtectedLiveChainTapeTimingDivisor
                 : ProtectedLiveTapeTimingDivisor;

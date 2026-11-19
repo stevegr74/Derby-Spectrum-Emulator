@@ -37,7 +37,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Cliff Hanger | `.tzx` | Loading reaches the control-selection menu and remains stable |
 | 🟢 | Cobra (Hit Squad and Ocean original releases) | `.tzx` | Both releases complete loading and reach the stable opening credit sequence |
 | 🟢 | Dan Dare (original and Ricochet releases) | `.tzx` | Both releases stop tape playback and enter gameplay in 48K and 128K. Ricochet uses the native ROM tape loader in 128K, so it takes longer to load |
-| 🔴 | Dan Dare II: Mekon's Revenge | `.tzx` | Loading remains at a red-border, black-screen state and does not complete |
+| 🟢 | Dan Dare II: Mekon's Revenge | `.tzx` | The generalized-pulse recording loads, stops tape playback automatically, and enters gameplay in both 48K and 128K |
 | 🟢 | Donkey Kong (Erbe) | `.tzx` | Custom loader completes without corrupting the loading screen; game runs |
 | 🟢 | Donkey Kong (Ocean original, Alkatraz protection) | `.tzx` | Protected loading reaches the stable game/control menu |
 | 🟢 | Dynamite Dan (original release) | `.tzx` | Loading reaches the stable control-selection menu |
