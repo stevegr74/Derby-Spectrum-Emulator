@@ -823,6 +823,43 @@ namespace Derby.Tests
             }
         }
 
+        [Theory]
+        [InlineData(128, 0x8000, false)]
+        [InlineData(384, 0x8000, false)]
+        [InlineData(256, 0x5B8D, false)]
+        [InlineData(256, 0x8000, true)]
+        public void RomTrap_OnlyAcceleratesRawLoadsItCanReproduce(int recordLength, int destination, bool accelerated)
+        {
+            string folder = CreateTempRoms();
+            try
+            {
+                var machine = new SpectrumMachine(folder);
+                var tape = new MountedTape("raw-rom-load", new[]
+                {
+                    TapeBlock.CreateData(BuildDataBlock(new byte[recordLength]),
+                        2168, 3223, 667, 735, 855, 1710, 8, 1000)
+                });
+                machine.MountTape(tape);
+                machine.Cpu.Regs.PC = machine.RomProfile.LoadBytesTrapAddress;
+                machine.Cpu.Regs.SP = 0x9000;
+                machine.PokeMemory(0x9000, 0x00);
+                machine.PokeMemory(0x9001, 0xA0);
+                machine.Cpu.Regs.IX = (ushort)destination;
+                machine.Cpu.Regs.DE = 256;
+                machine.Cpu.Regs.A = 0xFF;
+                machine.Cpu.Regs.F = 1;
+                machine.PokeMemory((ushort)destination, 0xAB);
+
+                Assert.Equal(accelerated, machine.TryServiceTapeTrap());
+                Assert.Equal(accelerated ? 1 : 0, tape.CaptureQuickState().NextBlockIndex);
+                Assert.Equal(accelerated ? 0 : 0xAB, machine.PeekMemory((ushort)destination));
+            }
+            finally
+            {
+                Directory.Delete(folder, true);
+            }
+        }
+
         [Fact]
         public void MountedTape_RomTrap_UnstructuredStandardBlock_ReturnsToDirectCaller()
         {

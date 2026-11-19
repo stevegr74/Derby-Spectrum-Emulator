@@ -163,6 +163,14 @@ namespace Derby.Tape
 
                 bool lengthMatches = block.Payload!.Length == expectedLength;
                 bool flagMatches = block.Flag == expectedFlag;
+                // Length mismatches can still write bytes before failure. A raw
+                // workspace replacement also needs the ROM's live load state.
+                bool overwritesRomWorkspace = destination <= SpectrumRomWorkspace.ErrorStackPointerAddress &&
+                    destination + block.Payload.Length > SpectrumRomWorkspace.ProgAddress + 1;
+                if (hasUnstructuredStandardRomLoadContext && flagMatches &&
+                    (!lengthMatches || (isLoad && overwritesRomWorkspace)))
+                    return false;
+
                 bool canUseEarlySyncTrap =
                     isSyncLoopTrap &&
                     lengthMatches &&
