@@ -765,7 +765,7 @@ namespace Derby.Tape
             if (startMode == 0x02 || startMode == 0x03)
                 blocks.Add(TapeBlock.CreateSetSignalLevel(startMode == 0x03));
 
-            blocks.Add(TapeBlock.CreatePulseSequence(pulses, pauseAfterBlockMs));
+            blocks.Add(TapeBlock.CreatePulseSequence(pulses, pauseAfterBlockMs, requiresExactPulseTiming: true));
         }
 
         private static int[] TrimTrailingZeroPulses(int[] pulses)
