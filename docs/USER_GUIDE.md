@@ -101,7 +101,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F12` | Write a machine diagnostic dump |
 | Right-click | Open the complete context menu |
 
-The context menu presents assigned function-key actions in order, followed by joystick options and the Poke Manager.
+The context menu presents assigned function-key actions in order, followed by the on-screen keyboard, joystick options, and the Poke Manager.
 
 ![Complete right-click context menu](images/context-menu.png)
 
@@ -150,6 +150,15 @@ The Windows frontend captures physical key messages before normal menu/control p
 - Arrow keys generate the Spectrum cursor-key chords.
 
 Shared Spectrum chords track each physical host key independently. Releasing one PC key will not incorrectly release a Spectrum modifier still owned by another held key.
+
+### On-Screen Keyboard
+
+Right-click the display and choose **On-Screen Keyboard...**. Use **48K rubber-key** or **128K** to change the key layout without changing the running machine. When the keyboard window has focus, **Page Up** selects 48K and **Page Down** selects 128K. The 128K layout has dedicated cursor, editing, and punctuation keys.
+
+- Click a key to tap it, or hold the mouse button to keep the key down. Releasing the button ends the press, even if the pointer has left the key.
+- Click **CAPS SHIFT** or **SYMBOL SHIFT** to arm it for the next key; click it again to cancel. To enter extended mode on the 48K layout, click both Shift keys in succession. The 128K layout also has a dedicated **EXTEND MODE** key.
+- The emulator keeps running while the keyboard is open. Physical Spectrum keys still work when the keyboard window has focus. Losing focus, closing the window, or switching layouts clears on-screen holds and armed modifiers.
+- The keyboard opens beside the display when there is room. You can move or resize it; DERBY remembers the layout and window placement. There is no separate function-key shortcut.
 
 ### Focus
 

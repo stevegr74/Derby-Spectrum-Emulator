@@ -3,9 +3,13 @@ using System.Windows.Forms;
 
 namespace Derby
 {
-    public sealed class SpectrumKeyInputBridge
+    public sealed class SpectrumKeyInputBridge : SpectrumKeyInputBridge<Keys>
     {
-        private readonly Dictionary<Keys, KeyState> keyStates = new();
+    }
+
+    public class SpectrumKeyInputBridge<TKey> where TKey : notnull
+    {
+        private readonly Dictionary<TKey, KeyState> keyStates = new();
 
         private sealed class KeyState
         {
@@ -17,12 +21,12 @@ namespace Derby
             public ulong ReleaseDeadlineTStates;
         }
 
-        public readonly record struct SpectrumKeyStateChange(Keys Key, bool Pressed);
+        public readonly record struct SpectrumKeyStateChange(TKey Key, bool Pressed);
 
         public void Reset() => keyStates.Clear();
 
         public IReadOnlyList<SpectrumKeyStateChange> RegisterKeyDown(
-            Keys key,
+            TKey key,
             int[] rows,
             Func<int, ulong> getRowScanCount,
             ulong currentTStates)
@@ -50,7 +54,7 @@ namespace Derby
         }
 
         public IReadOnlyList<SpectrumKeyStateChange> RegisterKeyUp(
-            Keys key,
+            TKey key,
             Func<int, ulong> getRowScanCount,
             ulong currentTStates,
             ulong maximumDeferredReleaseTStates)
@@ -81,7 +85,7 @@ namespace Derby
                 return Array.Empty<SpectrumKeyStateChange>();
 
             List<SpectrumKeyStateChange>? changes = null;
-            foreach ((Keys key, KeyState state) in keyStates.ToArray())
+            foreach ((TKey key, KeyState state) in keyStates.ToArray())
             {
                 if (!state.PendingRelease || state.PhysicalDown)
                     continue;
@@ -96,7 +100,7 @@ namespace Derby
             return changes ?? (IReadOnlyList<SpectrumKeyStateChange>)Array.Empty<SpectrumKeyStateChange>();
         }
 
-        public string DescribeKeyState(Keys key, Func<int, ulong> getRowScanCount)
+        public string DescribeKeyState(TKey key, Func<int, ulong> getRowScanCount)
         {
             if (!keyStates.TryGetValue(key, out KeyState? state))
                 return "state=(none)";
@@ -106,7 +110,7 @@ namespace Derby
             return $"state=logicalDown={state.LogicalDown} physicalDown={state.PhysicalDown} pendingRelease={state.PendingRelease} releaseDeadlineTStates={state.ReleaseDeadlineTStates} rows=[{rows}]";
         }
 
-        private IReadOnlyList<SpectrumKeyStateChange> Release(Keys key, KeyState state)
+        private IReadOnlyList<SpectrumKeyStateChange> Release(TKey key, KeyState state)
         {
             state.LogicalDown = false;
             state.PendingRelease = false;

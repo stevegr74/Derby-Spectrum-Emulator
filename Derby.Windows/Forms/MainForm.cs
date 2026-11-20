@@ -240,6 +240,7 @@ namespace Derby
             displayContextMenu.Items.Add(new ToolStripSeparator());
             displayContextMenu.Items.Add("F12 - Write Machine Diagnostic Dump", null, (_, _) => DumpMachineDebugState());
             displayContextMenu.Items.Add(new ToolStripSeparator());
+            displayContextMenu.Items.Add("On-Screen Keyboard...", null, (_, _) => OpenOnScreenKeyboard());
             InitializeJoystickMenu();
             displayContextMenu.Items.Add(joystickMenuItem);
             pokeManagerMenuItem.Click += (_, _) => OpenPokeManager();
@@ -1188,6 +1189,7 @@ namespace Derby
         {
             if (disposing)
             {
+                onScreenKeyboard?.Close();
                 if (keyboardMessageFilter != null)
                 {
                     Application.RemoveMessageFilter(keyboardMessageFilter);
@@ -1218,6 +1220,7 @@ namespace Derby
             base.Dispose(disposing);
         }
 
-        private readonly record struct SpectrumHostKeyEvent(Keys Key, bool IsDown, bool Reset = false);
+        private readonly record struct SpectrumHostKeyEvent(
+            Keys Key, bool IsDown, bool Reset = false, OnScreenKeyStroke? Stroke = null, bool CancelOnScreen = false);
     }
 }

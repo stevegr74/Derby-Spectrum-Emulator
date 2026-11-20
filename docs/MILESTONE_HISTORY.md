@@ -110,6 +110,13 @@ status table in the main README remains the authoritative roadmap summary.
 - Integrated SZX with F10, media identity, lifecycle cleanup, the manual harness,
   and focused parsing, restoration, rejection, and execution tests.
 
+## Milestone 24 - On-Screen Keyboard
+
+- Added a modeless right-click keyboard with selectable 48K rubber-key and 128K layouts. Page Up and Page Down select the layout without taking over Spectrum typing or adding a function-key binding.
+- Routed pointer holds, one-shot Shift chords, and the 128K editing keys through scan-aware matrix input, independently of physical key ownership. Extend Mode remains a momentary key handled by the emulated editor.
+- Persisted window placement and layout, and cleared on-screen holds on pointer capture loss, focus loss, layout change, or close.
+- Verified both layouts, dedicated 128K chords, hold/release, cancellation, placement, and shortcut routing. Checked minimum-size controls at desktop DPI and legend fit at 100%, 125%, 150%, and 200% scales.
+
 ## Milestone 27 - Eight-Slot Quick State Manager
 
 - Replaced separate save/load shortcuts with one paused F7 manager containing

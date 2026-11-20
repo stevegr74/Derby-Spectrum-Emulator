@@ -44,6 +44,7 @@ namespace Derby.Tests
                             "---",
                             "F12 - Write Machine Diagnostic Dump",
                             "---",
+                            "On-Screen Keyboard...",
                             "Joystick",
                             "Poke Manager..."
                         ],

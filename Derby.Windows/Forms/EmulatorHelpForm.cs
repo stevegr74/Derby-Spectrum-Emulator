@@ -54,6 +54,7 @@ namespace Derby
                 ("Enter / Space", "Map directly to the Spectrum keyboard"),
                 ("Shift", "Maps to Spectrum CAPS SHIFT"),
                 ("Ctrl / Alt", "Map to Spectrum SYMBOL SHIFT"),
+                ("On-Screen Keyboard", "Open from the right-click menu; choose the 48K or 128K layout"),
                 ("PC punctuation", "Maps common BASIC punctuation to Spectrum SYMBOL SHIFT chords"),
                 ("Arrow keys", "Provide cursor-style Spectrum input chords")
             ]),

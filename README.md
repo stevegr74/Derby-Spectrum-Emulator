@@ -22,6 +22,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
 - `.tap` and `.tzx` parsing, fast bootstrap, ROM-driven loading, protected/mounted playback, VERIFY, and multi-block sequencing
 - Manual/resumable tape transport with 48K stop-marker support and persistent status feedback
+- Modeless on-screen keyboard with selectable 48K rubber-key and 128K layouts, pointer holds, and Shift chords
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
 - Platform-neutral headless core with Windows presentation/audio adapters
 - Paused `F6` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
@@ -234,7 +235,7 @@ that do not consume a function key.
 | `F12` | Write a machine diagnostic dump |
 
 The right-click menu mirrors these actions and adds machine/display selection,
-two-controller joystick configuration, and the Poke Manager. The debugger,
+the 48K/128K on-screen keyboard, two-controller joystick configuration, and the Poke Manager. The debugger,
 Quick State Manager, and inspection dialogs pause through nested-safe leases.
 See the [User Guide](docs/USER_GUIDE.md) for complete operation, tape transport,
 controller mapping, persistent Quick State, poke, and debugger instructions.
@@ -397,21 +398,13 @@ compatibility; completed milestones remain regression baselines.
 | 21 | Complete | Accepted bank-aware Poke Manager with one-off writes, guarded restore, and an 82-game catalogue with 53 checksum-scoped entries |
 | 22 | Complete | Two-channel USB joystick input with selectable Kempston, Cursor, and Interface II mappings, per-device profiles, stable hardware matching, and live identification through a Windows-only host adapter and platform-neutral core state |
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
-| 24 | Planned | Pop-up on-screen keyboard with selectable authentic 48K and 128K layouts |
+| 24 | Complete | Modeless 48K/128K on-screen keyboard with scan-aware holds, Shift chords, and keyboard-accessible layout selection |
 | 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
 | 26 | Complete | 48K/128K/grey +2/+2A/+3 profiles and verified read-only +3 drive A: |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
 | 28 | Planned | Advanced tape transport with pause/stop bookmarks, rewind, and manual seeking |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
-
-### Milestone 24 - On-Screen Keyboard Planned
-- Add a discoverable non-modal pop-up keyboard through the normal menus and right-click context menu without consuming another function key
-- Provide selectable 48K rubber-key and 128K keyboard layouts with authentic legends and model-appropriate key placement
-- Route pointer presses through the existing scan-aware Spectrum keyboard bridge so physical and on-screen input share matrix, chord, ownership, and emulated-timing behavior
-- Support held keys, reliable release on pointer loss or window close, and Spectrum chord keys such as symbol-shift combinations without leaving matrix keys stuck
-- Keep the keyboard usable alongside the emulator at common desktop sizes, remember its position and selected layout, and avoid covering or resizing the emulated display
-- Add matrix-mapping, multi-key chord, hold/release lifecycle, model-switch, focus-loss, and frontend interaction tests
 
 ### Milestone 25 - Kempston And AMX Mouse Support Planned
 - Add explicit host-pointer capture only when requested, with click-to-capture, `Esc` release, focus-loss cleanup, and a clear on-screen capture indicator

@@ -2,6 +2,8 @@ namespace Derby
 {
     public partial class MainForm
     {
+        private OnScreenKeyboardForm? onScreenKeyboard;
+
         private void InitializeKeyboard()
         {
             KeyPreview = true;
@@ -13,15 +15,61 @@ namespace Derby
             screenBox.PreviewKeyDown += MainForm_PreviewKeyDown;
             Shown += (_, _) => screenBox.Focus();
             keyboardMessageFilter = new SpectrumKeyboardMessageFilter(
-                () => ContainsFocus && !displayContextMenu.Visible,
+                () => HasKeyboardInputFocus() && !displayContextMenu.Visible,
                 QueueSpectrumHostKeyEvent);
             Application.AddMessageFilter(keyboardMessageFilter);
         }
 
         private void MainForm_Deactivate(object? sender, EventArgs e)
         {
+            if (onScreenKeyboard is { IsDisposed: false } && IsHandleCreated && !Disposing)
+            {
+                // Wait for activation to settle when switching between the two windows.
+                BeginInvoke(ResetKeyboardInputIfUnfocused);
+                return;
+            }
             LogInputDiagnostic("deactivate", null, "clearing input state");
             QueueSpectrumHostInputReset();
+        }
+
+        private bool HasKeyboardInputFocus() => ContainsFocus || onScreenKeyboard?.ContainsFocus == true;
+
+        private void ResetKeyboardInputIfUnfocused()
+        {
+            if (IsDisposed || Disposing || HasKeyboardInputFocus())
+                return;
+            LogInputDiagnostic("deactivate", null, "clearing input state");
+            onScreenKeyboard?.ClearInput();
+            QueueSpectrumHostInputReset();
+        }
+
+        private void OpenOnScreenKeyboard()
+        {
+            if (onScreenKeyboard is { IsDisposed: false })
+            {
+                onScreenKeyboard.Activate();
+                return;
+            }
+
+            string path = OnScreenKeyboardSettings.DefaultPath;
+            OnScreenKeyboardSettings? saved = OnScreenKeyboardSettings.Load(path);
+            var layout = saved?.Layout ?? (selectedMachineModel == SpectrumMachineModel.Spectrum48K
+                ? OnScreenKeyboardLayout.Spectrum48K : OnScreenKeyboardLayout.Spectrum128K);
+            var keyboard = new OnScreenKeyboardForm(layout, QueueOnScreenKeyEvent, QueueOnScreenKeyCancellation);
+            onScreenKeyboard = keyboard;
+            keyboard.Bounds = OnScreenKeyboardSettings.Place(
+                saved?.Bounds, keyboard.Size, keyboard.MinimumSize, Bounds, Screen.FromControl(this).WorkingArea);
+            keyboard.Deactivate += (_, _) =>
+            {
+                if (IsHandleCreated && !Disposing)
+                    BeginInvoke(ResetKeyboardInputIfUnfocused);
+            };
+            keyboard.FormClosed += (_, _) =>
+            {
+                new OnScreenKeyboardSettings(keyboard.LayoutChoice, keyboard.Bounds).Save(path);
+                onScreenKeyboard = null;
+            };
+            keyboard.Show(this);
         }
 
         private void MainForm_PreviewKeyDown(object? sender, PreviewKeyDownEventArgs e)
@@ -233,6 +281,18 @@ namespace Derby
             }
         }
 
+        private void QueueOnScreenKeyEvent(OnScreenKeyStroke stroke, bool isDown)
+        {
+            lock (inputStateLock)
+                pendingSpectrumHostKeyEvents.Enqueue(new SpectrumHostKeyEvent(Keys.None, isDown, Stroke: stroke));
+        }
+
+        private void QueueOnScreenKeyCancellation()
+        {
+            lock (inputStateLock)
+                pendingSpectrumHostKeyEvents.Enqueue(new SpectrumHostKeyEvent(Keys.None, false, CancelOnScreen: true));
+        }
+
         private void SuppressSpectrumHostInputForMilliseconds(int milliseconds)
         {
             if (milliseconds <= 0)
@@ -244,6 +304,7 @@ namespace Derby
 
         private void ResetInputBridgeState()
         {
+            onScreenKeyboard?.ClearInput();
             lock (inputStateLock)
             {
                 pendingSpectrumHostKeyEvents.Clear();
@@ -271,6 +332,17 @@ namespace Derby
                     continue;
                 }
 
+                if (keyEvent.Value.CancelOnScreen)
+                {
+                    keyboardInputController.CancelOnScreenKeys(machine.SetKey);
+                    continue;
+                }
+                if (keyEvent.Value.Stroke is OnScreenKeyStroke stroke)
+                {
+                    keyboardInputController.HandleOnScreenKeyEvent(stroke, keyEvent.Value.IsDown,
+                        machine.GetKeyboardRowScanCount, inputEmulatedTStates, (ulong)machine.FrameTStates, machine.SetKey);
+                    continue;
+                }
                 UpdateSpectrumMappedKeyState(keyEvent.Value.Key, keyEvent.Value.IsDown);
             }
         }
