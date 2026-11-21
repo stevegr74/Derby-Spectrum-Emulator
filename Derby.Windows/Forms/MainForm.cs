@@ -240,13 +240,19 @@ namespace Derby
             displayContextMenu.Items.Add(new ToolStripSeparator());
             displayContextMenu.Items.Add("F12 - Write Machine Diagnostic Dump", null, (_, _) => DumpMachineDebugState());
             displayContextMenu.Items.Add(new ToolStripSeparator());
-            displayContextMenu.Items.Add("On-Screen Keyboard...", null, (_, _) => OpenOnScreenKeyboard());
+            displayContextMenu.Items.Add("Keyboard", null, (_, _) => OpenOnScreenKeyboard());
             InitializeJoystickMenu();
             displayContextMenu.Items.Add(joystickMenuItem);
+            displayContextMenu.Items.Add(CreateMouseMenu());
             pokeManagerMenuItem.Click += (_, _) => OpenPokeManager();
             displayContextMenu.Items.Add(pokeManagerMenuItem);
-            displayContextMenu.Opening += (_, _) =>
+            displayContextMenu.Opening += (_, e) =>
             {
+                if (mouseCaptured)
+                {
+                    e.Cancel = true;
+                    return;
+                }
                 UpdateTapeTransportMenuItem();
                 lock (machineLock)
                     replaceTapeMenuItem.Enabled = machine.HasMountedTape;
@@ -258,6 +264,7 @@ namespace Derby
 
         private void SelectDisplayMode(SpectrumDisplayMode mode)
         {
+            ReleaseSpectrumMouse();
             if (displayMode == mode)
             {
                 screenBox.Focus();
@@ -605,6 +612,7 @@ namespace Derby
             var configuredMachine = new SpectrumMachine(selectedRomSet);
             if (selectedMachineModel != configuredMachine.MachineModel)
                 configuredMachine.Reset(selectedMachineModel);
+            configuredMachine.SetMouseType(selectedMouseType);
             configuredMachine.SetScreenWriteDiagnosticsEnabled(LogFrameDiagnostics);
             if (LogUnimplementedOpcodes || LogPagingWrites)
             {
@@ -716,6 +724,7 @@ namespace Derby
                             while (tStatesBudget > 0)
                             {
                                 DrainPendingSpectrumHostKeyEvents();
+                                DrainSpectrumMouseInput(activeMachine);
                                 PollJoystick(activeMachine);
                                 bool executeWholeFrame = activeMachine.HasMountedTape && tStatesBudget >= activeMachine.FrameTStates;
                                 int executedSliceTStates;
@@ -855,6 +864,7 @@ namespace Derby
 
         private IDisposable AcquireEmulationPauseLease()
         {
+            ReleaseSpectrumMouse();
             Exception? failure = Volatile.Read(ref emulationLoopFailure);
             if (failure != null)
             {
@@ -882,6 +892,7 @@ namespace Derby
 
         private void ClearHostAndSpectrumInputState()
         {
+            ReleaseSpectrumMouse();
             ResetInputBridgeState();
             ResetJoystickInputBridgeState();
             lock (machineLock)
@@ -889,6 +900,7 @@ namespace Derby
                 inputEmulatedTStates = 0;
                 machine.ClearKeyboard();
                 machine.ClearJoystick();
+                machine.UpdateMouse(0, 0, SpectrumMouseButtons.None);
             }
         }
 
@@ -942,6 +954,8 @@ namespace Derby
                 now,
                 isStatusOverlayVisible,
                 tapeTransportOverlay.IsFullOverlayVisible(now));
+            if (mouseCaptured)
+                DrawMouseCaptureOverlay(presentationBitmap, layout.Scale);
             long renderEndTicks = frameClock.ElapsedTicks;
 
             screenBox.Image = presentationBitmap;
@@ -1189,6 +1203,7 @@ namespace Derby
         {
             if (disposing)
             {
+                ReleaseSpectrumMouse();
                 onScreenKeyboard?.Close();
                 if (keyboardMessageFilter != null)
                 {

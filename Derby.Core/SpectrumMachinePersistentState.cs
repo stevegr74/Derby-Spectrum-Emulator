@@ -6,7 +6,7 @@ namespace Derby
 {
     public sealed partial class SpectrumMachine
     {
-        private const int PersistentStateVersion = 1;
+        private const int PersistentStateVersion = 3;
         private static readonly byte[] PersistentStateMagic = Encoding.ASCII.GetBytes("DRBQST");
 
         public byte[] CapturePersistentState()
@@ -51,6 +51,12 @@ namespace Derby
             writer.Write(ayRegisters);
             for (int bank = 0; bank < state.RamBanks.Length; bank++)
                 writer.Write(state.RamBanks[bank]);
+            writer.Write(state.MouseState.Enabled);
+            writer.Write(state.MouseState.X);
+            writer.Write(state.MouseState.Y);
+            writer.Write((byte)state.MouseType);
+            WriteAmxChannel(writer, state.AmxState.X);
+            WriteAmxChannel(writer, state.AmxState.Y);
             writer.Flush();
             return stream.ToArray();
         }
@@ -66,6 +72,9 @@ namespace Derby
             state.RamBanks = restored.RamBanks;
             state.Model = restored.Model;
             state.AyHardwareEnabled = restored.AyHardwareEnabled;
+            state.MouseState = restored.MouseState;
+            state.MouseType = restored.MouseType;
+            state.AmxState = restored.AmxState;
             state.PagedRamBank = restored.PagedRamBank;
             state.CurrentRomBank = restored.CurrentRomBank;
             state.PagingLocked = restored.PagingLocked;
@@ -103,7 +112,7 @@ namespace Derby
                 if (!reader.ReadBytes(PersistentStateMagic.Length).SequenceEqual(PersistentStateMagic))
                     throw new InvalidDataException("The Quick State payload has an invalid signature.");
                 int version = reader.ReadInt32();
-                if (version != PersistentStateVersion)
+                if (version is < 1 or > PersistentStateVersion)
                     throw new NotSupportedException($"Quick State payload version {version} is not supported.");
 
                 var restored = new PersistentStateData
@@ -139,6 +148,19 @@ namespace Derby
                     AyRegisters = ReadExact(reader, 16),
                     RamBanks = Enumerable.Range(0, 8).Select(_ => ReadExact(reader, 16384)).ToArray()
                 };
+                if (version >= 2)
+                {
+                    restored.MouseState = new KempstonMouseState(
+                        reader.ReadBoolean(), reader.ReadByte(), reader.ReadByte(), SpectrumMouseButtons.None);
+                    restored.MouseType = restored.MouseState.Enabled ? SpectrumMouseType.Kempston : SpectrumMouseType.Off;
+                }
+                if (version >= 3)
+                {
+                    restored.MouseType = (SpectrumMouseType)reader.ReadByte();
+                    if (!Enum.IsDefined(restored.MouseType))
+                        throw new InvalidDataException("The Quick State mouse type is invalid.");
+                    restored.AmxState = new AmxMouse.State(ReadAmxChannel(reader), ReadAmxChannel(reader), SpectrumMouseButtons.None);
+                }
                 if (stream.Position != stream.Length)
                     throw new InvalidDataException("The Quick State payload contains unexpected trailing data.");
                 ValidatePersistentState(restored);
@@ -148,6 +170,27 @@ namespace Derby
             {
                 throw new InvalidDataException("The Quick State payload is truncated.", exception);
             }
+        }
+
+        private static void WriteAmxChannel(BinaryWriter writer, AmxMouse.Channel channel)
+        {
+            writer.Write(channel.Vector);
+            writer.Write(channel.Mode);
+            writer.Write(channel.InterruptEnabled);
+            writer.Write(channel.FollowupWords);
+            writer.Write((short)channel.Pending);
+            writer.Write(channel.Direction);
+            writer.Write(channel.InService);
+        }
+
+        private static AmxMouse.Channel ReadAmxChannel(BinaryReader reader)
+        {
+            var channel = new AmxMouse.Channel(reader.ReadByte(), reader.ReadByte(), reader.ReadBoolean(),
+                reader.ReadByte(), reader.ReadInt16(), reader.ReadByte(), reader.ReadBoolean());
+            if ((channel.Vector & 1) != 0 || channel.Mode > 3 || channel.FollowupWords > 1 ||
+                channel.Pending is < -256 or > 256 || channel.Direction > 1)
+                throw new InvalidDataException("The Quick State AMX mouse channel is invalid.");
+            return channel;
         }
 
         private static void ValidatePersistentState(PersistentStateData state)
@@ -206,6 +249,9 @@ namespace Derby
 
         private sealed class PersistentStateData
         {
+            public KempstonMouseState MouseState;
+            public SpectrumMouseType MouseType;
+            public AmxMouse.State AmxState;
             public Z80Cpu.QuickState CpuState = null!;
             public SpectrumMachineModel Model;
             public bool AyHardwareEnabled;

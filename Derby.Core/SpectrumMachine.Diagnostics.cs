@@ -95,6 +95,8 @@ namespace Derby
             sb.AppendLine("=== MACHINE STATE ===");
             sb.AppendLine($"Frame={FrameCount} Border={BorderColor} PagedRamBank={PagedRamBank} ScreenBank={ScreenBank} RomBank={CurrentRomBank} PagingModel={MemoryPagingModel} SpecialPaging={SpecialPagingEnabled} 7FFD={memoryPaging.Last7ffdValue:X2} 1FFD={memoryPaging.Last1ffdValue:X2} PagingLocked={PagingLocked}");
             sb.AppendLine($"RomProfile={RomProfile.Name} AddressTapeServices={(SupportsRomTapeAcceleration ? 1 : 0)}");
+            if (kempstonMouse.Enabled)
+                sb.AppendLine($"KempstonMouse X={kempstonMouse.X:X2} Y={kempstonMouse.Y:X2} Buttons={kempstonMouse.Buttons}");
             sb.AppendLine($"SpeakerHigh={speakerHigh} SpeakerEdge={SpeakerEdge} FlashPhase={FlashPhase} MountedTape={mountedTape?.DisplayName ?? "(none)"}");
             sb.AppendLine($"TapeTransport={TapeTransportState} Transition={LastTapeTransportTransition} MarkerStop={(IsTapeStoppedAtMarker ? 1 : 0)}");
             if (mountedTape != null)

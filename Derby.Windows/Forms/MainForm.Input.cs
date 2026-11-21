@@ -16,12 +16,14 @@ namespace Derby
             Shown += (_, _) => screenBox.Focus();
             keyboardMessageFilter = new SpectrumKeyboardMessageFilter(
                 () => HasKeyboardInputFocus() && !displayContextMenu.Visible,
-                QueueSpectrumHostKeyEvent);
+                QueueSpectrumHostKeyEvent, TryConsumeMouseEscape);
             Application.AddMessageFilter(keyboardMessageFilter);
         }
 
         private void MainForm_Deactivate(object? sender, EventArgs e)
         {
+            ReleaseSpectrumMouse();
+            consumedMouseEscape = false;
             if (onScreenKeyboard is { IsDisposed: false } && IsHandleCreated && !Disposing)
             {
                 // Wait for activation to settle when switching between the two windows.

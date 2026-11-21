@@ -101,7 +101,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F12` | Write a machine diagnostic dump |
 | Right-click | Open the complete context menu |
 
-The context menu presents assigned function-key actions in order, followed by the on-screen keyboard, joystick options, and the Poke Manager.
+The context menu presents assigned function-key actions in order, followed by Keyboard, Joystick, Mouse, and the Poke Manager.
 
 ![Complete right-click context menu](images/context-menu.png)
 
@@ -153,12 +153,20 @@ Shared Spectrum chords track each physical host key independently. Releasing one
 
 ### On-Screen Keyboard
 
-Right-click the display and choose **On-Screen Keyboard...**. Use **48K rubber-key** or **128K** to change the key layout without changing the running machine. When the keyboard window has focus, **Page Up** selects 48K and **Page Down** selects 128K. The 128K layout has dedicated cursor, editing, and punctuation keys.
+Right-click the display and choose **Keyboard**. Use **48K rubber-key** or **128K** to change the key layout without changing the running machine. When the keyboard window has focus, **Page Up** selects 48K and **Page Down** selects 128K. The 128K layout has dedicated cursor, editing, and punctuation keys.
 
 - Click a key to tap it, or hold the mouse button to keep the key down. Releasing the button ends the press, even if the pointer has left the key.
 - Click **CAPS SHIFT** or **SYMBOL SHIFT** to arm it for the next key; click it again to cancel. To enter extended mode on the 48K layout, click both Shift keys in succession. The 128K layout also has a dedicated **EXTEND MODE** key.
 - The emulator keeps running while the keyboard is open. Physical Spectrum keys still work when the keyboard window has focus. Losing focus, closing the window, or switching layouts clears on-screen holds and armed modifiers.
 - The keyboard opens beside the display when there is room. You can move or resize it; DERBY remembers the layout and window placement. There is no separate function-key shortcut.
+
+### Mouse
+
+The mouse starts **Off**. Right-click the display and choose **AMX Mouse** or **Kempston Mouse** from the **Mouse** submenu to match the software you are running. Click inside the display to capture the current Windows mouse; the capture click is not sent to the Spectrum. Press `Esc` to release the pointer. Losing focus or opening a dialog also releases it.
+
+AMX Mouse and the Kempston joystick share a hardware port. While AMX Mouse is selected, it takes over that port. Choose **Off** or **Kempston Mouse** to use the Kempston joystick again without reconfiguring it.
+
+Capture only routes the Windows pointer to the Spectrum interface. Software that remembers its own input mode may still be set to keyboard or joystick. In **The Artist II**, use `Q`, `S`, `I`, and `O` to move the program's pointer to **Extras**, then use `S` to highlight **KEMPS MOUSE** and `M` to select it. Capture the mouse after selecting the driver. The Artist II uses the right mouse button to select or draw and the left to deselect or erase.
 
 ### Focus
 
@@ -264,8 +272,8 @@ The emulator also handles supported TZX pauses, stop markers, tape end, and dete
 
 ### +3 Disk Images
 
-1. Press `F8` or choose **F8 - Disk Drive**, the first item in the right-click menu's media group.
-2. Choose **Insert** and select a `.dsk` image. If another model is selected, confirm the reset to +3.
+1. Press `F8` or choose **F8 - Disk Drive**, the first item in the right-click menu's media group. The dialog is available on every model and opening it does not reset the machine.
+2. Choose **Insert** and select a `.dsk` image. If another model is selected, DERBY asks before switching to +3 and resetting. Declining leaves the current model and session intact.
 3. Close the dialog and press Enter on **Loader** in the Spectrum +3 menu.
 
 ![Read-only +3 Disk Drive dialog with drive A: empty](images/plus3-disk-drive.png)
@@ -573,7 +581,7 @@ Press `F5` once. If loading fails immediately, capture the exact error rather th
 - SZX support currently targets exact 48K and original 128K machine state; peripheral-bearing snapshots and other Spectrum models are not yet supported.
 - +3 emulates one read-only drive. Disk writes, formatting, and +3 Quick State are not supported.
 - An on-screen 48K/128K keyboard is planned but not implemented.
-- Kempston Mouse and AMX Mouse are planned but not implemented.
+- SZX snapshots that carry mouse peripheral state are not supported. Quick State preserves emulated mouse state but does not recapture the Windows pointer.
 - Broader protected/custom TZX compatibility remains ongoing.
 - The Poke library uses one-time writes rather than frozen/conditional trainers.
 - Palette selection and CRT/composite-inspired presentation are planned; the current display uses the idealised digital palette.

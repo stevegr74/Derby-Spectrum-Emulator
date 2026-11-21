@@ -21,6 +21,9 @@ namespace Derby.Z80
         public Action<ushort, byte> WritePort { get; set; } = (_, _) => { };
         // IM 0 samples this byte during interrupt acknowledge; Spectrum hardware normally supplies 0xFF.
         public Func<byte> ReadInterruptDataBus { get; set; } = () => 0xFF;
+        internal Func<bool>? HasPeripheralInterrupt { get; set; }
+        internal Func<byte?>? AcknowledgePeripheralInterrupt { get; set; }
+        internal Action? ReturnPeripheralInterrupt { get; set; }
         public Action<string>? Trace { get; set; }
         public Func<Z80Cpu, bool>? BeforeInstruction { get; set; }
         // Diagnostic-only stop hook.  It is unset during normal emulation.
@@ -210,7 +213,8 @@ namespace Derby.Z80
                     break;
                 }
 
-                if (InterruptPending && IFF1 && !suppressInterruptsForNextInstruction)
+                if (IFF1 && !suppressInterruptsForNextInstruction &&
+                    (InterruptPending || HasPeripheralInterrupt?.Invoke() == true))
                 {
                     AcceptMaskableInterrupt();
                     continue;
@@ -244,7 +248,8 @@ namespace Derby.Z80
                     break;
                 }
 
-                if (InterruptPending && IFF1 && !suppressInterruptsForNextInstruction)
+                if (IFF1 && !suppressInterruptsForNextInstruction &&
+                    (InterruptPending || HasPeripheralInterrupt?.Invoke() == true))
                 {
                     AcceptMaskableInterrupt();
                     continue;
@@ -268,7 +273,9 @@ namespace Derby.Z80
             RecordInterruptEvent($"INT_ACCEPT return={returnPc:X4}", true);
             RecordInterruptEvent("INT_ACCEPT");
             LastInterruptProgressTStates = TStates;
-            InterruptPending = false;
+            byte? peripheralVector = AcknowledgePeripheralInterrupt?.Invoke();
+            if (!peripheralVector.HasValue)
+                InterruptPending = false;
             halted = false;
             qFlags = 0;
 
@@ -280,7 +287,7 @@ namespace Derby.Z80
             switch (interruptMode)
             {
                 case 0:
-                    AcceptInterruptMode0();
+                    AcceptInterruptMode0(peripheralVector ?? ReadInterruptDataBus());
                     break;
 
                 case 1:
@@ -294,7 +301,7 @@ namespace Derby.Z80
                 case 2:
                     TStates += 7;
                     Push(Regs.PC);
-                    ushort vector = (ushort)((Regs.I << 8) | 0xFF);
+                    ushort vector = (ushort)((Regs.I << 8) | (peripheralVector ?? 0xFF));
                     byte low = ReadMemory(vector);
                     TStates += 3;
                     byte high = ReadMemory((ushort)(vector + 1));
@@ -307,9 +314,8 @@ namespace Derby.Z80
 
         }
 
-        private void AcceptInterruptMode0()
+        private void AcceptInterruptMode0(byte opcode)
         {
-            byte opcode = ReadInterruptDataBus();
             flagsWrittenThisInstruction = false;
             instructionFetchOffsetTStates = 6;
 

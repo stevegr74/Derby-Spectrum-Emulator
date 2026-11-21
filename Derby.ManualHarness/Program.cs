@@ -37,6 +37,8 @@ if (args.Length > 0)
     ushort? preloadBreakProgramCounter = null;
     string executionMode = "frame";
     List<ScheduledKeyEvent> scheduledKeyEvents = new();
+    List<(int Frame, int X, int Y, SpectrumMouseButtons Buttons)> scheduledMouseEvents = new();
+    SpectrumMouseType? mouseType = null;
     List<ScheduledPcEvent> scheduledPcEvents = new();
     List<ScheduledRegisterEvent> scheduledRegisterEvents = new();
     List<ScheduledMemoryWriteEvent> scheduledMemoryWriteEvents = new();
@@ -124,6 +126,19 @@ if (args.Length > 0)
                 "128" or "128k" => SpectrumMachineModel.Spectrum128K,
                 _ => throw new InvalidOperationException($"Unsupported machine model '{arg}'.")
             };
+        }
+        else if (arg.Equals("mouse=amx", StringComparison.OrdinalIgnoreCase))
+        {
+            mouseType = SpectrumMouseType.Amx;
+        }
+        else if (arg.StartsWith("mouse=", StringComparison.OrdinalIgnoreCase))
+        {
+            string[] parts = arg["mouse=".Length..].Split(':');
+            if (parts.Length != 4 || !int.TryParse(parts[0], out int frame) || frame < 0 ||
+                !int.TryParse(parts[1], out int x) || !int.TryParse(parts[2], out int y) ||
+                !byte.TryParse(parts[3], out byte buttons) || buttons > 7)
+                throw new InvalidOperationException("Expected mouse=frame:dx:dy:buttons (bits: 1=right, 2=left, 4=middle).");
+            scheduledMouseEvents.Add((frame, x, y, (SpectrumMouseButtons)buttons));
         }
         else if (arg.StartsWith("pc=", StringComparison.OrdinalIgnoreCase))
         {
@@ -397,10 +412,19 @@ if (args.Length > 0)
     int maximumAudioDelta = 0;
     short? previousAudioSample = null;
     int iteration = 0;
+    machine.SetMouseType(mouseType ?? (scheduledMouseEvents.Count != 0 ? SpectrumMouseType.Kempston : SpectrumMouseType.Off));
     int lastReportedFrame = -1;
     bool? lastPendingMountedLoadContinuation = null;
     while (machine.FrameCount < frameLimit)
     {
+        foreach (var mouseEvent in scheduledMouseEvents)
+        {
+            if (mouseEvent.Frame != iteration)
+                continue;
+            machine.UpdateMouse(mouseEvent.X, mouseEvent.Y, mouseEvent.Buttons);
+            Console.WriteLine($"MOUSE frame={iteration} dx={mouseEvent.X} dy={mouseEvent.Y} buttons={mouseEvent.Buttons}");
+        }
+
         foreach (ScheduledKeyEvent keyEvent in scheduledKeyEvents)
         {
             if (keyEvent.Frame == iteration)

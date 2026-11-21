@@ -264,6 +264,8 @@ namespace Derby
 
         public void Reset(SpectrumMachineModel model)
         {
+            kempstonMouse = new KempstonMouseState(IsKempstonMouseEnabled, 0, 0, SpectrumMouseButtons.None);
+            amxMouse.Restore(default);
             diskController.Reset();
             MachineModel = model;
             ayHardwareEnabled = model == SpectrumMachineModel.Spectrum128K;
@@ -1127,6 +1129,8 @@ namespace Derby
                 value = ReadKeyboardEarPort(port, cpu.TStates);
             else if (TryReadDiskPort(port, cpu.TStates, out byte diskValue))
                 value = diskValue;
+            else if (TryReadMousePort(port, out byte mouseValue))
+                value = mouseValue;
             else if (IsKempstonJoystickPort(port))
                 value = (byte)GetJoystickState(SpectrumJoystickInterface.Kempston);
             else if (IsAyRegisterReadPort(port))
@@ -1173,6 +1177,10 @@ namespace Derby
             if (TryReadDiskPort(port, sampleTStates, out byte diskValue))
             {
                 value = diskValue;
+            }
+            else if (TryReadMousePort(port, out byte mouseValue))
+            {
+                value = mouseValue;
             }
             else if (IsKempstonJoystickPort(port))
             {
@@ -1581,6 +1589,9 @@ namespace Derby
             if (debugEventCaptureEnabled)
                 RecordPortEvent($"T={writeTStates,10} OUT {port:X4}={value:X2} PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4}");
             SpeakerEdge = false;
+
+            if (MouseType == SpectrumMouseType.Amx)
+                amxMouse.WriteControl(port, value);
 
             if ((port & 0x0001) == 0)
             {

@@ -11,11 +11,14 @@ namespace Derby
 
         private readonly Func<bool> shouldCapture;
         private readonly Action<Keys, bool> handleKey;
+        private readonly Func<Keys, bool, bool>? tryHandleHostShortcut;
 
-        public SpectrumKeyboardMessageFilter(Func<bool> shouldCapture, Action<Keys, bool> handleKey)
+        public SpectrumKeyboardMessageFilter(Func<bool> shouldCapture, Action<Keys, bool> handleKey,
+            Func<Keys, bool, bool>? tryHandleHostShortcut = null)
         {
             this.shouldCapture = shouldCapture;
             this.handleKey = handleKey;
+            this.tryHandleHostShortcut = tryHandleHostShortcut;
         }
 
         public bool PreFilterMessage(ref Message message)
@@ -33,6 +36,8 @@ namespace Derby
                 return false;
 
             Keys key = (Keys)((long)message.WParam & (long)Keys.KeyCode);
+            if (tryHandleHostShortcut?.Invoke(key, isDown.Value) == true)
+                return true;
             if (!SpectrumKeyboardMapping.IsMappedKey(key))
                 return false;
 

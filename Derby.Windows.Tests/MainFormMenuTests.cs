@@ -44,11 +44,22 @@ namespace Derby.Tests
                             "---",
                             "F12 - Write Machine Diagnostic Dump",
                             "---",
-                            "On-Screen Keyboard...",
+                            "Keyboard",
                             "Joystick",
+                            "Mouse",
                             "Poke Manager..."
                         ],
                         labels);
+
+                    var mouseMenu = menu.Items.OfType<ToolStripMenuItem>().Single(item => item.Text == "Mouse");
+                    var choices = mouseMenu.DropDownItems.OfType<ToolStripMenuItem>().ToArray();
+                    Assert.Equal(["Off", "AMX Mouse", "Kempston Mouse"], choices.Select(item => item.Text));
+                    Assert.True(choices[0].Checked);
+                    Assert.Equal(SpectrumMouseType.Off, form.MachineForTesting.MouseType);
+                    choices[1].PerformClick();
+                    Assert.Equal(SpectrumMouseType.Amx, form.MachineForTesting.MouseType);
+                    choices[2].PerformClick();
+                    Assert.Equal(SpectrumMouseType.Kempston, form.MachineForTesting.MouseType);
 
                     ToolStripMenuItem machineMenu = menu.Items
                         .OfType<ToolStripMenuItem>()

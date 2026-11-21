@@ -23,6 +23,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - `.tap` and `.tzx` parsing, fast bootstrap, ROM-driven loading, protected/mounted playback, VERIFY, and multi-block sequencing
 - Manual/resumable tape transport with 48K stop-marker support and persistent status feedback
 - Modeless on-screen keyboard with selectable 48K rubber-key and 128K layouts, pointer holds, and Shift chords
+- Optional Kempston or AMX Mouse with click-to-capture and Escape release
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
 - Platform-neutral headless core with Windows presentation/audio adapters
 - Paused `F6` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
@@ -55,7 +56,7 @@ For operation and controls, see the [User Guide](docs/USER_GUIDE.md). UI changes
 `master` is a stable, playable baseline for the original 48K, 128K, grey +2,
 +2A, and +3 with read-only disk support.
 It includes beam-aware video, clock-driven audio, resumable tape transport,
-snapshot and replay loading, USB joystick support, the eight-slot Quick State Manager, a bank-aware
+snapshot and replay loading, an on-screen keyboard, joystick and mouse support, the eight-slot Quick State Manager, a bank-aware
 debugger, and a checksum-aware Poke Manager. ZEXDOC and ZEXALL pass in the
 headless compliance runner, although no CPU suite proves every interaction with
 the surrounding hardware.
@@ -71,7 +72,8 @@ Current limitations and active work:
   tested.
 - Broader timing-sensitive software and subjective title-by-title audio
   comparison remain ongoing validation work.
-- The on-screen keyboard and host mouse peripherals remain planned roadmap items.
+- AMX Mouse port and interrupt behavior is covered by tests. Application-level
+  compatibility and SZX mouse-state support remain open.
 
 ### Implementation Notes
 
@@ -113,7 +115,7 @@ Current limitations and active work:
 Active work remains deliberately incremental:
 
 - Continue structure-driven tape compatibility under Milestone 6.
-- Add the planned on-screen keyboard and mouse peripherals in Milestones 24 and 25.
+- Continue software validation for the optional mouse peripherals under Milestone 25.
 - Keep the verified-media matrix, focused regressions, and ZEXDOC/ZEXALL as
   compatibility gates throughout structural work.
 
@@ -227,7 +229,7 @@ that do not consume a function key.
 | `F5` | Stop or resume the mounted tape without ejecting it |
 | `F6` | Open the debugger and disassembler, paused on an immutable machine capture |
 | `F7` | Open the paused eight-slot Quick State Manager (not available on +3) |
-| `F8` | Insert, replace, or eject a read-only +3 disk |
+| `F8` | Open the read-only disk drive; inserting from another model asks before switching to +3 and resetting |
 | `F9` | Load a 48K or 128K `.sna` snapshot |
 | `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
 | `F11` | Mount a `.tap` or `.tzx` tape image |
@@ -235,7 +237,7 @@ that do not consume a function key.
 | `F12` | Write a machine diagnostic dump |
 
 The right-click menu mirrors these actions and adds machine/display selection,
-the 48K/128K on-screen keyboard, two-controller joystick configuration, and the Poke Manager. The debugger,
+Keyboard, Joystick, Mouse, and the Poke Manager. The debugger,
 Quick State Manager, and inspection dialogs pause through nested-safe leases.
 See the [User Guide](docs/USER_GUIDE.md) for complete operation, tape transport,
 controller mapping, persistent Quick State, poke, and debugger instructions.
@@ -343,6 +345,10 @@ investigated; audio analysis reports generated frame/sample counts, nonzero samp
 peak, RMS, clipping, and maximum adjacent-sample delta. Game-specific probes are
 deliberately kept out of the harness.
 
+Schedule mouse input with repeatable `mouse=frame:dx:dy:buttons` arguments
+(right/up are positive; button bits are 1=right, 2=left, 4=middle). These events
+select Kempston Mouse unless `mouse=amx` is also supplied.
+
 The [ULA timing validation runbook](test-assets/ula/README.md) records how the
 48K/128K Timing Test and floating-bus diagnostics are run without redistributing
 their GPL-licensed media.
@@ -399,21 +405,20 @@ compatibility; completed milestones remain regression baselines.
 | 22 | Complete | Two-channel USB joystick input with selectable Kempston, Cursor, and Interface II mappings, per-device profiles, stable hardware matching, and live identification through a Windows-only host adapter and platform-neutral core state |
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
 | 24 | Complete | Modeless 48K/128K on-screen keyboard with scan-aware holds, Shift chords, and keyboard-accessible layout selection |
-| 25 | Planned | Host mouse capture through generic Kempston Mouse support followed by interrupt-driven AMX Mouse emulation |
+| 25 | In progress | Kempston and AMX Mouse with host pointer capture; software compatibility validation ongoing |
 | 26 | Complete | 48K/128K/grey +2/+2A/+3 profiles and verified read-only +3 drive A: |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
 | 28 | Planned | Advanced tape transport with pause/stop bookmarks, rewind, and manual seeking |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
-### Milestone 25 - Kempston And AMX Mouse Support Planned
-- Add explicit host-pointer capture only when requested, with click-to-capture, `Esc` release, focus-loss cleanup, and a clear on-screen capture indicator
-- Keep host pointer movement and buttons in the Windows adapter while the platform-neutral core owns emulated peripheral counters, buttons, ports, and interrupt state
-- Implement Kempston Mouse first through its wrapping X/Y counters and active-low button port, without conflating it with the existing Kempston joystick interface
-- Add AMX Mouse as a separate second phase with Z80 PIO data/control ports, movement-driven interrupts, button input, and tested interaction with normal Spectrum interrupts
-- Model real peripheral conflicts explicitly, including the AMX use of port `0x1F`, rather than allowing incompatible joystick and mouse interfaces to respond simultaneously
-- Preserve emulated mouse counters and peripheral state in Quick State and supported SZX snapshots while excluding transient host capture state
-- Add port-decoding, counter-wrap, scaling, button, capture/release, focus-loss, interrupt-ordering, save/restore, and peripheral-conflict tests plus acceptance checks with The Artist II
+### Milestone 25 - Kempston And AMX Mouse Support
+- Mouse emulation defaults to off and uses explicit click-to-capture, `Esc` release, focus-loss cleanup, and an on-screen capture indicator
+- The Windows adapter passes relative movement and buttons to the core, which owns the wrapping X/Y counters and active-low buttons on the standard Kempston Mouse ports
+- Kempston joystick reads remain independent of the mouse
+- AMX Mouse implements PIO input mode, movement-driven interrupts, and three buttons. While selected, AMX takes over port `0x1F` from the Kempston joystick without changing its configuration.
+- Quick State preserves the mouse type, Kempston counters, and AMX PIO state without recapturing the host pointer. SZX files with mouse state are not yet supported.
+- Automated tests cover ports, counter wrap, interrupt ordering, save/restore, and joystick conflicts.
 
 ### Milestone 26 - Machine Profiles And Read-Only +3 Disk Support
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 220" role="img" aria-labelledby="title desc">
-  <title>DERBY</title>
-  <desc>DERBY ZX Spectrum emulator wordmark</desc>
+  <title id="title">DERBY</title>
+  <desc id="desc">DERBY ZX Spectrum emulator wordmark</desc>
   <rect width="960" height="220" rx="24" fill="#1e2d31"/>
   <g fill="#f6f6f2" font-family="Consolas, monospace" font-weight="700">
     <text x="48" y="138" font-size="112" letter-spacing="12">DERBY</text>

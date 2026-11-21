@@ -15,6 +15,9 @@ namespace Derby
             internal ulong[] KeyboardRowScanCounts = null!;
             internal SpectrumMachineModel Model;
             internal bool AyHardwareEnabled;
+            internal KempstonMouseState MouseState;
+            internal SpectrumMouseType MouseType;
+            internal AmxMouse.State AmxState;
             internal int PagedRamBank;
             internal int CurrentRomBank;
             internal bool PagingLocked;
@@ -79,6 +82,9 @@ namespace Derby
                 KeyboardRowScanCounts = (ulong[])keyboardRowScanCounts.Clone(),
                 Model = MachineModel,
                 AyHardwareEnabled = ayHardwareEnabled,
+                MouseState = kempstonMouse,
+                MouseType = MouseType,
+                AmxState = amxMouse.Capture(),
                 PagedRamBank = PagedRamBank,
                 CurrentRomBank = CurrentRomBank,
                 PagingLocked = PagingLocked,
@@ -140,6 +146,9 @@ namespace Derby
 
             MachineModel = state.Model;
             ayHardwareEnabled = state.AyHardwareEnabled;
+            kempstonMouse = state.MouseState;
+            amxMouse.Restore(state.AmxState);
+            RestoreMouseType(state.MouseType);
             PagedRamBank = state.PagedRamBank;
             CurrentRomBank = state.CurrentRomBank;
             PagingLocked = state.PagingLocked;

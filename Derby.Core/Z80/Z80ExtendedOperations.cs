@@ -134,7 +134,11 @@ namespace Derby.Z80
             // Return / interrupt mode
             // =========================
             edOpcodeTable[0x45] = ReturnFromInterrupt; // RETN
-            edOpcodeTable[0x4D] = ReturnFromInterrupt; // RETI
+            edOpcodeTable[0x4D] = () =>
+            {
+                ReturnFromInterrupt();
+                ReturnPeripheralInterrupt?.Invoke();
+            }; // RETI
             edOpcodeTable[0x55] = ReturnFromInterrupt; // RETN aliases
             edOpcodeTable[0x5D] = ReturnFromInterrupt;
             edOpcodeTable[0x65] = ReturnFromInterrupt;

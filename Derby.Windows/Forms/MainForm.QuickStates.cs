@@ -76,6 +76,7 @@ namespace Derby
                 else
                     machine.RestorePersistentState(slot.PersistentState);
                 selectedMachineModel = machine.MachineModel;
+                selectedMouseType = machine.MouseType;
                 presentationState.Publish(machine);
             }
             ClearHostAndSpectrumInputState();
