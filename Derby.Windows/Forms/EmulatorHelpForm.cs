@@ -17,7 +17,7 @@ namespace Derby
                 ("F5", "Stop or resume tape; its state appears in the on-screen transport badge"),
                 ("F6", "Open or close the paused debugger and disassembler"),
                 ("F7", "Open the paused eight-slot Quick State Manager (not available on +3)"),
-                ("Right-click", "Open the full emulator menu, including media, joystick settings, and the Poke Manager")
+                ("Right-click", "Open the emulator menu, including Tape Transport")
             ]),
             new("Loading and diagnostics",
             [

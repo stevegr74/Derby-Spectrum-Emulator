@@ -195,10 +195,12 @@ namespace Derby.Tape
             block.Kind == TapeBlockKind.Data &&
             block.CanUseRomLoadTrap;
 
-        public void Reset()
+        public void Reset() => ResetAt(initialBlockIndex, initialPrePlaybackPauseTStates);
+
+        private void ResetAt(int blockIndex, int prePlaybackPauseTStates)
         {
-            nextBlockIndex = initialBlockIndex;
-            earPlaybackBlockIndex = initialBlockIndex;
+            nextBlockIndex = blockIndex;
+            earPlaybackBlockIndex = blockIndex;
             earStreamByteIndex = 0;
             earBitIndex = 0;
             earPulseRepeatCount = 0;
@@ -207,7 +209,7 @@ namespace Derby.Tape
             earPulseSequenceIndex = 0;
             earNextBlockIndexAfterPause = 0;
             earPauseLowTailTStates = 0;
-            pendingPrePlaybackPauseTStates = ScaleToPlaybackClock(initialPrePlaybackPauseTStates);
+            pendingPrePlaybackPauseTStates = ScaleToPlaybackClock(prePlaybackPauseTStates);
             romStreamTrapBlockIndex = -1;
             romStreamTrapByteIndex = 0;
             completedRomLoadableBlockIndex = -1;
@@ -225,17 +227,17 @@ namespace Derby.Tape
             pendingHeaderName = null;
             pendingHeaderInfo = null;
 
-            if (blocks.Count == 0 || initialBlockIndex >= blocks.Count)
+            if (blockIndex >= blocks.Count)
             {
                 state = TapeState.Idle;
                 return;
             }
 
-            int firstLoadableBlockIndex = FindNextLoadableBlockIndex(initialBlockIndex);
+            int firstLoadableBlockIndex = FindNextLoadableBlockIndex(blockIndex);
             state = firstLoadableBlockIndex >= blocks.Count
                 ? TapeState.Idle
                 : IsHeaderBlock(blocks[firstLoadableBlockIndex]) ? TapeState.ExpectHeader : TapeState.ExpectData;
-            int playbackStartBlockIndex = GetEarPlaybackStartBlockIndex(initialBlockIndex);
+            int playbackStartBlockIndex = GetEarPlaybackStartBlockIndex(blockIndex);
             StartEarPlaybackBlock(playbackStartBlockIndex, preserveSignalPhase: false);
         }
 

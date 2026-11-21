@@ -46,6 +46,7 @@ if (args.Length > 0)
     List<ScheduledFrameTimingEvent> scheduledFrameTimingEvents = new();
     List<int> scheduledTapeToggleFrames = new();
     List<ScheduledTapeReplacementEvent> scheduledTapeReplacementEvents = new();
+    List<(int Frame, string Operation, string Label)> scheduledCueEvents = new();
     int optionStartIndex = 1;
     if (args.Length > 1 && !args[1].Contains('='))
     {
@@ -194,6 +195,14 @@ if (args.Length > 0)
         else if (arg.StartsWith("replacement=", StringComparison.OrdinalIgnoreCase))
         {
             scheduledTapeReplacementEvents.Add(ParseTapeReplacementEvent(arg["replacement=".Length..]));
+        }
+        else if (arg.StartsWith("cue=", StringComparison.OrdinalIgnoreCase))
+        {
+            string[] parts = arg["cue=".Length..].Split(':', 3);
+            if (parts.Length != 3 || !int.TryParse(parts[0], out int frame) || frame < 0 ||
+                parts[1] is not ("save" or "seek" or "block" or "section") || string.IsNullOrWhiteSpace(parts[2]))
+                throw new InvalidOperationException("Expected cue=frame:save|seek|section:name or cue=frame:block:number.");
+            scheduledCueEvents.Add((frame, parts[1], parts[2]));
         }
         else if (arg.StartsWith("traceframes=", StringComparison.OrdinalIgnoreCase))
         {
@@ -427,6 +436,7 @@ if (args.Length > 0)
     int maximumAudioDelta = 0;
     short? previousAudioSample = null;
     int iteration = 0;
+    Dictionary<(string Image, string Name), TapeCue> tapeCues = new();
     machine.SetMouseType(mouseType ?? (scheduledMouseEvents.Count != 0 && scheduledMouseTypeEvents.Count == 0
         ? SpectrumMouseType.Kempston : SpectrumMouseType.Off));
     int lastReportedFrame = -1;
@@ -479,6 +489,39 @@ if (args.Length > 0)
             Console.WriteLine(
                 $"REPLACEMENT frame={iteration} file={Path.GetFileName(replacementEvent.Path)} " +
                 $"blocks={replacementResult.TotalBlockCount} pc=0x{machine.Cpu.Regs.PC:X4}");
+        }
+
+        foreach (var cueEvent in scheduledCueEvents)
+        {
+            if (cueEvent.Frame != iteration)
+                continue;
+            TapeDeckView view = machine.CaptureTapeDeck() ??
+                throw new InvalidOperationException($"No tape for cue at frame {iteration}.");
+            var id = (view.Timeline.Identity, cueEvent.Label);
+            if (cueEvent.Operation == "section")
+            {
+                TapeSection section = view.Timeline.Sections.Single(s => s.Name == cueEvent.Label);
+                if (!machine.TrySeekTape(view.Timeline, section.BlockIndex))
+                    throw new InvalidOperationException($"Cannot seek to section '{section.Name}' at frame {iteration}.");
+                Console.WriteLine($"CUE frame={iteration} section='{section.Name}' pc=0x{machine.Cpu.Regs.PC:X4}");
+                continue;
+            }
+            if (cueEvent.Operation == "block")
+            {
+                if (!int.TryParse(cueEvent.Label, out int block) || block < 1 ||
+                    !machine.TrySeekTape(view.Timeline, block - 1))
+                    throw new InvalidOperationException($"Cannot seek to block '{cueEvent.Label}' at frame {iteration}.");
+                Console.WriteLine($"CUE frame={iteration} block={block} pc=0x{machine.Cpu.Regs.PC:X4}");
+                continue;
+            }
+            if (cueEvent.Operation == "save")
+                tapeCues[id] = machine.CaptureTapeCue(view.Timeline) ??
+                    throw new InvalidOperationException($"Stop tape before saving a cue at frame {iteration}.");
+            else if (!tapeCues.TryGetValue(id, out TapeCue? cue) ||
+                     !machine.TrySeekTape(view.Timeline, cue.BlockIndex, cue))
+                throw new InvalidOperationException($"Cannot seek to cue '{cueEvent.Label}' at frame {iteration}.");
+            Console.WriteLine($"CUE frame={iteration} {cueEvent.Operation} '{cueEvent.Label}' " +
+                $"block={tapeCues[id].BlockIndex + 1} pc=0x{machine.Cpu.Regs.PC:X4} {machine.GetMountedTapeDebugState()}");
         }
 
         foreach (ScheduledPcEvent pcEvent in scheduledPcEvents)

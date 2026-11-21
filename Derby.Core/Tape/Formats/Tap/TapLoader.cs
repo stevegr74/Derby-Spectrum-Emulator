@@ -97,6 +97,7 @@ namespace Derby.Tape
 
             var tape = new MountedTape(Path.GetFileName(path), blocks);
             machine.MountTape(tape);
+            machine.IdentifyTapeImage(fileData);
             LogMountedTape(tape, blocks);
             return new TapMountResult(blocks.Count, Path.GetFileName(path));
         }
@@ -113,7 +114,11 @@ namespace Derby.Tape
             string displayName = Path.GetFileName(path);
             TapeLoadPlan plan = CreateExecutionPlan(machine, blocks);
 
-            return TapeExecutionEngine.Execute(machine, displayName, blocks, plan);
+            TapeExecutionResult result = TapeExecutionEngine.Execute(machine, displayName, blocks, plan);
+            if (!machine.HasTapeInDeck && blocks.Count != 0)
+                machine.KeepFastLoadedTapeImage(new MountedTape(displayName, blocks));
+            machine.IdentifyTapeImage(fileData);
+            return result;
         }
 
         public static TapBootstrapResult LoadAllStandardBlocksAndAutoStart(SpectrumMachine machine, string path)

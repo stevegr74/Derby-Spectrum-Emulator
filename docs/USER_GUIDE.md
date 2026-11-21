@@ -101,7 +101,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F12` | Write a machine diagnostic dump |
 | Right-click | Open the complete context menu |
 
-The context menu presents assigned function-key actions in order, followed by Keyboard, Joystick, Mouse, and the Poke Manager.
+The context menu presents assigned function-key actions in order, with **Tape Transport...** next to F5. Keyboard, Joystick, Mouse, and the Poke Manager follow the function-key groups.
 
 ![Complete right-click context menu](images/context-menu.png)
 
@@ -263,6 +263,12 @@ Use `F3` before mounting the tape when you want to test the other machine model.
 Use `F5` to stop or resume the mounted tape without ejecting it. Resume only when the game asks for more tape input.
 
 The emulator also handles supported TZX pauses, stop markers, tape end, and detected loader handoffs automatically. A stopped tape remains mounted and can be resumed. Brief pulse-synchronization holds used by protected loaders remain internal, so they do not flash misleading stop/play feedback.
+
+Right-click the display and open **Tape Transport...**, then click **Choose tape...**. If there's already a tape in the deck, **Change tape** is the default and keeps the running game. Choose **Start new game** to reset the Spectrum and load the tape from the start. F11 still loads a new game, and Shift+F11 still changes the tape without resetting.
+
+The progress bar shows named tape sections as dark ticks, your bookmarks as teal dots, and the last stop as an amber tick. When the tape is stopped, select a section or bookmark in the list or on the bar, then choose **Go to**. Only tapes with embedded names show sections. **Add bookmark...** names the current stopped position or a selected stop, and **Edit...** renames or deletes a bookmark. Rewinding and jumping leave the tape stopped and do not rewind the Spectrum.
+
+Bookmarks reappear when you return to the same tape image during the session. The transport window itself does not pause the Spectrum.
 
 ### If A Multi-load Fails
 

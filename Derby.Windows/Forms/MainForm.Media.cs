@@ -48,110 +48,80 @@ namespace Derby
             }
         }
 
-        private void MountTapFromDialog()
+        private void MountTapFromDialog() => ChooseTapeFromDialog(this, TapeFileAction.StartNewGame);
+
+        private void ReplaceMountedTapeFromDialog() => ChooseTapeFromDialog(this, TapeFileAction.ChangeTape);
+
+        private void ChooseTapeFromDialog(Form owner) => ChooseTapeFromDialog(owner, null);
+
+        private void ChooseTapeFromDialog(Form owner, TapeFileAction? shortcutAction)
         {
+            using IDisposable pauseLease = AcquireEmulationPauseLease();
+            bool hasTape;
+            lock (machineLock)
+                hasTape = machine.HasTapeInDeck;
+            if (!hasTape && shortcutAction == TapeFileAction.ChangeTape)
+                return;
+
             using var dialog = new OpenFileDialog
             {
-                Title = "Mount Tape Image",
+                Title = "Choose Tape",
                 Filter = "Spectrum tape images (*.tap;*.tzx)|*.tap;*.tzx|All files (*.*)|*.*",
                 CheckFileExists = true,
                 Multiselect = false
             };
-            using IDisposable pauseLease = AcquireEmulationPauseLease();
-
-            if (dialog.ShowDialog(this) != DialogResult.OK)
+            if (dialog.ShowDialog(owner) != DialogResult.OK)
                 return;
+
+            TapeFileAction action = shortcutAction ?? TapeFileAction.StartNewGame;
+            if (shortcutAction == null && hasTape)
+            {
+                using var choice = new TapeFileActionForm(Path.GetFileName(dialog.FileName));
+                if (choice.ShowDialog(owner) != DialogResult.OK)
+                    return;
+                action = choice.Action;
+            }
 
             try
             {
-                string extension = Path.GetExtension(dialog.FileName);
-                ExecuteWithEmulationPaused(() =>
-                {
-                    ClearHostAndSpectrumInputState();
-                    if (extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase))
-                    {
-                        lock (machineLock)
-                        {
-                            SpectrumMachine newMachine = CreateConfiguredMachine();
-                            Tape.TzxLoader.LoadWithPolicy(newMachine, dialog.FileName);
-                            machine = newMachine;
-                        }
-                    }
-                    else
-                    {
-                        lock (machineLock)
-                        {
-                            SpectrumMachine newMachine = CreateConfiguredMachine();
-                            Tape.TapLoader.LoadWithPolicy(newMachine, dialog.FileName);
-                            machine = newMachine;
-                        }
-                    }
-
-                    ResetFrameScheduler();
-                    RecreateAudioPipeline();
-                    lock (machineLock)
-                        machine.ClearDebugHistory();
-                });
+                ClearHostAndSpectrumInputState();
+                if (action == TapeFileAction.ChangeTape)
+                    ReplaceMountedTape(dialog.FileName);
+                else
+                    LoadTapeForNewGame(dialog.FileName);
                 SetLoadedMediaDisplayName(dialog.FileName);
                 SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
                 ShowMountedTapeTransportFeedback();
                 PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
-                screenBox.Focus();
+                if (owner == this)
+                    screenBox.Focus();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    this,
-                    $"Failed to mount tape:\n{ex.Message}",
-                    "Tape Mount Error",
+                    owner,
+                    $"Failed to open tape:\n{ex.Message}",
+                    "Tape Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
         }
 
-        private void ReplaceMountedTapeFromDialog()
+        private void LoadTapeForNewGame(string path)
         {
             lock (machineLock)
             {
-                if (!machine.HasMountedTape)
-                    return;
+                SpectrumMachine newMachine = CreateConfiguredMachine();
+                if (Path.GetExtension(path).Equals(".tzx", StringComparison.OrdinalIgnoreCase))
+                    Tape.TzxLoader.LoadWithPolicy(newMachine, path);
+                else
+                    Tape.TapLoader.LoadWithPolicy(newMachine, path);
+                machine = newMachine;
             }
-
-            using var dialog = new OpenFileDialog
-            {
-                Title = "Replace Mounted Tape (Preserve Machine)",
-                Filter = "Spectrum tape images (*.tap;*.tzx)|*.tap;*.tzx|All files (*.*)|*.*",
-                CheckFileExists = true,
-                Multiselect = false
-            };
-            using IDisposable pauseLease = AcquireEmulationPauseLease();
-
-            if (dialog.ShowDialog(this) != DialogResult.OK)
-                return;
-
-            try
-            {
-                ExecuteWithEmulationPaused(() =>
-                {
-                    ClearHostAndSpectrumInputState();
-                    ReplaceMountedTape(dialog.FileName);
-                });
-
-                SetLoadedMediaDisplayName(dialog.FileName);
-                SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
-                ShowMountedTapeTransportFeedback();
-                PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
-                screenBox.Focus();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    this,
-                    $"Failed to replace tape:\n{ex.Message}",
-                    "Tape Replacement Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            ResetFrameScheduler();
+            RecreateAudioPipeline();
+            lock (machineLock)
+                machine.ClearDebugHistory();
         }
 
         private Tape.TapMountResult ReplaceMountedTape(string path)
@@ -159,7 +129,7 @@ namespace Derby
             string extension = Path.GetExtension(path);
             lock (machineLock)
             {
-                if (!machine.HasMountedTape)
+                if (!machine.HasTapeInDeck)
                     throw new InvalidOperationException("There is no mounted tape to replace.");
 
                 return extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase)

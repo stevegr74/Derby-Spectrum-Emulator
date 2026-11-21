@@ -120,7 +120,8 @@ namespace Derby.Tape
         AutomaticRomResume,
         StopMarker,
         Ended,
-        Ejected
+        Ejected,
+        ManualSeek
     }
 
     public sealed class TapeExecutionResult

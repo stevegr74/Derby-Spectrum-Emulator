@@ -63,7 +63,6 @@ namespace Derby
         private readonly ToolStripMenuItem tapeTransportMenuItem = new ToolStripMenuItem("F5 - Stop / Resume Tape");
         private readonly ToolStripMenuItem disassemblerMenuItem = new ToolStripMenuItem("F6 - Debugger / Disassembler");
         private readonly ToolStripMenuItem quickStateManagerMenuItem = new ToolStripMenuItem("F7 - Quick State Manager...");
-        private readonly ToolStripMenuItem replaceTapeMenuItem = new ToolStripMenuItem("Shift+F11 - Replace Tape (Preserve Machine)");
         private readonly ToolStripMenuItem joystickMenuItem = new ToolStripMenuItem("Joystick");
         private readonly ToolStripMenuItem pokeManagerMenuItem = new ToolStripMenuItem("Poke Manager...");
 
@@ -222,6 +221,7 @@ namespace Derby
 
             tapeTransportMenuItem.Click += (_, _) => ToggleTapeTransport();
             displayContextMenu.Items.Add(tapeTransportMenuItem);
+            displayContextMenu.Items.Add("Tape Transport...", null, (_, _) => OpenTapeDeck());
             displayContextMenu.Items.Add(new ToolStripSeparator());
 
             disassemblerMenuItem.Click += (_, _) => ToggleDisassemblerWindow();
@@ -235,8 +235,6 @@ namespace Derby
             displayContextMenu.Items.Add("F9 - Load .sna Snapshot", null, (_, _) => LoadSnaSnapshotFromDialog());
             displayContextMenu.Items.Add("F10 - Load .z80/.szx Snapshot / Play .rzx", null, (_, _) => LoadSnapshotOrRecordingFromDialog());
             displayContextMenu.Items.Add("F11 - Mount .tap or .tzx Tape Image", null, (_, _) => MountTapFromDialog());
-            replaceTapeMenuItem.Click += (_, _) => ReplaceMountedTapeFromDialog();
-            displayContextMenu.Items.Add(replaceTapeMenuItem);
             displayContextMenu.Items.Add(new ToolStripSeparator());
             displayContextMenu.Items.Add("F12 - Write Machine Diagnostic Dump", null, (_, _) => DumpMachineDebugState());
             displayContextMenu.Items.Add(new ToolStripSeparator());
@@ -254,8 +252,6 @@ namespace Derby
                     return;
                 }
                 UpdateTapeTransportMenuItem();
-                lock (machineLock)
-                    replaceTapeMenuItem.Enabled = machine.HasMountedTape;
             };
             UpdateMachineModelMenuItems();
             UpdateTapeTransportMenuItem();
@@ -1204,6 +1200,7 @@ namespace Derby
             if (disposing)
             {
                 ReleaseSpectrumMouse();
+                tapeDeck?.Close();
                 onScreenKeyboard?.Close();
                 if (keyboardMessageFilter != null)
                 {
