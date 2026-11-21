@@ -19,11 +19,12 @@ internal static class WindowsMouseInput
         return RegisterRawInputDevices([device], 1, (uint)Marshal.SizeOf<RawInputDevice>());
     }
 
-    public static bool TryRead(IntPtr handle, out RawMouse mouse)
+    public static bool TryRead(IntPtr handle, out RawMouse mouse, out IntPtr device)
     {
         uint size = (uint)Marshal.SizeOf<RawInput>();
         uint read = GetRawInputData(handle, ReadInput, out RawInput input, ref size, (uint)Marshal.SizeOf<RawInputHeader>());
         mouse = input.Mouse;
+        device = input.Header.Device;
         return read != uint.MaxValue && read >= (uint)Marshal.SizeOf<RawInput>() && input.Header.Type == 0;
     }
 
@@ -49,7 +50,6 @@ internal static class WindowsMouseInput
     internal struct RawMouse
     {
         [FieldOffset(0)] public ushort Flags;
-        [FieldOffset(4)] public ushort ButtonFlags;
         [FieldOffset(12)] public int X;
         [FieldOffset(16)] public int Y;
     }

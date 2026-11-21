@@ -124,7 +124,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Alien | `alien.z80` | Snapshot reaches the illustrated title screen and remains stable for 2,000 frames with sustained audio output |
 | 🟢 | Amaurote | `Amaurote.z80`, `Amaurote 128.z80` | Both snapshots reach the title screen and remain stable for 2,000 frames; the 128K image produces sustained AY audio |
 | 🟢 | Ant Attack | `Ant Attack.sna` | Snapshot reaches the gender-selection prompt and remains stable for 2,000 frames |
-| 🟠 | The Artist II | `artist2.sna` | Resumes in keyboard mode despite the retained LOADING banner. Selecting **Extras → KEMPS MOUSE** enables pointer movement and button reads; drawing and AMX operation are not yet verified |
+| 🟠 | The Artist II | `artist2.sna` | Resumes in keyboard mode despite the retained LOADING banner. Selecting **Extras → KEMPS MOUSE** enables pointer movement and button reads. The snapshot was saved without the program's AMX startup flag; use the +3 disk for AMX |
 | 🟢 | Athena | `athena.sna` | Snapshot reaches the active title/game screen and remains stable for 2,000 frames |
 | 🟢 | Auf Wiedersehen Monty | `.sna`, `.z80` | Both snapshots reach the control menu and remain stable for 2,000 frames |
 | 🟢 | Back to Skool | `.sna` | Snapshot reaches the active demonstration screen and remains stable for 2,000 frames |
@@ -209,7 +209,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Captain Blood (Exxos) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 | 🟢 | Garfield | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 | 🟢 | Into the Eagle's Nest (original release) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
-| 🟠 | The Artist II (Softechnics, +3) | `The Artist 2.dsk` | Boots through the +3 Loader and reaches the mouse-selection prompt and editor; mouse operation is not yet verified |
+| 🟢 | The Artist II (Softechnics, +3) | `The Artist 2.dsk` | Boots through the +3 Loader; AMX pointer movement and left-button drawing are verified. Answer `Y` at the AMX prompt, select **Mouse → AMX Mouse** in DERBY, then activate **Extras → AMX MOUSE** in the editor with `M`. Kempston was not tested on this disk |
 
 ## Replay Images
 

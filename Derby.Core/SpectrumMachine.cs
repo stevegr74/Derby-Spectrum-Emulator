@@ -265,7 +265,7 @@ namespace Derby
         public void Reset(SpectrumMachineModel model)
         {
             kempstonMouse = new KempstonMouseState(IsKempstonMouseEnabled, 0, 0, SpectrumMouseButtons.None);
-            amxMouse.Restore(default);
+            amxMouse.Reset();
             diskController.Reset();
             MachineModel = model;
             ayHardwareEnabled = model == SpectrumMachineModel.Spectrum128K;

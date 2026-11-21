@@ -38,6 +38,7 @@ if (args.Length > 0)
     string executionMode = "frame";
     List<ScheduledKeyEvent> scheduledKeyEvents = new();
     List<(int Frame, int X, int Y, SpectrumMouseButtons Buttons)> scheduledMouseEvents = new();
+    List<(int Frame, SpectrumMouseType Type)> scheduledMouseTypeEvents = new();
     SpectrumMouseType? mouseType = null;
     List<ScheduledPcEvent> scheduledPcEvents = new();
     List<ScheduledRegisterEvent> scheduledRegisterEvents = new();
@@ -130,6 +131,20 @@ if (args.Length > 0)
         else if (arg.Equals("mouse=amx", StringComparison.OrdinalIgnoreCase))
         {
             mouseType = SpectrumMouseType.Amx;
+        }
+        else if (arg.StartsWith("mousetype=", StringComparison.OrdinalIgnoreCase))
+        {
+            string[] parts = arg["mousetype=".Length..].Split(':');
+            if (parts.Length != 2 || !int.TryParse(parts[0], out int frame) || frame < 0)
+                throw new InvalidOperationException("Expected mousetype=frame:off|amx|kempston.");
+            SpectrumMouseType type = parts[1].ToLowerInvariant() switch
+            {
+                "off" => SpectrumMouseType.Off,
+                "amx" => SpectrumMouseType.Amx,
+                "kempston" => SpectrumMouseType.Kempston,
+                _ => throw new InvalidOperationException("Expected mousetype=frame:off|amx|kempston.")
+            };
+            scheduledMouseTypeEvents.Add((frame, type));
         }
         else if (arg.StartsWith("mouse=", StringComparison.OrdinalIgnoreCase))
         {
@@ -412,11 +427,20 @@ if (args.Length > 0)
     int maximumAudioDelta = 0;
     short? previousAudioSample = null;
     int iteration = 0;
-    machine.SetMouseType(mouseType ?? (scheduledMouseEvents.Count != 0 ? SpectrumMouseType.Kempston : SpectrumMouseType.Off));
+    machine.SetMouseType(mouseType ?? (scheduledMouseEvents.Count != 0 && scheduledMouseTypeEvents.Count == 0
+        ? SpectrumMouseType.Kempston : SpectrumMouseType.Off));
     int lastReportedFrame = -1;
     bool? lastPendingMountedLoadContinuation = null;
     while (machine.FrameCount < frameLimit)
     {
+        foreach (var mouseTypeEvent in scheduledMouseTypeEvents)
+        {
+            if (mouseTypeEvent.Frame != iteration)
+                continue;
+            machine.SetMouseType(mouseTypeEvent.Type);
+            Console.WriteLine($"MOUSE TYPE frame={iteration} type={mouseTypeEvent.Type}");
+        }
+
         foreach (var mouseEvent in scheduledMouseEvents)
         {
             if (mouseEvent.Frame != iteration)
