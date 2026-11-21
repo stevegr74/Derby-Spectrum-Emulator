@@ -72,8 +72,7 @@ Current limitations and active work:
   tested.
 - Broader timing-sensitive software and subjective title-by-title audio
   comparison remain ongoing validation work.
-- AMX Mouse port and interrupt behavior is covered by tests. Application-level
-  compatibility and SZX mouse-state support remain open.
+- SZX snapshots with mouse peripheral state are not supported.
 
 ### Implementation Notes
 
@@ -115,7 +114,6 @@ Current limitations and active work:
 Active work remains deliberately incremental:
 
 - Continue structure-driven tape compatibility under Milestone 6.
-- Continue software validation for the optional mouse peripherals under Milestone 25.
 - Keep the verified-media matrix, focused regressions, and ZEXDOC/ZEXALL as
   compatibility gates throughout structural work.
 
@@ -347,7 +345,8 @@ deliberately kept out of the harness.
 
 Schedule mouse input with repeatable `mouse=frame:dx:dy:buttons` arguments
 (right/up are positive; button bits are 1=right, 2=left, 4=middle). These events
-select Kempston Mouse unless `mouse=amx` is also supplied.
+default to Kempston Mouse. Use `mouse=amx` to start with AMX, or schedule changes
+with `mousetype=frame:off|amx|kempston`.
 
 The [ULA timing validation runbook](test-assets/ula/README.md) records how the
 48K/128K Timing Test and floating-bus diagnostics are run without redistributing
@@ -405,20 +404,12 @@ compatibility; completed milestones remain regression baselines.
 | 22 | Complete | Two-channel USB joystick input with selectable Kempston, Cursor, and Interface II mappings, per-device profiles, stable hardware matching, and live identification through a Windows-only host adapter and platform-neutral core state |
 | 23 | Complete | Bounded SZX loading for supported 48K and original 128K machine state, with explicit rejection of unsupported models and peripherals |
 | 24 | Complete | Modeless 48K/128K on-screen keyboard with scan-aware holds, Shift chords, and keyboard-accessible layout selection |
-| 25 | In progress | Kempston and AMX Mouse with host pointer capture; software compatibility validation ongoing |
+| 25 | Complete | Kempston and AMX Mouse with Windows pointer capture, touchpad support, and software validation |
 | 26 | Complete | 48K/128K/grey +2/+2A/+3 profiles and verified read-only +3 drive A: |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
 | 28 | Planned | Advanced tape transport with pause/stop bookmarks, rewind, and manual seeking |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
-
-### Milestone 25 - Kempston And AMX Mouse Support
-- Mouse emulation defaults to off and uses explicit click-to-capture, `Esc` release, focus-loss cleanup, and an on-screen capture indicator
-- The Windows adapter passes relative movement and buttons to the core, which owns the wrapping X/Y counters and active-low buttons on the standard Kempston Mouse ports
-- Kempston joystick reads remain independent of the mouse
-- AMX Mouse implements PIO input mode, movement-driven interrupts, and three buttons. While selected, AMX takes over port `0x1F` from the Kempston joystick without changing its configuration.
-- Quick State preserves the mouse type, Kempston counters, and AMX PIO state without recapturing the host pointer. SZX files with mouse state are not yet supported.
-- Automated tests cover ports, counter wrap, interrupt ordering, save/restore, and joystick conflicts.
 
 ### Milestone 26 - Machine Profiles And Read-Only +3 Disk Support
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change

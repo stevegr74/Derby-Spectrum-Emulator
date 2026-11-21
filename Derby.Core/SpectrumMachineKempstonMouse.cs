@@ -30,7 +30,7 @@ public sealed partial class SpectrumMachine
         if (MouseType == type)
             return;
         kempstonMouse = default;
-        amxMouse.Restore(default);
+        amxMouse.Reset();
         RestoreMouseType(type);
     }
 

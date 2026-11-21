@@ -6,9 +6,13 @@ internal sealed class AmxMouse
         byte FollowupWords, int Pending, byte Direction, bool InService);
     internal record struct State(Channel X, Channel Y, SpectrumMouseButtons Buttons);
 
-    private Channel x;
-    private Channel y;
+    // A reset Z80 PIO starts in Mode 1 (input), with interrupts disabled.
+    private static readonly Channel ResetChannel = new() { Mode = 1 };
+    private Channel x = ResetChannel;
+    private Channel y = ResetChannel;
     private SpectrumMouseButtons buttons;
+
+    public void Reset() => Restore(new(ResetChannel, ResetChannel, SpectrumMouseButtons.None));
 
     public State Capture() => new(x, y, buttons);
 
@@ -45,14 +49,14 @@ internal sealed class AmxMouse
         if (!HasInterrupt)
             return null;
         if (x.Pending != 0)
-            return Acknowledge(ref x, reverseDirection: true);
-        return Acknowledge(ref y, reverseDirection: false);
+            return Acknowledge(ref x);
+        return Acknowledge(ref y);
     }
 
-    private static byte Acknowledge(ref Channel channel, bool reverseDirection)
+    private static byte Acknowledge(ref Channel channel)
     {
         bool positive = channel.Pending > 0;
-        channel.Direction = (byte)(positive != reverseDirection ? 1 : 0);
+        channel.Direction = positive ? (byte)0 : (byte)1;
         channel.Pending -= positive ? 1 : -1;
         channel.InService = true;
         return channel.Vector;

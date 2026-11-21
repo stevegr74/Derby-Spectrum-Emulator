@@ -5,8 +5,10 @@ namespace Derby;
 public partial class MainForm
 {
     private readonly ConcurrentQueue<(int X, int Y, SpectrumMouseButtons Buttons)> mouseInput = new();
+    private readonly CapturedPointerMotion pointerMotion = new();
     private SpectrumMouseType selectedMouseType;
     private bool mouseCaptured;
+    private bool rawMouseRegistered;
     private bool consumedMouseEscape;
     private bool ignoreCaptureClick;
     private SpectrumMouseButtons hostMouseButtons;
@@ -30,7 +32,15 @@ public partial class MainForm
         {
             if (e.Button == MouseButtons.Left && selectedMouseType != SpectrumMouseType.Off && !mouseCaptured)
                 CaptureSpectrumMouse();
+            else if (mouseCaptured)
+                UpdateCapturedMouseButton(e.Button, down: true);
         };
+        screenBox.MouseUp += (_, e) =>
+        {
+            if (mouseCaptured)
+                UpdateCapturedMouseButton(e.Button, down: false);
+        };
+        screenBox.MouseMove += (_, _) => QueueWindowsPointerMotion();
         return menu;
     }
 
@@ -48,14 +58,10 @@ public partial class MainForm
     {
         if (!ContainsFocus && Form.ActiveForm != this)
             return;
-        if (!WindowsMouseInput.SetRegistered(Handle, true))
-        {
-            MessageBox.Show(this, "Windows could not capture mouse input.", "Mouse",
-                MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            return;
-        }
+        rawMouseRegistered = WindowsMouseInput.SetRegistered(Handle, true);
         ignoreCaptureClick = true;
         lastHostMousePosition = Cursor.Position;
+        pointerMotion.Reset(lastHostMousePosition);
         mouseCaptured = true;
         Cursor.Clip = screenBox.RectangleToScreen(screenBox.ClientRectangle);
         Cursor.Hide();
@@ -66,7 +72,9 @@ public partial class MainForm
         if (!mouseCaptured)
             return;
         mouseCaptured = false;
-        WindowsMouseInput.SetRegistered(IntPtr.Zero, false);
+        if (rawMouseRegistered)
+            WindowsMouseInput.SetRegistered(IntPtr.Zero, false);
+        rawMouseRegistered = false;
         Cursor.Clip = Rectangle.Empty;
         Cursor.Show();
         hostMouseButtons = SpectrumMouseButtons.None;
@@ -90,32 +98,39 @@ public partial class MainForm
     protected override void WndProc(ref Message message)
     {
         const int WmInput = 0x00FF;
-        if (message.Msg == WmInput && mouseCaptured && WindowsMouseInput.TryRead(message.LParam, out var mouse))
-            QueueSpectrumMouseInput(mouse);
+        if (message.Msg == WmInput && mouseCaptured && rawMouseRegistered &&
+            WindowsMouseInput.TryRead(message.LParam, out var mouse, out IntPtr device) && device != IntPtr.Zero)
+            QueueRawMouseMotion(mouse);
         base.WndProc(ref message);
     }
 
-    private void QueueSpectrumMouseInput(WindowsMouseInput.RawMouse mouse)
+    private void UpdateCapturedMouseButton(MouseButtons button, bool down)
     {
-        const ushort LeftDown = 0x0001, LeftUp = 0x0002, RightDown = 0x0004, RightUp = 0x0008,
-            MiddleDown = 0x0010, MiddleUp = 0x0020;
-        SpectrumMouseButtons before = hostMouseButtons;
-        if (!ignoreCaptureClick && (mouse.ButtonFlags & LeftDown) != 0)
-            hostMouseButtons |= SpectrumMouseButtons.Left;
-        if ((mouse.ButtonFlags & LeftUp) != 0)
+        SpectrumMouseButtons mapped = button switch
         {
-            ignoreCaptureClick = false;
-            hostMouseButtons &= ~SpectrumMouseButtons.Left;
+            MouseButtons.Left => SpectrumMouseButtons.Left,
+            MouseButtons.Right => SpectrumMouseButtons.Right,
+            MouseButtons.Middle => SpectrumMouseButtons.Middle,
+            _ => SpectrumMouseButtons.None
+        };
+        if (mapped == SpectrumMouseButtons.None)
+            return;
+        QueueWindowsPointerMotion();
+        if (ignoreCaptureClick && mapped == SpectrumMouseButtons.Left)
+        {
+            if (!down)
+                ignoreCaptureClick = false;
+            return;
         }
-        if ((mouse.ButtonFlags & RightDown) != 0)
-            hostMouseButtons |= SpectrumMouseButtons.Right;
-        if ((mouse.ButtonFlags & RightUp) != 0)
-            hostMouseButtons &= ~SpectrumMouseButtons.Right;
-        if ((mouse.ButtonFlags & MiddleDown) != 0)
-            hostMouseButtons |= SpectrumMouseButtons.Middle;
-        if ((mouse.ButtonFlags & MiddleUp) != 0)
-            hostMouseButtons &= ~SpectrumMouseButtons.Middle;
 
+        SpectrumMouseButtons before = hostMouseButtons;
+        hostMouseButtons = down ? before | mapped : before & ~mapped;
+        if (before != hostMouseButtons)
+            mouseInput.Enqueue((0, 0, hostMouseButtons));
+    }
+
+    private void QueueRawMouseMotion(WindowsMouseInput.RawMouse mouse)
+    {
         int x = mouse.X, y = mouse.Y;
         if ((mouse.Flags & 1) != 0)
         {
@@ -131,8 +146,32 @@ public partial class MainForm
         {
             lastHostMousePosition = Cursor.Position;
         }
-        if (x != 0 || y != 0 || before != hostMouseButtons)
+        if ((x != 0 || y != 0) && pointerMotion.TryUseRawMotion())
             mouseInput.Enqueue((x, -y, hostMouseButtons));
+    }
+
+    private void QueueWindowsPointerMotion()
+    {
+        if (!mouseCaptured)
+            return;
+
+        Point cursor = Cursor.Position;
+        int scale = SpectrumDisplayModes.GetLayout(displayMode).Scale;
+        Point delta = pointerMotion.UseWindowsPointer(cursor, scale);
+        if (!pointerMotion.UsesWindowsPointer)
+            return;
+        lastHostMousePosition = cursor;
+        if (!delta.IsEmpty)
+            mouseInput.Enqueue((delta.X, -delta.Y, hostMouseButtons));
+
+        Rectangle area = screenBox.RectangleToScreen(screenBox.ClientRectangle);
+        Rectangle inner = Rectangle.Inflate(area, -12, -12);
+        if (area.Contains(cursor) && !inner.Contains(cursor))
+        {
+            Cursor.Position = new Point(area.Left + area.Width / 2, area.Top + area.Height / 2);
+            lastHostMousePosition = Cursor.Position;
+            pointerMotion.Rebase(lastHostMousePosition);
+        }
     }
 
     private void DrainSpectrumMouseInput(SpectrumMachine activeMachine)

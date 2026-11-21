@@ -66,12 +66,60 @@ public sealed class AmxMouseTests
 
         machine.Cpu.ExecuteCycles(1);
         Assert.Equal(0xA200, machine.Cpu.Regs.PC);
-        Assert.Equal(1, machine.DebugReadPort(0x003F) & 1);
+        Assert.Equal(0, machine.DebugReadPort(0x003F) & 1);
         ReturnWithReti(machine);
 
         machine.Cpu.ExecuteCycles(1);
         Assert.Equal(0xA300, machine.Cpu.Regs.PC);
         Assert.False(machine.Cpu.InterruptPending);
+    }
+
+    [Fact]
+    public void ResetPioAcceptsBothAxesWithoutAModeWord()
+    {
+        var machine = CreateMachine();
+        for (int pass = 0; pass < 2; pass++)
+        {
+            machine.SetMouseType(SpectrumMouseType.Amx);
+            machine.UpdateMouse(1, 1, SpectrumMouseButtons.None);
+            Assert.False(machine.Cpu.HasPeripheralInterrupt!.Invoke());
+
+            machine.DebugWritePort(0x045F, 0x04);
+            machine.DebugWritePort(0xD25F, 0xD2);
+            machine.DebugWritePort(0x875F, 0x87);
+            machine.DebugWritePort(0x047F, 0x04);
+            machine.DebugWritePort(0xD07F, 0xD0);
+            machine.DebugWritePort(0x877F, 0x87);
+            machine.UpdateMouse(1, 1, SpectrumMouseButtons.None);
+
+            Assert.Equal((byte)0xD2, machine.Cpu.AcknowledgePeripheralInterrupt!.Invoke());
+            machine.Cpu.ReturnPeripheralInterrupt!.Invoke();
+            Assert.Equal((byte)0xD0, machine.Cpu.AcknowledgePeripheralInterrupt!.Invoke());
+            machine.Cpu.ReturnPeripheralInterrupt!.Invoke();
+            Assert.False(machine.Cpu.HasPeripheralInterrupt!.Invoke());
+            machine.SetMouseType(SpectrumMouseType.Off);
+        }
+    }
+
+    [Fact]
+    public void MotionDirectionBitsFollowTheSpectrumPointerAxes()
+    {
+        var machine = CreateMachine();
+        machine.SetMouseType(SpectrumMouseType.Amx);
+        ConfigureAxis(machine, 0x5F, 0x40);
+        ConfigureAxis(machine, 0x7F, 0x42);
+
+        foreach (int direction in new[] { 1, -1 })
+        {
+            int expected = direction > 0 ? 0 : 1;
+            machine.UpdateMouse(direction, direction, SpectrumMouseButtons.None);
+            Assert.Equal((byte)0x40, machine.Cpu.AcknowledgePeripheralInterrupt!.Invoke());
+            Assert.Equal(expected, machine.DebugReadPort(0x001F) & 1);
+            machine.Cpu.ReturnPeripheralInterrupt!.Invoke();
+            Assert.Equal((byte)0x42, machine.Cpu.AcknowledgePeripheralInterrupt!.Invoke());
+            Assert.Equal(expected, machine.DebugReadPort(0x003F) & 1);
+            machine.Cpu.ReturnPeripheralInterrupt!.Invoke();
+        }
     }
 
     [Fact]

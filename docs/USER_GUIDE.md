@@ -164,9 +164,11 @@ Right-click the display and choose **Keyboard**. Use **48K rubber-key** or **128
 
 The mouse starts **Off**. Right-click the display and choose **AMX Mouse** or **Kempston Mouse** from the **Mouse** submenu to match the software you are running. Click inside the display to capture the current Windows mouse; the capture click is not sent to the Spectrum. Press `Esc` to release the pointer. Losing focus or opening a dialog also releases it.
 
+DERBY uses one movement source per capture so the same motion is not counted twice. For touchpads that move the Windows pointer, movement is scaled to Spectrum pixels and sent as it arrives rather than batched. Release and recapture when switching pointing devices.
+
 AMX Mouse and the Kempston joystick share a hardware port. While AMX Mouse is selected, it takes over that port. Choose **Off** or **Kempston Mouse** to use the Kempston joystick again without reconfiguring it.
 
-Capture only routes the Windows pointer to the Spectrum interface. Software that remembers its own input mode may still be set to keyboard or joystick. In **The Artist II**, use `Q`, `S`, `I`, and `O` to move the program's pointer to **Extras**, then use `S` to highlight **KEMPS MOUSE** and `M` to select it. Capture the mouse after selecting the driver. The Artist II uses the right mouse button to select or draw and the left to deselect or erase.
+Selecting a mouse in DERBY makes that interface available to the emulated Spectrum. If the software starts in keyboard or joystick mode, select the matching mouse driver in the software before capturing the pointer.
 
 ### Focus
 

@@ -117,6 +117,14 @@ status table in the main README remains the authoritative roadmap summary.
 - Persisted window placement and layout, and cleared on-screen holds on pointer capture loss, focus loss, layout change, or close.
 - Verified both layouts, dedicated 128K chords, hold/release, cancellation, placement, and shortcut routing. Checked minimum-size controls at desktop DPI and legend fit at 100%, 125%, 150%, and 200% scales.
 
+## Milestone 25 - Kempston And AMX Mouse Support
+
+- Added click-to-capture mouse input with `Esc` release, focus-loss cleanup, and an on-screen capture indicator. Mouse emulation is off by default.
+- The Windows adapter uses raw movement or scaled Windows pointer movement for touchpads, without counting both. The core owns Kempston counters and active-low buttons, and AMX PIO state and movement interrupts.
+- Kempston Mouse does not interfere with the Kempston joystick. AMX takes over port `0x1F` while selected without changing the joystick mapping.
+- Quick State preserves emulated mouse state without recapturing the Windows pointer. SZX mouse state remains unsupported.
+- Tests cover motion scaling, port reads, counter wrap, AMX reset and direction, interrupt ordering, state restore, and joystick conflicts. Kempston was checked with an editor snapshot; AMX movement and persistent drawing were verified on the +3 disk release.
+
 ## Milestone 27 - Eight-Slot Quick State Manager
 
 - Replaced separate save/load shortcuts with one paused F7 manager containing
