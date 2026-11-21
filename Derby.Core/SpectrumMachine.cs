@@ -443,7 +443,8 @@ namespace Derby
                     (activeTape?.IsExhaustedAndIdle == true && !HasPendingMountedLoadUsrContinuation);
                 if (tapeHasEnded && ReferenceEquals(mountedTape, activeTape))
                     tapeTransport.CompleteIfCurrent(activeTape);
-                else if (ReferenceEquals(mountedTape, activeTape) && activeTape != null)
+                else if (ReferenceEquals(mountedTape, activeTape) && activeTape != null &&
+                         !tapeActivity.AwaitingProtectedLoaderRead)
                     tapeTransport.SynchronizeState(activeTape);
 
                 tStatesBudget -= actualExecutedTStates;
@@ -844,9 +845,9 @@ namespace Derby
 
         public void DebugWritePort(ushort port, byte value) => WritePort(port, value);
 
-        public void MountTape(MountedTape tape)
+        public void MountTape(MountedTape tape, bool startStopped = false)
         {
-            tapeTransport.Mount(tape, CurrentCpuClockHz);
+            tapeTransport.Mount(tape, CurrentCpuClockHz, startStopped);
             ResetMountedTapeActivityTracking();
         }
 
@@ -875,13 +876,7 @@ namespace Derby
             if (state is not (TapeTransportState.Playing or TapeTransportState.Stopped)
                 || state != TapeTransportState || !tapeTransport.Matches(expected))
                 return false;
-            if (state == TapeTransportState.Playing && mountedTape?.IsPlaybackPaused == true)
-            {
-                tapeTransport.StopAtHeldPosition();
-                ResetMountedTapeActivityTracking();
-            }
-            else
-                ToggleTapeTransport();
+            ToggleTapeTransport();
             return true;
         }
 

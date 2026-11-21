@@ -19,7 +19,7 @@ namespace Derby.Tape
         private const byte HeaderFlag = 0x00;
         private const int CpuClockHz48 = 3500000;
 
-        public static TapMountResult Mount(SpectrumMachine machine, string path)
+        public static TapMountResult Mount(SpectrumMachine machine, string path, bool startStopped = false)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -36,7 +36,7 @@ namespace Derby.Tape
                 blocks,
                 skipCustomHeaderForEarPlayback: false,
                 initialEarLevelHigh: false);
-            machine.MountTape(tape);
+            machine.MountTape(tape, startStopped);
             machine.IdentifyTapeImage(fileData);
             return new TapMountResult(blocks.Count, Path.GetFileName(path));
         }

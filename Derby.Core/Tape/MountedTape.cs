@@ -197,7 +197,7 @@ namespace Derby.Tape
 
         public void Reset() => ResetAt(initialBlockIndex, initialPrePlaybackPauseTStates);
 
-        private void ResetAt(int blockIndex, int prePlaybackPauseTStates)
+        private void ResetAt(int blockIndex, int prePlaybackPauseTStates, bool? boundaryEarLevel = null)
         {
             nextBlockIndex = blockIndex;
             earPlaybackBlockIndex = blockIndex;
@@ -214,7 +214,7 @@ namespace Derby.Tape
             romStreamTrapByteIndex = 0;
             completedRomLoadableBlockIndex = -1;
             lastEarSampleTStates = 0;
-            earLevel = initialEarLevelHigh;
+            earLevel = boundaryEarLevel ?? initialEarLevelHigh;
             earPlaybackStarted = false;
             retainedByteStreamTrapAvailable = false;
             playbackCompleted = false;
@@ -238,7 +238,7 @@ namespace Derby.Tape
                 ? TapeState.Idle
                 : IsHeaderBlock(blocks[firstLoadableBlockIndex]) ? TapeState.ExpectHeader : TapeState.ExpectData;
             int playbackStartBlockIndex = GetEarPlaybackStartBlockIndex(blockIndex);
-            StartEarPlaybackBlock(playbackStartBlockIndex, preserveSignalPhase: false);
+            StartEarPlaybackBlock(playbackStartBlockIndex, preserveSignalPhase: boundaryEarLevel.HasValue);
         }
 
         internal void ConfigurePlaybackClock(int clockHz)
@@ -305,6 +305,8 @@ namespace Derby.Tape
             stopMarkerResumeBlockIndex = -1;
             return true;
         }
+
+        internal void HoldAtMount() => playbackPaused = true;
 
         internal bool PausePlaybackAtCurrentBlockStart(ulong currentTStates)
         {

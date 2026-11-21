@@ -232,10 +232,10 @@ Tape images reproduce a loading process rather than a finished machine state. Th
 
 Press `F11` and choose a `.tap` or `.tzx` image.
 
-For a multi-side release, wait until the game asks for the other side and press
-`Shift+F11`. Choose the next tape image to replace the mounted tape without
-resetting CPU, RAM, paging, or the running game. The same action is available
-from the right-click menu and is disabled until a tape is mounted.
+For a multi-side release, press `Shift+F11` when it's time to change sides, or
+open **Tape Transport...** and choose **Change tape** from **Choose tape...**.
+The replacement stays stopped without resetting the running game. Go to the
+required section if needed, then press Play or `F5`.
 
 ### Automatic Loading
 
@@ -264,7 +264,7 @@ Use `F5` to stop or resume the mounted tape without ejecting it. Resume only whe
 
 The emulator also handles supported TZX pauses, stop markers, tape end, and detected loader handoffs automatically. A stopped tape remains mounted and can be resumed. Brief pulse-synchronization holds used by protected loaders remain internal, so they do not flash misleading stop/play feedback.
 
-Right-click the display and open **Tape Transport...**, then click **Choose tape...**. If there's already a tape in the deck, **Change tape** is the default and keeps the running game. Choose **Start new game** to reset the Spectrum and load the tape from the start. F11 still loads a new game, and Shift+F11 still changes the tape without resetting.
+Right-click the display and open **Tape Transport...**, then click **Choose tape...**. If there's already a tape in the deck, **Change tape** is the default and keeps the running game. The replacement stays stopped, so you can go to a section or bookmark before pressing Play. Choose **Start new game** to reset the Spectrum and load the tape from the start. F11 still loads a new game, and Shift+F11 still changes the tape without resetting.
 
 The progress bar shows named tape sections as dark ticks, your bookmarks as teal dots, and the last stop as an amber tick. When the tape is stopped, select a section or bookmark in the list or on the bar, then choose **Go to**. Only tapes with embedded names show sections. **Add bookmark...** names the current stopped position or a selected stop, and **Edit...** renames or deletes a bookmark. Rewinding and jumping leave the tape stopped and do not rewind the Spectrum.
 
@@ -275,7 +275,7 @@ Bookmarks reappear when you return to the same tape image during the session. Th
 1. Confirm the correct 48K/128K model was selected before mounting.
 2. Wait for the game to request the next section.
 3. If the game requests another tape side, press `Shift+F11` and select it.
-4. Press `F5` once to resume if the mounted tape did not start automatically.
+4. After changing sides, choose the required position if needed, then press `F5` once to resume.
 5. If the game immediately errors, do not repeatedly toggle transport; record the displayed error and media filename for diagnosis.
 
 ### +3 Disk Images
@@ -329,6 +329,8 @@ machine profile, border/video-visible state, AY registers, and interrupt timing.
 An in-flight external tape or RZX stream is not reopened automatically after a
 restart; within the original session, the richer live slot still restores its
 exact tape pulse/EAR, loader-continuation, and replay position.
+If the tape had ended when you saved, it remains in the deck after a same-session
+restore and can be rewound without resetting the Spectrum.
 
 Live host details such as a controller connection are not stored as emulated machine state. Audio and input adapters are cleaned up when a state is restored.
 

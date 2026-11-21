@@ -83,7 +83,7 @@ namespace Derby.Tape
             return new TapLoadResult(blocks.Count, loadedBlockCount, autoStartFileName);
         }
 
-        public static TapMountResult Mount(SpectrumMachine machine, string path)
+        public static TapMountResult Mount(SpectrumMachine machine, string path, bool startStopped = false)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
@@ -96,7 +96,7 @@ namespace Derby.Tape
                 throw new InvalidOperationException("The .tap file does not contain any blocks.");
 
             var tape = new MountedTape(Path.GetFileName(path), blocks);
-            machine.MountTape(tape);
+            machine.MountTape(tape, startStopped);
             machine.IdentifyTapeImage(fileData);
             LogMountedTape(tape, blocks);
             return new TapMountResult(blocks.Count, Path.GetFileName(path));

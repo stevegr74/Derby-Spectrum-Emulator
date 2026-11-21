@@ -5,10 +5,12 @@ namespace Derby.Tape
     internal sealed class TapeTransportController
     {
         internal sealed record QuickState(
-            MountedTape? MountedTape,
-            MountedTape.QuickState? MountedTapeState,
+            MountedTape? LiveTape,
+            MountedTape? EndedTape,
+            MountedTape.QuickState? TapeState,
             TapeTransportState State,
-            TapeTransportTransition LastTransition);
+            TapeTransportTransition LastTransition,
+            IReadOnlyList<TapeTimelineMarker> Markers);
 
         public MountedTape? MountedTape { get; private set; }
         public TapeTransportState State { get; private set; } = TapeTransportState.NoTape;
@@ -36,13 +38,15 @@ namespace Derby.Tape
             LastTransition = TapeTransportTransition.Reset;
         }
 
-        public void Mount(MountedTape tape, int playbackClockHz)
+        public void Mount(MountedTape tape, int playbackClockHz, bool startStopped = false)
         {
             MountedTape = tape ?? throw new ArgumentNullException(nameof(tape));
             endedTape = null;
             markers = Array.Empty<TapeTimelineMarker>();
             MountedTape.ConfigurePlaybackClock(playbackClockHz);
             MountedTape.Reset();
+            if (startStopped)
+                MountedTape.HoldAtMount();
             State = TapeTransportState.NoTape;
             SynchronizeState(MountedTape);
             LastTransition = TapeTransportTransition.Mounted;
@@ -53,17 +57,18 @@ namespace Derby.Tape
             if (MountedTape == null)
                 return State;
 
-            bool wasPaused = MountedTape.IsPlaybackPaused;
-            if (wasPaused)
+            // A protected-loader hold can pause the signal while the deck still says Playing.
+            bool resume = State == TapeTransportState.Stopped;
+            if (resume)
                 MountedTape.ResumePlayback(currentTStates);
             else
                 MountedTape.PausePlayback(currentTStates);
 
             SynchronizeState(MountedTape);
-            LastTransition = wasPaused
+            LastTransition = resume
                 ? TapeTransportTransition.ManualResume
                 : TapeTransportTransition.ManualStop;
-            if (!wasPaused && State == TapeTransportState.Stopped)
+            if (!resume && State == TapeTransportState.Stopped)
                 RecordMarker(MountedTape, "Manual stop");
             return State;
         }
@@ -153,15 +158,6 @@ namespace Derby.Tape
 
         public bool Matches(TapeTimeline expected) => ReferenceEquals(DeckTape?.Timeline, expected);
 
-        public void StopAtHeldPosition()
-        {
-            if (MountedTape is not { IsPlaybackPaused: true } tape)
-                return;
-            State = TapeTransportState.Stopped;
-            LastTransition = TapeTransportTransition.ManualStop;
-            RecordMarker(tape, "Manual stop");
-        }
-
         public bool Seek(TapeTimeline expected, int blockIndex, TapeCue? cue)
         {
             if (!CanSeek || !Matches(expected) || DeckTape is not { } tape)
@@ -180,19 +176,21 @@ namespace Derby.Tape
 
         public QuickState CaptureQuickState() => new QuickState(
             MountedTape,
-            MountedTape?.CaptureQuickState(),
+            endedTape,
+            DeckTape?.CaptureQuickState(),
             State,
-            LastTransition);
+            LastTransition,
+            markers);
 
         public void RestoreQuickState(QuickState state)
         {
-            MountedTape = state.MountedTape;
-            endedTape = null;
-            markers = Array.Empty<TapeTimelineMarker>();
-            if (MountedTape != null && state.MountedTapeState != null)
-                MountedTape.RestoreQuickState(state.MountedTapeState);
+            MountedTape = state.LiveTape;
+            endedTape = state.EndedTape;
+            if (DeckTape is { } tape && state.TapeState != null)
+                tape.RestoreQuickState(state.TapeState);
             State = state.State;
             LastTransition = state.LastTransition;
+            markers = state.Markers;
         }
     }
 }

@@ -484,11 +484,11 @@ if (args.Length > 0)
 
             string replacementExtension = Path.GetExtension(replacementEvent.Path);
             TapMountResult replacementResult = replacementExtension.Equals(".tzx", StringComparison.OrdinalIgnoreCase)
-                ? TzxLoader.Mount(machine, replacementEvent.Path)
-                : TapLoader.Mount(machine, replacementEvent.Path);
+                ? TzxLoader.Mount(machine, replacementEvent.Path, startStopped: true)
+                : TapLoader.Mount(machine, replacementEvent.Path, startStopped: true);
             Console.WriteLine(
                 $"REPLACEMENT frame={iteration} file={Path.GetFileName(replacementEvent.Path)} " +
-                $"blocks={replacementResult.TotalBlockCount} pc=0x{machine.Cpu.Regs.PC:X4}");
+                $"blocks={replacementResult.TotalBlockCount} state={machine.TapeTransportState} pc=0x{machine.Cpu.Regs.PC:X4}");
         }
 
         foreach (var cueEvent in scheduledCueEvents)

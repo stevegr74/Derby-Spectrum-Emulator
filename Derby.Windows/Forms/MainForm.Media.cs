@@ -91,7 +91,7 @@ namespace Derby
                     LoadTapeForNewGame(dialog.FileName);
                 SetLoadedMediaDisplayName(dialog.FileName);
                 SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
-                ShowMountedTapeTransportFeedback();
+                ShowMountedTapeTransportFeedback(showStopped: action == TapeFileAction.ChangeTape);
                 PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
                 if (owner == this)
                     screenBox.Focus();
@@ -133,9 +133,9 @@ namespace Derby
                     throw new InvalidOperationException("There is no mounted tape to replace.");
 
                 return extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase)
-                    ? Tape.TzxLoader.Mount(machine, path)
+                    ? Tape.TzxLoader.Mount(machine, path, startStopped: true)
                     : extension.Equals(".tap", StringComparison.OrdinalIgnoreCase)
-                        ? Tape.TapLoader.Mount(machine, path)
+                        ? Tape.TapLoader.Mount(machine, path, startStopped: true)
                         : throw new InvalidOperationException("Tape replacement requires a .tap or .tzx image.");
             }
         }

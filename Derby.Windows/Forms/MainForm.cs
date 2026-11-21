@@ -1066,13 +1066,14 @@ namespace Derby
             }
         }
 
-        private void ShowMountedTapeTransportFeedback()
+        private void ShowMountedTapeTransportFeedback(bool showStopped = false)
         {
             TapeTransportState state = machine.TapeTransportState;
-            tapeTransportOverlay.SetObservedState(state, machine.IsTapeStoppedAtMarker);
+            bool markerStop = machine.IsTapeStoppedAtMarker;
+            tapeTransportOverlay.SetObservedState(state, markerStop);
             UpdateTapeTransportMenuItem();
-            if (state == TapeTransportState.Playing)
-                tapeTransportOverlay.Show(state, markerStop: false, frameClock.ElapsedTicks);
+            if (state == TapeTransportState.Playing || (showStopped && state == TapeTransportState.Stopped))
+                tapeTransportOverlay.Show(state, markerStop, frameClock.ElapsedTicks);
         }
 
         private void UpdateTapeTransportFeedback(long nowTicks)

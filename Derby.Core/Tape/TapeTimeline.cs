@@ -82,9 +82,20 @@ public sealed partial class MountedTape
         if (blockIndex < 0 || blockIndex >= blocks.Count ||
             (blockIndex != 0 && !IsSeekableBlock(blockIndex)))
             return false;
-        ResetAt(blockIndex, 0);
+        ResetAt(blockIndex, 0, FindBoundaryEarLevel(blockIndex));
         playbackPaused = true;
         return true;
+    }
+
+    private bool? FindBoundaryEarLevel(int blockIndex)
+    {
+        // Metadata has no signal; a preceding waveform or stop is a different boundary.
+        int preceding = blockIndex - 1;
+        while (preceding >= 0 && blocks[preceding].Kind == TapeBlockKind.Metadata)
+            preceding--;
+        return preceding >= 0 && blocks[preceding].Kind == TapeBlockKind.SetSignalLevel
+            ? blocks[preceding].SignalLevel
+            : null;
     }
 
     private bool IsSeekableBlock(int index) =>

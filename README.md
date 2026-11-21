@@ -428,7 +428,7 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 ### Milestone 28 - Advanced Tape Transport
 - The modeless Tape Transport window has a single Choose tape action, playback controls, and a progress bar with sections and bookmarks. The existing tape shortcuts and display overlay are unchanged.
 - Named bookmarks remain available for the same image during the session. Rewind, section jumps, and exact bookmark restores leave the tape stopped without rewinding the Spectrum.
-- Change tape handles manual side changes without resetting the game. Persistent bookmarks, saved side pairing, and free scrubbing are outside the first version.
+- Change tape keeps the running game and leaves the replacement stopped until Play. Persistent bookmarks, saved side pairing, and free scrubbing are outside the first version.
 - Validated with Impossamole in 128K mode: restore the Amazon cue after swapping sides, play into the level, and stop at the next tape marker.
 
 ---
