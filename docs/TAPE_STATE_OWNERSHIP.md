@@ -34,7 +34,8 @@ retain mutable tape objects for direct cross-thread control.
    intent.
 3. `Stopped` retains the mounted tape and its exact cursor. The stop may be
    manual, automatic, or caused by a tape stop marker.
-4. `Ended` means the machine observed completion and released the mounted tape.
+4. `Ended` means playback completed. The machine detaches the tape from active
+   playback but keeps it in the deck for rewind or seeking.
 5. A stop marker pauses before the following block and remains distinguishable
    from an automatic loader handoff.
 6. A manual stop resets automatic-handoff tracking and must not be automatically
@@ -47,12 +48,14 @@ retain mutable tape objects for direct cross-thread control.
    EAR-sensitive read cancels the pending automatic stop.
 8. Mounting media replaces the previous tape, configures it for the current
    model clock, resets its cursor, and resets machine-level activity tracking.
+   A side replacement mounts stopped before the machine can consume any pulses.
 9. Physical tape ownership and loader continuation are separate. Loader policy
    decides when a continuation is created or cleared; a full machine reset
    clears both.
-10. Quick State captures the mounted media, exact tape cursor, public transport
-    state, automatic-handoff counters, and loader continuation as one aggregate.
-    Restore must reattach media before restoring tape and continuation state.
+10. Same-session Quick State captures the deck media, exact tape cursor, public
+    transport state, automatic-handoff counters, and loader continuation as one
+    aggregate. Restore keeps completed media in the deck without reattaching it
+    to active playback.
 11. Load strategy and continuation decisions are independent of media names and
     game hashes. A preloaded custom-loader handoff is accepted only when BASIC
     execution changed one unique loader wait loop in live RAM; unchanged or
@@ -64,13 +67,14 @@ retain mutable tape objects for direct cross-thread control.
 | --- | --- |
 | New machine or reset | Tape released, continuation cleared, `NoTape` |
 | Mount tape | Existing media replaced, incoming tape reset, `Playing` unless the tape itself starts stopped |
+| Change tape | Running machine preserved, replacement mounted at the start, `Stopped` |
 | Manual stop | Cursor preserved, automatic tracking reset, `Stopped` |
 | Manual resume | Cursor preserved and resumed, `Playing` unless already complete |
 | Stop marker | Cursor held before the next block, `Stopped` |
 | Recognised loader handoff | Cursor preserved, automatic stop may enter `Stopped` |
 | Recognised ROM tape read after automatic handoff | Playback may resume automatically |
 | Protected synchronization preamble reached before its loader begins reading | Pulse cursor held internally until sustained EAR-sensitive reads; public state remains `Playing` |
-| Playback completion | Tape released, `Ended` |
+| Playback completion | Active tape detached and retained in the deck, `Ended` |
 | Eject | Tape released, `NoTape` |
 | Quick State restore | All captured transport and continuation state restored consistently |
 

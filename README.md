@@ -407,7 +407,7 @@ compatibility; completed milestones remain regression baselines.
 | 25 | Complete | Kempston and AMX Mouse with Windows pointer capture, touchpad support, and software validation |
 | 26 | Complete | 48K/128K/grey +2/+2A/+3 profiles and verified read-only +3 drive A: |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
-| 28 | Planned | Advanced tape transport with pause/stop bookmarks, rewind, and manual seeking |
+| 28 | Refinement in progress | Tape Transport window with named tape sections, session bookmarks, and rewind |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
@@ -425,11 +425,11 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 - Use the ROM's **Loader** to boot after inserting a disk. A small transient `A:` badge shows disk activity without adding a title-bar status.
 - Captain Blood (Exxos), Garfield, and Into the Eagle's Nest load through the native Loader and enter gameplay. Disk writes, formatting, additional drives, full controller fidelity, and +3 Quick State are outside this read-only scope.
 
-### Milestone 28 - Advanced Tape Transport Planned
-- Remember positions at manual pauses and automatic pauses or stops, and show them as bookmarks for the mounted tape side
-- Allow rewinding to the start of the side, returning to a bookmark, or selecting a known block boundary while leaving the running game and machine state intact
-- Keep the tape stopped after repositioning until Play is pressed. Preserve exact pulse and EAR state when returning to a captured position; start at a valid playback boundary when seeking to a block
-- Validate with Impossamole, where levels can be selected out of order and may require a side change. The player chooses the side and position; the emulator does not guess which level was requested
+### Milestone 28 - Advanced Tape Transport
+- The modeless Tape Transport window has a single Choose tape action, playback controls, and a progress bar with sections and bookmarks. The existing tape shortcuts and display overlay are unchanged.
+- Named bookmarks remain available for the same image during the session. Rewind, section jumps, and exact bookmark restores leave the tape stopped without rewinding the Spectrum.
+- Change tape keeps the running game and leaves the replacement stopped until Play. Persistent bookmarks, saved side pairing, and free scrubbing are outside the first version.
+- Validated with Impossamole in 128K mode: restore the Amazon cue after swapping sides, play into the level, and stop at the next tape marker.
 
 ---
 

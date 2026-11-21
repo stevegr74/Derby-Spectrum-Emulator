@@ -81,6 +81,7 @@ namespace Derby.Tape
         public byte[]? DirectRecordingSamples { get; }
         public ushort DirectRecordingSampleTStates { get; }
         public bool? SignalLevel { get; }
+        internal string? TimelineLabel { get; private init; }
 
         public bool IsDataBlock => Kind == TapeBlockKind.Data;
         public byte Flag => StreamData == null || StreamData.Length == 0 ? (byte)0xFF : StreamData[0];
@@ -455,7 +456,7 @@ namespace Derby.Tape
                 high);
         }
 
-        public static TapeBlock CreateMetadata()
+        public static TapeBlock CreateMetadata(string? label = null)
         {
             return new TapeBlock(
                 TapeBlockKind.Metadata,
@@ -477,7 +478,7 @@ namespace Derby.Tape
                 null,
                 null,
                 0,
-                null);
+                null) { TimelineLabel = label };
         }
     }
 }

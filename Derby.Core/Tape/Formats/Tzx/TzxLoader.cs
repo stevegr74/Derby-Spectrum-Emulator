@@ -19,14 +19,15 @@ namespace Derby.Tape
         private const byte HeaderFlag = 0x00;
         private const int CpuClockHz48 = 3500000;
 
-        public static TapMountResult Mount(SpectrumMachine machine, string path)
+        public static TapMountResult Mount(SpectrumMachine machine, string path, bool startStopped = false)
         {
             if (machine == null)
                 throw new ArgumentNullException(nameof(machine));
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
-            var blocks = ParseBlocksForNewTapeLoad(File.ReadAllBytes(path), machine.MachineModel);
+            byte[] fileData = File.ReadAllBytes(path);
+            var blocks = ParseBlocksForNewTapeLoad(fileData, machine.MachineModel);
             if (blocks.Count == 0)
                 throw new InvalidOperationException("The .tzx file does not contain any supported tape blocks.");
 
@@ -35,7 +36,8 @@ namespace Derby.Tape
                 blocks,
                 skipCustomHeaderForEarPlayback: false,
                 initialEarLevelHigh: false);
-            machine.MountTape(tape);
+            machine.MountTape(tape, startStopped);
+            machine.IdentifyTapeImage(fileData);
             return new TapMountResult(blocks.Count, Path.GetFileName(path));
         }
 
@@ -46,15 +48,21 @@ namespace Derby.Tape
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
-            var blocks = ParseBlocksForNewTapeLoad(File.ReadAllBytes(path), machine.MachineModel);
+            byte[] fileData = File.ReadAllBytes(path);
+            var blocks = ParseBlocksForNewTapeLoad(fileData, machine.MachineModel);
             string displayName = Path.GetFileName(path);
             TapeLoadPlan plan = TapLoader.CreateExecutionPlan(machine, blocks);
-            return TapeExecutionEngine.Execute(
+            TapeExecutionResult result = TapeExecutionEngine.Execute(
                 machine,
                 displayName,
                 blocks,
                 plan,
                 initialEarLevelHigh: UsesStandardRomSignalStart(blocks));
+            if (!machine.HasTapeInDeck && blocks.Count != 0)
+                machine.KeepFastLoadedTapeImage(new MountedTape(displayName, blocks,
+                    skipCustomHeaderForEarPlayback: false, initialEarLevelHigh: false));
+            machine.IdentifyTapeImage(fileData);
+            return result;
         }
 
         public static TapBootstrapResult BootstrapBasicProgramAndMountRemaining(SpectrumMachine machine, string path)
@@ -412,12 +420,6 @@ namespace Derby.Tape
                         break;
                     }
 
-                    case 0x21:
-                        EnsureAvailable(fileData, offset, 1);
-                        offset += 1 + fileData[offset];
-                        blocks.Add(RawTzxBlock.FromTapeBlock(TapeBlock.CreateMetadata()));
-                        break;
-
                     case 0x22:
                         blocks.Add(RawTzxBlock.FromTapeBlock(TapeBlock.CreateMetadata()));
                         break;
@@ -492,11 +494,19 @@ namespace Derby.Tape
                         offset += 5;
                         break;
 
+                    case 0x21:
                     case 0x30:
+                    {
                         EnsureAvailable(fileData, offset, 1);
-                        offset += 1 + fileData[offset];
-                        blocks.Add(RawTzxBlock.FromTapeBlock(TapeBlock.CreateMetadata()));
+                        int length = fileData[offset++];
+                        EnsureAvailable(fileData, offset, length);
+                        string label = Encoding.Latin1.GetString(fileData, offset, length);
+                        label = new string(label.Select(c => char.IsControl(c) ? ' ' : c).ToArray()).Trim();
+                        blocks.Add(RawTzxBlock.FromTapeBlock(TapeBlock.CreateMetadata(
+                            string.IsNullOrEmpty(label) ? null : label)));
+                        offset += length;
                         break;
+                    }
 
                     case 0x31:
                         EnsureAvailable(fileData, offset, 2);

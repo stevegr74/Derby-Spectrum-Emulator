@@ -251,6 +251,7 @@ namespace Derby
         private UlaTimingProfile TimingProfile => UlaTimingProfile.ForFrameLength(frameTStates);
 
         public bool HasMountedTape => mountedTape != null;
+        public bool HasTapeInDeck => tapeTransport.HasTapeInDeck;
         public string? MountedTapeName => mountedTape?.DisplayName;
         public bool HasRzxPlayback => rzxPlayback != null;
         public string? RzxPlaybackName => rzxPlayback?.DisplayName;
@@ -442,7 +443,8 @@ namespace Derby
                     (activeTape?.IsExhaustedAndIdle == true && !HasPendingMountedLoadUsrContinuation);
                 if (tapeHasEnded && ReferenceEquals(mountedTape, activeTape))
                     tapeTransport.CompleteIfCurrent(activeTape);
-                else if (ReferenceEquals(mountedTape, activeTape) && activeTape != null)
+                else if (ReferenceEquals(mountedTape, activeTape) && activeTape != null &&
+                         !tapeActivity.AwaitingProtectedLoaderRead)
                     tapeTransport.SynchronizeState(activeTape);
 
                 tStatesBudget -= actualExecutedTStates;
@@ -843,9 +845,9 @@ namespace Derby
 
         public void DebugWritePort(ushort port, byte value) => WritePort(port, value);
 
-        public void MountTape(MountedTape tape)
+        public void MountTape(MountedTape tape, bool startStopped = false)
         {
-            tapeTransport.Mount(tape, CurrentCpuClockHz);
+            tapeTransport.Mount(tape, CurrentCpuClockHz, startStopped);
             ResetMountedTapeActivityTracking();
         }
 
@@ -857,6 +859,33 @@ namespace Derby
             TapeTransportState state = tapeTransport.Toggle(cpu.TStates);
             ResetMountedTapeActivityTracking();
             return state;
+        }
+
+        public TapeDeckView? CaptureTapeDeck() => tapeTransport.CaptureDeck(!HasPendingMountedLoadUsrContinuation);
+
+        internal void IdentifyTapeImage(byte[] data) =>
+            tapeTransport.NameDeckImage(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data)));
+
+        internal void KeepFastLoadedTapeImage(MountedTape tape) =>
+            tapeTransport.KeepFastLoadedImage(tape, CurrentCpuClockHz);
+
+        public TapeCue? CaptureTapeCue(TapeTimeline expected) => tapeTransport.CaptureCue(expected);
+
+        public bool TryToggleTapeDeck(TapeTimeline expected, TapeTransportState state)
+        {
+            if (state is not (TapeTransportState.Playing or TapeTransportState.Stopped)
+                || state != TapeTransportState || !tapeTransport.Matches(expected))
+                return false;
+            ToggleTapeTransport();
+            return true;
+        }
+
+        public bool TrySeekTape(TapeTimeline expected, int blockIndex, TapeCue? cue = null)
+        {
+            if (HasPendingMountedLoadUsrContinuation || !tapeTransport.Seek(expected, blockIndex, cue))
+                return false;
+            ResetMountedTapeActivityTracking();
+            return true;
         }
 
         public void AttachRzxPlayback(RzxPlaybackSession playback)

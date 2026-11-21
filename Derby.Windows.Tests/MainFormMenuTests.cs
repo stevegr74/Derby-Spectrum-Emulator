@@ -32,6 +32,7 @@ namespace Derby.Tests
                             "F4 - Display Size",
                             "---",
                             "F5 - Stop / Resume Tape",
+                            "Tape Transport...",
                             "---",
                             "F6 - Debugger / Disassembler",
                             "F7 - Quick State Manager...",
@@ -40,7 +41,6 @@ namespace Derby.Tests
                             "F9 - Load .sna Snapshot",
                             "F10 - Load .z80/.szx Snapshot / Play .rzx",
                             "F11 - Mount .tap or .tzx Tape Image",
-                            "Shift+F11 - Replace Tape (Preserve Machine)",
                             "---",
                             "F12 - Write Machine Diagnostic Dump",
                             "---",
@@ -206,7 +206,7 @@ namespace Derby.Tests
         }
 
         [Fact]
-        public void ReplaceMountedTape_PreservesRunningMachineState()
+        public void ReplaceMountedTape_PreservesMachineAndWaitsForPlay()
         {
             string tapePath = Path.Combine(Path.GetTempPath(), $"replacement-{Guid.NewGuid():N}.tap");
             File.WriteAllBytes(tapePath, [0x02, 0x00, 0xFF, 0xFF]);
@@ -223,6 +223,9 @@ namespace Derby.Tests
                     SpectrumMachine machine = form.MachineForTesting;
                     machine.Reset(SpectrumMachineModel.Spectrum48K);
                     machine.Cpu.Regs.PC = 0x8123;
+                    machine.PokeMemory(0x8123, 0xC3); // JP 8123h
+                    machine.PokeMemory(0x8124, 0x23);
+                    machine.PokeMemory(0x8125, 0x81);
                     machine.PokeMemory(0x9000, 0x5A);
                     machine.MountTape(new Tape.MountedTape("side-1.tzx", Array.Empty<Tape.TapeBlock>()));
 
@@ -237,6 +240,13 @@ namespace Derby.Tests
                     Assert.Equal((byte)0x5A, machine.PeekMemory(0x9000));
                     Assert.Equal(Path.GetFileName(tapePath), machine.MountedTapeName);
                     Assert.Equal(1, result.TotalBlockCount);
+                    Assert.Equal(Tape.TapeTransportState.Stopped, machine.TapeTransportState);
+                    string startingPosition = machine.GetMountedTapeDebugState();
+                    for (int i = 0; i < 10; i++)
+                        machine.ExecuteFrame();
+                    Assert.Equal(Tape.TapeTransportState.Stopped, machine.TapeTransportState);
+                    Assert.Equal(startingPosition, machine.GetMountedTapeDebugState());
+                    Assert.Equal(Tape.TapeTransportState.Playing, machine.ToggleTapeTransport());
                 }
                 catch (Exception exception)
                 {
