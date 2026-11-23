@@ -23,7 +23,10 @@ namespace Derby.Tests
                     Assert.True(form.ClientSize.Width >= 930);
 
                     ListBox sections = Descendants(form).OfType<ListBox>().Single();
-                    Assert.Equal(5, sections.Items.Count);
+                    Assert.Equal(
+                        ["Display and setup", "Tape and disk", "Saved states and diagnostics",
+                            "Debugger window", "Spectrum keyboard", "Joystick"],
+                        sections.Items.Cast<object>().Select(section => section.ToString()));
                     GroupBox details = Descendants(form).OfType<GroupBox>()
                         .Single(group => group.Text != "Sections");
 

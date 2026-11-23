@@ -2,55 +2,11 @@ namespace Derby
 {
     public partial class MainForm
     {
-        private void LoadSnaSnapshotFromDialog()
-        {
-            using var dialog = new OpenFileDialog
-            {
-                Title = "Load .sna Snapshot",
-                Filter = "Spectrum snapshots (*.sna)|*.sna|All files (*.*)|*.*",
-                CheckFileExists = true,
-                Multiselect = false
-            };
-            using IDisposable pauseLease = AcquireEmulationPauseLease();
+        private void LoadTapeFromDialog() => ChooseTapeFromDialog(this, TapeFileAction.StartNewGame);
 
-            if (dialog.ShowDialog(this) != DialogResult.OK)
-                return;
+        private void MountStoppedTapeFromDialog() => ChooseTapeFromDialog(this, TapeFileAction.MountStopped);
 
-            try
-            {
-                ExecuteWithEmulationPaused(() =>
-                {
-                    ClearHostAndSpectrumInputState();
-                    lock (machineLock)
-                    {
-                        SpectrumMachine newMachine = CreateConfiguredMachine();
-                        SnapshotLoader.Load(newMachine, dialog.FileName, selectedMachineModel);
-                        machine = newMachine;
-                    }
-                    ResetFrameScheduler();
-                    RecreateAudioPipeline();
-                    lock (machineLock)
-                        machine.ClearDebugHistory();
-                });
-                SetLoadedMediaDisplayName(dialog.FileName);
-                SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
-                PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
-                screenBox.Focus();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    this,
-                    $"Failed to load snapshot:\n{ex.Message}",
-                    "Snapshot Load Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-
-        private void MountTapFromDialog() => ChooseTapeFromDialog(this, TapeFileAction.StartNewGame);
-
-        private void ReplaceMountedTapeFromDialog() => ChooseTapeFromDialog(this, TapeFileAction.ChangeTape);
+        private static string StoppedTapeActionLabel(bool hasTape) => hasTape ? "Change Tape" : "Insert Tape";
 
         private void ChooseTapeFromDialog(Form owner) => ChooseTapeFromDialog(owner, null);
 
@@ -60,12 +16,14 @@ namespace Derby
             bool hasTape;
             lock (machineLock)
                 hasTape = machine.HasTapeInDeck;
-            if (!hasTape && shortcutAction == TapeFileAction.ChangeTape)
-                return;
-
             using var dialog = new OpenFileDialog
             {
-                Title = "Choose Tape",
+                Title = shortcutAction switch
+                {
+                    TapeFileAction.StartNewGame => "Load Tape",
+                    TapeFileAction.MountStopped => StoppedTapeActionLabel(hasTape),
+                    _ => "Choose Tape"
+                },
                 Filter = "Spectrum tape images (*.tap;*.tzx)|*.tap;*.tzx|All files (*.*)|*.*",
                 CheckFileExists = true,
                 Multiselect = false
@@ -85,13 +43,8 @@ namespace Derby
             try
             {
                 ClearHostAndSpectrumInputState();
-                if (action == TapeFileAction.ChangeTape)
-                    ReplaceMountedTape(dialog.FileName);
-                else
-                    LoadTapeForNewGame(dialog.FileName);
-                SetLoadedMediaDisplayName(dialog.FileName);
+                ApplyTapeFileAction(action, dialog.FileName);
                 SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
-                ShowMountedTapeTransportFeedback(showStopped: action == TapeFileAction.ChangeTape);
                 PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
                 if (owner == this)
                     screenBox.Focus();
@@ -105,6 +58,23 @@ namespace Derby
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void ApplyTapeFileAction(TapeFileAction action, string path)
+        {
+            if (action == TapeFileAction.MountStopped)
+            {
+                MountStoppedTape(path);
+                tapeTransportOverlay.SetObservedState(Tape.TapeTransportState.Stopped, markerStop: false);
+                tapeTransportOverlay.Clear();
+                UpdateTapeTransportMenuItem();
+                UpdateWindowTitle();
+                return;
+            }
+
+            LoadTapeForNewGame(path);
+            SetLoadedMediaDisplayName(path);
+            ShowMountedTapeTransportFeedback();
         }
 
         private void LoadTapeForNewGame(string path)
@@ -124,19 +94,17 @@ namespace Derby
                 machine.ClearDebugHistory();
         }
 
-        private Tape.TapMountResult ReplaceMountedTape(string path)
+        private void MountStoppedTape(string path)
         {
             string extension = Path.GetExtension(path);
             lock (machineLock)
             {
-                if (!machine.HasTapeInDeck)
-                    throw new InvalidOperationException("There is no mounted tape to replace.");
-
-                return extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase)
-                    ? Tape.TzxLoader.Mount(machine, path, startStopped: true)
-                    : extension.Equals(".tap", StringComparison.OrdinalIgnoreCase)
-                        ? Tape.TapLoader.Mount(machine, path, startStopped: true)
-                        : throw new InvalidOperationException("Tape replacement requires a .tap or .tzx image.");
+                if (extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase))
+                    Tape.TzxLoader.Mount(machine, path, startStopped: true);
+                else if (extension.Equals(".tap", StringComparison.OrdinalIgnoreCase))
+                    Tape.TapLoader.Mount(machine, path, startStopped: true);
+                else
+                    throw new InvalidOperationException("Insert or change tape requires a .tap or .tzx image.");
             }
         }
 
@@ -145,7 +113,8 @@ namespace Derby
             using var dialog = new OpenFileDialog
             {
                 Title = "Load Snapshot or RZX Recording",
-                Filter = "Spectrum snapshots and recordings (*.z80;*.szx;*.rzx)|*.z80;*.szx;*.rzx|All files (*.*)|*.*",
+                Filter = "Snapshots and recordings (*.sna;*.z80;*.szx;*.rzx)|*.sna;*.z80;*.szx;*.rzx" +
+                    "|Snapshots (*.sna;*.z80;*.szx)|*.sna;*.z80;*.szx|Recordings (*.rzx)|*.rzx|All files (*.*)|*.*",
                 CheckFileExists = true,
                 Multiselect = false
             };
@@ -153,66 +122,9 @@ namespace Derby
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
                 return;
-
             try
             {
-                string extension = Path.GetExtension(dialog.FileName);
-                if (extension.Equals(".rzx", StringComparison.OrdinalIgnoreCase))
-                {
-                    ExecuteWithEmulationPaused(() =>
-                    {
-                        ClearHostAndSpectrumInputState();
-                        lock (machineLock)
-                        {
-                            SpectrumMachine newMachine = CreateConfiguredMachine();
-                            RzxLoader.Load(newMachine, dialog.FileName);
-                            machine = newMachine;
-                        }
-                        ResetFrameScheduler();
-                        RecreateAudioPipeline();
-                        lock (machineLock)
-                            machine.ClearDebugHistory();
-                    });
-                }
-                else if (extension.Equals(".szx", StringComparison.OrdinalIgnoreCase))
-                {
-                    ExecuteWithEmulationPaused(() =>
-                    {
-                        ClearHostAndSpectrumInputState();
-                        lock (machineLock)
-                        {
-                            SpectrumMachine newMachine = CreateConfiguredMachine();
-                            SzxSnapshotLoader.Load(newMachine, dialog.FileName);
-                            machine = newMachine;
-                        }
-                        ResetFrameScheduler();
-                        RecreateAudioPipeline();
-                        lock (machineLock)
-                            machine.ClearDebugHistory();
-                    });
-                }
-                else if (extension.Equals(".z80", StringComparison.OrdinalIgnoreCase))
-                {
-                    ExecuteWithEmulationPaused(() =>
-                    {
-                        ClearHostAndSpectrumInputState();
-                        lock (machineLock)
-                        {
-                            SpectrumMachine newMachine = CreateConfiguredMachine();
-                            Z80SnapshotLoader.Load(newMachine, dialog.FileName, selectedMachineModel);
-                            machine = newMachine;
-                        }
-                        ResetFrameScheduler();
-                        RecreateAudioPipeline();
-                        lock (machineLock)
-                            machine.ClearDebugHistory();
-                    });
-                }
-                else
-                {
-                    throw new InvalidOperationException("Select a .z80 or .szx snapshot, or an .rzx recording.");
-                }
-                SetLoadedMediaDisplayName(dialog.FileName);
+                LoadSnapshotOrRecording(dialog.FileName);
                 SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
                 PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
                 screenBox.Focus();
@@ -221,11 +133,37 @@ namespace Derby
             {
                 MessageBox.Show(
                     this,
-                    $"Failed to load snapshot:\n{ex.Message}",
-                    "Snapshot Load Error",
+                    $"Failed to open snapshot or recording:\n{ex.Message}",
+                    "Snapshot or Recording Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void LoadSnapshotOrRecording(string path)
+        {
+            ExecuteWithEmulationPaused(() =>
+            {
+                ClearHostAndSpectrumInputState();
+                lock (machineLock)
+                {
+                    SpectrumMachine newMachine = CreateConfiguredMachine();
+                    switch (Path.GetExtension(path).ToLowerInvariant())
+                    {
+                        case ".sna": SnapshotLoader.Load(newMachine, path, selectedMachineModel); break;
+                        case ".z80": Z80SnapshotLoader.Load(newMachine, path, selectedMachineModel); break;
+                        case ".szx": SzxSnapshotLoader.Load(newMachine, path); break;
+                        case ".rzx": RzxLoader.Load(newMachine, path); break;
+                        default: throw new InvalidOperationException("Select a .sna, .z80 or .szx snapshot, or an .rzx recording.");
+                    }
+                    machine = newMachine;
+                }
+                ResetFrameScheduler();
+                RecreateAudioPipeline();
+                lock (machineLock)
+                    machine.ClearDebugHistory();
+                SetLoadedMediaDisplayName(path);
+            });
         }
     }
 }

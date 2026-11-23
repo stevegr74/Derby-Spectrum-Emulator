@@ -1111,7 +1111,7 @@ namespace Derby
                 ExportListing();
             else if (e.KeyCode == Keys.Enter && instructionList.ContainsFocus)
                 NavigateToSelectedTarget();
-            else if (e.KeyCode is Keys.F6 or Keys.Escape)
+            else if (e.KeyCode == Keys.Escape)
                 Close();
             else
                 return;

@@ -140,11 +140,12 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 
 ![Complete emulator context menu](images/context-menu.png)
 
-*Figure 3. The context menu follows function-key order, starts the media group with Disk Drive (F8), shows disabled commands in place, and places non-function-key tools last.*
+*Figure 3. The context menu follows function-key order, groups tape and disk together, and shows disabled commands in place.*
 
 - Retain native Windows menu rendering and submenu arrows.
 - Put keyboard shortcuts at the start of the label where the current menu does so.
-- Group state/display, transport, debugging, media, diagnostics, and optional tools with separators.
+- Separate setup, tape and disk, saved states and recordings, debugging, and input tools.
+- Use an ellipsis when a command needs a file choice, confirmation, or other input. Omit it when the command only opens a named tool window.
 - Keep unavailable actions visible but disabled when their location is useful for learning the interface.
 - Avoid deep submenu nesting; one level is the normal maximum.
 

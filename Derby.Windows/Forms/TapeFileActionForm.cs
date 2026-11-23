@@ -2,13 +2,13 @@ namespace Derby;
 
 internal enum TapeFileAction
 {
-    ChangeTape,
+    MountStopped,
     StartNewGame
 }
 
 internal sealed class TapeFileActionForm : Form
 {
-    internal TapeFileAction Action { get; private set; } = TapeFileAction.ChangeTape;
+    internal TapeFileAction Action { get; private set; } = TapeFileAction.MountStopped;
 
     internal TapeFileActionForm(string fileName)
     {
