@@ -26,8 +26,8 @@ This project focuses on correctness, clean architecture, and incremental develop
 - Optional Kempston or AMX Mouse with click-to-capture and Escape release
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
 - Platform-neutral headless core with Windows presentation/audio adapters
-- Paused `F6` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
-- Paused `F7` Quick State Manager with eight persistent slots, thumbnails, metadata, and live-session restoration for supported models (not +3)
+- Paused `F11` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
+- Paused `F10` Quick State Manager with eight persistent slots, thumbnails, metadata, and live-session restoration for supported models (not +3)
 - Paused Poke Manager with an editable validated library, checksum-aware suggestions, mapped or physical-bank one-off writes, previews, and guarded restoration
 - Headless manual diagnostics and Z80 compliance runners
 
@@ -224,18 +224,18 @@ that do not consume a function key.
 | `F2` | Toggle compact mint top-right FPS, model, tape, and display diagnostics |
 | `F3` | Reset and cycle 128K, 48K, grey +2, +2A, and +3 machine profiles |
 | `F4` | Cycle fixed display size |
-| `F5` | Stop or resume the mounted tape without ejecting it |
-| `F6` | Open the debugger and disassembler, paused on an immutable machine capture |
-| `F7` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F5` | Play, stop, or resume the inserted tape without ejecting it |
+| `Shift+F5` | Open Tape Transport |
+| `F6` | Load a `.tap` or `.tzx` tape as a new game |
+| `F7` | Insert or change tape without resetting; press Play or `F5` when ready |
 | `F8` | Open the read-only disk drive; inserting from another model asks before switching to +3 and resetting |
-| `F9` | Load a 48K or 128K `.sna` snapshot |
-| `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
-| `F11` | Mount a `.tap` or `.tzx` tape image |
-| `Shift+F11` | Replace the mounted tape without resetting the running machine |
+| `F9` | Load a `.sna`, `.z80`, or `.szx` snapshot, or play an `.rzx` recording |
+| `F10` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F11` | Open the debugger and disassembler, paused on an immutable machine capture |
 | `F12` | Write a machine diagnostic dump |
 
-The right-click menu mirrors these actions and adds machine/display selection,
-Keyboard, Joystick, Mouse, and the Poke Manager. The debugger,
+The right-click menu mirrors these actions, offers direct machine and display
+selection, and adds Keyboard, Joystick, Mouse, and the Poke Manager. The debugger,
 Quick State Manager, and inspection dialogs pause through nested-safe leases.
 See the [User Guide](docs/USER_GUIDE.md) for complete operation, tape transport,
 controller mapping, persistent Quick State, poke, and debugger instructions.
@@ -318,7 +318,7 @@ Current snapshot status:
   - restores the SZX `WZ/MEMPTR` field alongside the documented CPU and execution state
   - self-contained 48K and 128K construction, load, and execution smoke tests cover the supported subset
 
-Snapshots can be loaded with `F9` (`.sna`) and `F10` (`.z80` or `.szx`) in the UI.
+The `F9` picker loads `.sna`, `.z80`, and `.szx` snapshots and plays `.rzx` recordings.
 
 RZX replay accepts embedded SNA, Z80, and SZX start snapshots. The loader uses
 the last snapshot before recorded input begins and ignores later checkpoint
@@ -421,14 +421,14 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 - Fingerprints the complete bundled four-ROM set while deliberately keeping address-based tape traps disabled for +2A ROM internals
 - Validated the production +2A ROM through automated boot/display smoke coverage and a live startup/debugger acceptance pass
 - The distinct +3 profile provides a read-only, polled uPD765 controller subset and standard/Extended CPC DSK media. Drive A: is driven by the native +3 ROM and games, not the host tape transport.
-- Use `F8 - Disk Drive` for Insert, Replace, and Eject. Disk swaps preserve the running machine; switching to +3 from another model requires confirmation. `F5`, `F11`, and `Shift+F11` remain tape-only.
+- Use `F8 - Disk Drive` for Insert, Replace, and Eject. Disk swaps preserve the running machine; switching to +3 from another model requires confirmation.
 - Use the ROM's **Loader** to boot after inserting a disk. A small transient `A:` badge shows disk activity without adding a title-bar status.
 - Captain Blood (Exxos), Garfield, and Into the Eagle's Nest load through the native Loader and enter gameplay. Disk writes, formatting, additional drives, full controller fidelity, and +3 Quick State are outside this read-only scope.
 
 ### Milestone 28 - Advanced Tape Transport
-- The modeless Tape Transport window has a single Choose tape action, playback controls, and a progress bar with sections and bookmarks. The existing tape shortcuts and display overlay are unchanged.
+- Open the modeless Tape Transport window with `Shift+F5`. It has a single Choose tape action, playback controls, and a progress bar with sections and bookmarks.
 - Named bookmarks remain available for the same image during the session. Rewind, section jumps, and exact bookmark restores leave the tape stopped without rewinding the Spectrum.
-- Change tape keeps the running game and leaves the replacement stopped until Play. Persistent bookmarks, saved side pairing, and free scrubbing are outside the first version.
+- Insert Tape and Change Tape keep the running game and leave the selected tape stopped until Play. The title adds a short tape name only if it differs from the game source or there is no named game; Tape Transport shows the full filename. Persistent bookmarks, saved side pairing, and free scrubbing are outside the first version.
 - Validated with Impossamole in 128K mode: restore the Amazon cue after swapping sides, play into the level, and stop at the next tape marker.
 
 ---

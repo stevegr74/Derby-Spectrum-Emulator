@@ -85,105 +85,9 @@ namespace Derby
             if (e.KeyCode == Keys.F4 && e.Alt)
                 return;
 
-            if (IsPlainShortcut(e, Keys.F1))
+            if (GetMainShortcutAction(e.KeyData) is { } action)
             {
-                ToggleHelpWindow();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F2))
-            {
-                ToggleStatusOverlay();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F3))
-            {
-                CycleMachineProfile();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F5))
-            {
-                ToggleTapeTransport();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F6))
-            {
-                ToggleDisassemblerWindow();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F7))
-            {
-                OpenQuickStateManager();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (e.KeyCode == Keys.F4 && !e.Alt && !e.Control && !e.Shift)
-            {
-                SelectDisplayMode(SpectrumDisplayModes.Next(displayMode));
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F8))
-            {
-                OpenDiskDrive();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F9))
-            {
-                LoadSnaSnapshotFromDialog();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F10))
-            {
-                LoadSnapshotOrRecordingFromDialog();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsTapeReplacementShortcut(e))
-            {
-                ReplaceMountedTapeFromDialog();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F11))
-            {
-                MountTapFromDialog();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (IsPlainShortcut(e, Keys.F12))
-            {
-                DumpMachineDebugState();
+                action();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
                 return;
@@ -203,24 +107,30 @@ namespace Derby
             e.SuppressKeyPress = true;
         }
 
-        private static bool IsTapeReplacementShortcut(KeyEventArgs e) =>
-            e.KeyCode == Keys.F11 && e.Shift && !e.Control && !e.Alt;
+        private Action? GetMainShortcutAction(Keys keyData) => keyData switch
+        {
+            Keys.F1 => ToggleHelpWindow,
+            Keys.F2 => ToggleStatusOverlay,
+            Keys.F3 => CycleMachineProfile,
+            Keys.F4 => () => SelectDisplayMode(SpectrumDisplayModes.Next(displayMode)),
+            Keys.F5 => ToggleTapeTransport,
+            (Keys.Shift | Keys.F5) => OpenTapeDeck,
+            Keys.F6 => LoadTapeFromDialog,
+            Keys.F7 => MountStoppedTapeFromDialog,
+            Keys.F8 => OpenDiskDrive,
+            Keys.F9 => LoadSnapshotOrRecordingFromDialog,
+            Keys.F10 => OpenQuickStateManager,
+            Keys.F11 => ToggleDisassemblerWindow,
+            Keys.F12 => DumpMachineDebugState,
+            _ => null
+        };
 
         private void MainForm_KeyUp(object? sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F4 && e.Alt)
                 return;
 
-            if (IsPlainShortcut(e, Keys.F1) || IsPlainShortcut(e, Keys.F2) ||
-                IsPlainShortcut(e, Keys.F3) || IsPlainShortcut(e, Keys.F5) ||
-                IsPlainShortcut(e, Keys.F6) || IsPlainShortcut(e, Keys.F7) || IsPlainShortcut(e, Keys.F8))
-            {
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-                return;
-            }
-
-            if (e.KeyCode == Keys.F4 && !e.Alt && !e.Control && !e.Shift)
+            if (GetMainShortcutAction(e.KeyData) != null)
             {
                 e.Handled = true;
                 e.SuppressKeyPress = true;

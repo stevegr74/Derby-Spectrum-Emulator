@@ -25,6 +25,7 @@ public sealed class TapeDeckFormTests
                     Assert.False(GetButton(form, "Add bookmark...").Enabled);
                     GetButton(form, "Choose tape...").PerformClick();
                     Assert.NotNull(machine.MountedTape);
+                    Assert.Contains(Descendants(form).OfType<Label>(), label => label.Text == "Side A.tzx");
                     Assert.DoesNotContain(Descendants(form).OfType<Button>(), button =>
                         button.Text is "Details" or "Go to block" or "Replace tape..." or "Load tape...");
                     ListBox positions = MarkerList(form);
@@ -93,7 +94,7 @@ public sealed class TapeDeckFormTests
                     Assert.Same(GetButton(form, "Change tape"), form.AcceptButton);
                     form.AcceptButton!.PerformClick();
                     Assert.Equal(DialogResult.OK, form.DialogResult);
-                    Assert.Equal(TapeFileAction.ChangeTape, form.Action);
+                    Assert.Equal(TapeFileAction.MountStopped, form.Action);
                 }
                 using (var form = new TapeFileActionForm("Another game.tzx"))
                 {

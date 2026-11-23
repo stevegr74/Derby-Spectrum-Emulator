@@ -28,6 +28,7 @@ namespace Derby
         private const int PostLoadInputSuppressionMilliseconds = 250;
         private const string ApplicationTitle = "DERBY";
         private const int MaximumMediaTitleLength = 48;
+        private const int MaximumTapeTitleLength = 32;
         private const int QuickStateSlotCount = 8;
 
         private int framesRenderedThisSecond;
@@ -60,11 +61,12 @@ namespace Derby
         private readonly ToolStripMenuItem enhanced3xDisplayMenuItem = new ToolStripMenuItem("3x Enhanced");
         private readonly ToolStripMenuItem machineMenuItem = new ToolStripMenuItem("F3 - Machine");
         private readonly ToolStripMenuItem statusOverlayMenuItem = new ToolStripMenuItem("F2 - Status Overlay");
-        private readonly ToolStripMenuItem tapeTransportMenuItem = new ToolStripMenuItem("F5 - Stop / Resume Tape");
-        private readonly ToolStripMenuItem disassemblerMenuItem = new ToolStripMenuItem("F6 - Debugger / Disassembler");
-        private readonly ToolStripMenuItem quickStateManagerMenuItem = new ToolStripMenuItem("F7 - Quick State Manager...");
+        private readonly ToolStripMenuItem tapeTransportMenuItem = new();
+        private readonly ToolStripMenuItem stoppedTapeMenuItem = new();
+        private readonly ToolStripMenuItem disassemblerMenuItem = new ToolStripMenuItem("F11 - Debugger / Disassembler");
+        private readonly ToolStripMenuItem quickStateManagerMenuItem = new ToolStripMenuItem("F10 - Quick State Manager");
         private readonly ToolStripMenuItem joystickMenuItem = new ToolStripMenuItem("Joystick");
-        private readonly ToolStripMenuItem pokeManagerMenuItem = new ToolStripMenuItem("Poke Manager...");
+        private readonly ToolStripMenuItem pokeManagerMenuItem = new ToolStripMenuItem("Poke Manager");
 
         private readonly string romFolder;
         private SpectrumRomSet bundled128RomSet = null!;
@@ -221,21 +223,20 @@ namespace Derby
 
             tapeTransportMenuItem.Click += (_, _) => ToggleTapeTransport();
             displayContextMenu.Items.Add(tapeTransportMenuItem);
-            displayContextMenu.Items.Add("Tape Transport...", null, (_, _) => OpenTapeDeck());
+            displayContextMenu.Items.Add("Shift+F5 - Tape Transport", null, (_, _) => OpenTapeDeck());
+            displayContextMenu.Items.Add("F6 - Load Tape...", null, (_, _) => LoadTapeFromDialog());
+            stoppedTapeMenuItem.Click += (_, _) => MountStoppedTapeFromDialog();
+            displayContextMenu.Items.Add(stoppedTapeMenuItem);
+            displayContextMenu.Items.Add("F8 - Disk Drive", null, (_, _) => OpenDiskDrive());
+            displayContextMenu.Items.Add(new ToolStripSeparator());
+
+            displayContextMenu.Items.Add("F9 - Load Snapshot / Play Recording...", null, (_, _) => LoadSnapshotOrRecordingFromDialog());
+            quickStateManagerMenuItem.Click += (_, _) => OpenQuickStateManager();
+            displayContextMenu.Items.Add(quickStateManagerMenuItem);
             displayContextMenu.Items.Add(new ToolStripSeparator());
 
             disassemblerMenuItem.Click += (_, _) => ToggleDisassemblerWindow();
             displayContextMenu.Items.Add(disassemblerMenuItem);
-
-            quickStateManagerMenuItem.Click += (_, _) => OpenQuickStateManager();
-            displayContextMenu.Items.Add(quickStateManagerMenuItem);
-
-            displayContextMenu.Items.Add(new ToolStripSeparator());
-            displayContextMenu.Items.Add("F8 - Disk Drive...", null, (_, _) => OpenDiskDrive());
-            displayContextMenu.Items.Add("F9 - Load .sna Snapshot", null, (_, _) => LoadSnaSnapshotFromDialog());
-            displayContextMenu.Items.Add("F10 - Load .z80/.szx Snapshot / Play .rzx", null, (_, _) => LoadSnapshotOrRecordingFromDialog());
-            displayContextMenu.Items.Add("F11 - Mount .tap or .tzx Tape Image", null, (_, _) => MountTapFromDialog());
-            displayContextMenu.Items.Add(new ToolStripSeparator());
             displayContextMenu.Items.Add("F12 - Write Machine Diagnostic Dump", null, (_, _) => DumpMachineDebugState());
             displayContextMenu.Items.Add(new ToolStripSeparator());
             displayContextMenu.Items.Add("Keyboard", null, (_, _) => OpenOnScreenKeyboard());
@@ -305,9 +306,6 @@ namespace Derby
             };
         }
 
-        private static bool IsPlainShortcut(KeyEventArgs e, Keys key) =>
-            e.KeyCode == key && !e.Alt && !e.Control && !e.Shift;
-
         private void ToggleStatusOverlay()
         {
             isStatusOverlayVisible = !isStatusOverlayVisible;
@@ -340,13 +338,24 @@ namespace Derby
 
         private void UpdateTapeTransportMenuItem()
         {
-            TapeTransportState state = machine.TapeTransportState;
+            TapeTransportState state;
+            TapeTransportTransition transition;
+            bool hasTape;
+            lock (machineLock)
+            {
+                state = machine.TapeTransportState;
+                transition = machine.LastTapeTransportTransition;
+                hasTape = machine.HasTapeInDeck;
+            }
+            stoppedTapeMenuItem.Text = $"F7 - {StoppedTapeActionLabel(hasTape)}...";
             tapeTransportMenuItem.Enabled = state is TapeTransportState.Playing or TapeTransportState.Stopped;
             tapeTransportMenuItem.Text = state switch
             {
                 TapeTransportState.Playing => "F5 - Stop Tape",
+                TapeTransportState.Stopped when transition == TapeTransportTransition.Mounted => "F5 - Play Tape",
                 TapeTransportState.Stopped => "F5 - Resume Tape",
-                _ => "F5 - Stop / Resume Tape"
+                _ when hasTape => "F5 - Tape at End",
+                _ => "F5 - No Tape Inserted"
             };
         }
 
@@ -1066,13 +1075,13 @@ namespace Derby
             }
         }
 
-        private void ShowMountedTapeTransportFeedback(bool showStopped = false)
+        private void ShowMountedTapeTransportFeedback()
         {
             TapeTransportState state = machine.TapeTransportState;
             bool markerStop = machine.IsTapeStoppedAtMarker;
             tapeTransportOverlay.SetObservedState(state, markerStop);
             UpdateTapeTransportMenuItem();
-            if (state == TapeTransportState.Playing || (showStopped && state == TapeTransportState.Stopped))
+            if (state == TapeTransportState.Playing)
                 tapeTransportOverlay.Show(state, markerStop, frameClock.ElapsedTicks);
         }
 
@@ -1093,7 +1102,13 @@ namespace Derby
             string mediaTitle = loadedMediaDisplayName is null
                 ? string.Empty
                 : $" - {loadedMediaDisplayName}";
-            Text = $"{ApplicationTitle}{mediaTitle}";
+            string? tapeFileName = ReadTapeDeck()?.Timeline.FileName;
+            string? tapeName = loadedMediaDisplayName != null &&
+                string.Equals(tapeFileName, loadedMediaIdentity?.FileName, StringComparison.OrdinalIgnoreCase)
+                ? null
+                : ShortenMediaTitle(Path.GetFileNameWithoutExtension(tapeFileName)?.Trim(), MaximumTapeTitleLength);
+            string tapeTitle = tapeName is null ? string.Empty : $" | Tape: {tapeName}";
+            Text = $"{ApplicationTitle}{mediaTitle}{tapeTitle}";
         }
 
         private void SetLoadedMediaDisplayName(string path)
@@ -1105,15 +1120,15 @@ namespace Derby
             UpdateWindowTitle();
         }
 
-        private static string? ShortenMediaTitle(string name)
+        private static string? ShortenMediaTitle(string? name, int maximumLength = MaximumMediaTitleLength)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return null;
-            if (name.Length <= MaximumMediaTitleLength)
+            if (name.Length <= maximumLength)
                 return name;
 
             const int suffixLength = 12;
-            int prefixLength = MaximumMediaTitleLength - suffixLength - 3;
+            int prefixLength = maximumLength - suffixLength - 3;
             return $"{name[..prefixLength]}...{name[^suffixLength..]}";
         }
 

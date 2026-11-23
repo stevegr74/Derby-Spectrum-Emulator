@@ -8,24 +8,27 @@ namespace Derby
 
         private static readonly HelpSection[] Sections =
         [
-            new("Display and state",
+            new("Display and setup",
             [
                 ("F1", "Show or close this help window"),
                 ("F2", "Show or hide compact FPS, model, tape, and display diagnostics"),
                 ("F3", "Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles"),
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
-                ("F5", "Stop or resume tape; its state appears in the on-screen transport badge"),
-                ("F6", "Open or close the paused debugger and disassembler"),
-                ("F7", "Open the paused eight-slot Quick State Manager (not available on +3)"),
-                ("Right-click", "Open the emulator menu, including Tape Transport")
+                ("Right-click", "Open the emulator menu")
             ]),
-            new("Loading and diagnostics",
+            new("Tape and disk",
             [
-                ("F8", "Insert, replace, or eject a read-only +3 disk. Use Loader in the +3 menu to start a disk game."),
-                ("F9", "Load a 48K or 128K .sna snapshot"),
-                ("F10", "Load a .z80 or .szx snapshot, or play an .rzx recording"),
-                ("F11", "Mount a .tap or .tzx tape image"),
-                ("Shift+F11", "Replace the mounted tape while preserving the running machine for multi-side releases"),
+                ("F5", "Play, stop, or resume the tape"),
+                ("Shift+F5", "Open Tape Transport to inspect, rewind, or choose a position"),
+                ("F6", "Load a .tap or .tzx tape as a new game"),
+                ("F7", "Insert or change tape without resetting. Press Play or F5 when ready."),
+                ("F8", "Open Disk Drive for read-only +3 disk images")
+            ]),
+            new("Saved states and diagnostics",
+            [
+                ("F9", "Load a .sna, .z80, or .szx snapshot, or play an .rzx recording"),
+                ("F10", "Open the paused eight-slot Quick State Manager (not available on +3)"),
+                ("F11", "Open the paused debugger and disassembler"),
                 ("F12", "Write a machine diagnostic dump")
             ]),
             new("Debugger window",

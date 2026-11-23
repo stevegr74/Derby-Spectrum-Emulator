@@ -1,12 +1,63 @@
 using System.Reflection;
 using System.Drawing;
 using System.Windows.Forms;
+using Derby.Debugging;
 using Xunit;
 
 namespace Derby.Tests
 {
     public class DisassemblerFormInteractionTests
     {
+        [Fact]
+        public void DebuggerShortcuts_F6DoesNotClose_F11StepsInto_EscapeCloses()
+        {
+            DirectoryInfo folder = Directory.CreateTempSubdirectory("derby-debugger-");
+            string settingsPath = Path.Combine(folder.FullName, "disassembler.json");
+            Exception? failure = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    DisassemblySnapshot snapshot = CreateSnapshotWithCpu();
+                    var commands = new List<DebuggerExecutionCommand>();
+                    using var form = new DisassemblerForm(() => snapshot, new DebuggerExecutionController(),
+                        (command, _) => commands.Add(command), new DisassemblerWindowSettingsStore(settingsPath));
+                    form.Show();
+                    MethodInfo keyDown = typeof(DisassemblerForm).GetMethod(
+                        "DisassemblerForm_KeyDown", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+                    Assert.False(Press(Keys.F6).Handled);
+                    Assert.True(form.Visible);
+                    Assert.Empty(commands);
+
+                    Assert.True(Press(Keys.F11).Handled);
+                    Assert.Equal(DebuggerExecutionCommand.StepInto, Assert.Single(commands));
+                    Assert.True(form.Visible);
+
+                    Assert.True(Press(Keys.Escape).Handled);
+                    Assert.True(form.IsDisposed);
+
+                    KeyEventArgs Press(Keys key)
+                    {
+                        var args = new KeyEventArgs(key);
+                        keyDown.Invoke(form, [form, args]);
+                        return args;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failure = ex;
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The debugger shortcut test timed out.");
+            File.Delete(settingsPath);
+            folder.Delete();
+            if (failure != null)
+                throw new Xunit.Sdk.XunitException(failure.ToString());
+        }
+
         [Fact]
         public void Form_ShowsDataReferencesAndInspectsFrozenMemory()
         {

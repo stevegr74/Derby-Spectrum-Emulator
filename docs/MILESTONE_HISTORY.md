@@ -107,7 +107,7 @@ status table in the main README remains the authoritative roadmap summary.
   ULA, AY, compressed pages, arbitrary chunk order, and supported optional state.
 - Rejected unsupported machines, timing variants, active peripherals, Fuller AY
   routing, and paged Multiface state rather than approximating them.
-- Integrated SZX with F10, media identity, lifecycle cleanup, the manual harness,
+- Integrated SZX with the snapshot picker, media identity, lifecycle cleanup, the manual harness,
   and focused parsing, restoration, rejection, and execution tests.
 
 ## Milestone 24 - On-Screen Keyboard
@@ -127,7 +127,7 @@ status table in the main README remains the authoritative roadmap summary.
 
 ## Milestone 27 - Eight-Slot Quick State Manager
 
-- Replaced separate save/load shortcuts with one paused F7 manager containing
+- Replaced separate save/load shortcuts with one paused manager containing
   eight persistent, visible slots.
 - Added thumbnails, media and machine metadata, capture times, confirmed replace
   and delete actions, and full live-session machine/media restoration.

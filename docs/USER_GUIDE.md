@@ -68,7 +68,7 @@ loaded media. Custom ROM loading is not exposed.
 ### First Use
 
 1. Press `F1` to open the built-in control reference.
-2. Press `F8` for +3 disk images, `F9` or `F10` for snapshots or recordings, or `F11` for tapes.
+2. Press `F6` to load a tape, `F8` for +3 disk images, or `F9` for snapshots or recordings.
 3. Use the PC keyboard as the Spectrum keyboard, or configure a USB controller from the right-click menu.
 4. Right-click the display whenever you prefer menus to function keys.
 
@@ -82,7 +82,7 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 
 ![Built-in Help window](images/help-controls.png)
 
-*Figure 2.1. Help groups display, loading, debugger, keyboard, and joystick controls.*
+*Figure 2.1. Built-in Help showing the tape and disk shortcuts.*
 
 | Key | Action |
 | --- | --- |
@@ -90,22 +90,22 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F2` | Show or hide the status overlay |
 | `F3` | Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles |
 | `F4` | Cycle 1x Native, 2x Enhanced, and 3x Enhanced display sizes |
-| `F5` | Stop or resume the mounted tape |
-| `F6` | Open or close the paused debugger and disassembler |
-| `F7` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F5` | Play, stop, or resume the inserted tape |
+| `Shift+F5` | Open Tape Transport |
+| `F6` | Load a `.tap` or `.tzx` tape as a new game |
+| `F7` | Insert or change tape without resetting; press Play or `F5` when ready |
 | `F8` | Open the read-only +3 disk drive dialog |
-| `F9` | Load a `.sna` snapshot |
-| `F10` | Load a `.z80` or `.szx` snapshot, or play an `.rzx` recording |
-| `F11` | Mount a `.tap` or `.tzx` tape image |
-| `Shift+F11` | Replace the mounted tape while preserving the running machine |
+| `F9` | Load a `.sna`, `.z80`, or `.szx` snapshot, or play an `.rzx` recording |
+| `F10` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F11` | Open the paused debugger and disassembler |
 | `F12` | Write a machine diagnostic dump |
 | Right-click | Open the complete context menu |
 
-The context menu presents assigned function-key actions in order, with **Tape Transport...** next to F5. Keyboard, Joystick, Mouse, and the Poke Manager follow the function-key groups.
+The context menu keeps function keys in order and groups tape and disk, saved states and recordings, and debugging. Keyboard, Joystick, Mouse, and the Poke Manager follow those groups.
 
 ![Complete right-click context menu](images/context-menu.png)
 
-*Figure 2.2. Disk Drive (F8) starts the media group, followed by snapshot, replay, and tape commands. Unavailable actions remain visible but disabled.*
+*Figure 2.2. Tape commands and Disk Drive share a group. Unavailable actions remain visible but disabled.*
 
 ## Chapter 3 - Display And Status
 
@@ -125,9 +125,11 @@ Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, model
 
 ### Window Title
 
-When media is loaded, its filename appears in the window title. Tape transport state is deliberately kept in the on-screen badge and optional status overlay rather than permanently expanding the title.
+The main window title shows the game or program first. A short `Tape:` label appears for a different tape, such as the next side, or when you insert a tape without a named game. The original game tape is not listed twice, and playback state stays out of the title. Tape Transport always shows the current tape filename; hover over a shortened label to read the full filename.
 
 ### Tape Badge
+
+Inserting or changing a stopped tape clears any previous badge without showing a pause indicator. The badge appears when playback starts.
 
 Tape state changes appear at the top left of the emulated display:
 
@@ -194,7 +196,7 @@ TR-DOS snapshots are rejected because the emulator does not provide a TR-DOS ROM
 
 ### Z80 Snapshots
 
-Press `F10` and choose a `.z80` file.
+Press `F9` and choose a `.z80` file.
 
 The emulator supports Z80 v1, v2, and v3 snapshots, including applicable 128K
 paging and RAM-bank state. A 48K-layout snapshot keeps 48K memory and timing.
@@ -203,7 +205,7 @@ snapshots follow their Melodik metadata. Fuller AY port routing is rejected.
 
 ### SZX Snapshots
 
-Press `F10` and choose an `.szx` file.
+Press `F9` and choose an `.szx` file.
 
 SZX 1.x snapshots for the exact 48K and original 128K models restore supported
 CPU execution state, including the undocumented Z80 WZ/MEMPTR latch, RAM,
@@ -224,17 +226,17 @@ loaded inaccurately.
 
 ### RZX Recordings
 
-Press `F10` and choose an `.rzx` recording. Embedded SNA, Z80, and SZX start snapshots are supported; when a recording contains later checkpoint snapshots, the last snapshot before recorded input begins is used as the initial state. Recorded input has priority over live joystick port input so replay remains deterministic. Quick State also preserves the replay position.
+Press `F9` and choose an `.rzx` recording. The same picker shows snapshots and recordings by default, with separate filters for each. Embedded SNA, Z80, and SZX start snapshots are supported; when a recording contains later checkpoint snapshots, the last snapshot before recorded input begins is used as the initial state. Recorded input has priority over live joystick port input so replay remains deterministic. Quick State also preserves the replay position.
 
 ## Chapter 6 - Tape Images And Multi-load Games
 
 Tape images reproduce a loading process rather than a finished machine state. The emulator accelerates only the loader paths it can represent safely and falls back to ROM/pulse loading for ambiguous or protected sequences.
 
-Press `F11` and choose a `.tap` or `.tzx` image.
+Press `F6` (**Load Tape...**) and choose a `.tap` or `.tzx` image to reset the Spectrum and start loading.
 
-For a multi-side release, press `Shift+F11` when it's time to change sides, or
-open **Tape Transport...** and choose **Change tape** from **Choose tape...**.
-The replacement stays stopped without resetting the running game. Go to the
+Press `F7` to put a tape in the deck without resetting. The context menu
+labels this **Insert Tape...** when the deck is empty and **Change Tape...** when
+there is already a tape in it. The selected tape stays stopped. Go to the
 required section if needed, then press Play or `F5`.
 
 ### Automatic Loading
@@ -260,11 +262,11 @@ Use `F3` before mounting the tape when you want to test the other machine model.
 
 ### Manual Tape Control
 
-Use `F5` to stop or resume the mounted tape without ejecting it. Resume only when the game asks for more tape input.
+Use `F5` to **Play Tape** just after insertion, **Stop Tape** during playback, or **Resume Tape** after a stop. The menu item is disabled when it reads **No Tape Inserted** or **Tape at End**. An ended tape stays in the deck; rewind it or choose a position in Tape Transport before playing again.
 
 The emulator also handles supported TZX pauses, stop markers, tape end, and detected loader handoffs automatically. A stopped tape remains mounted and can be resumed. Brief pulse-synchronization holds used by protected loaders remain internal, so they do not flash misleading stop/play feedback.
 
-Right-click the display and open **Tape Transport...**, then click **Choose tape...**. If there's already a tape in the deck, **Change tape** is the default and keeps the running game. The replacement stays stopped, so you can go to a section or bookmark before pressing Play. Choose **Start new game** to reset the Spectrum and load the tape from the start. F11 still loads a new game, and Shift+F11 still changes the tape without resetting.
+Press `Shift+F5` or choose **Tape Transport** from the right-click menu, then click **Choose tape...**. With an empty deck, this starts a new game. If there's already a tape in the deck, **Change tape** is the default and keeps the running game. The replacement stays stopped, so you can go to a section or bookmark before pressing Play. Choose **Start new game** to reset the Spectrum and load the tape from the start. Use `F7` to insert a stopped tape even when the deck is empty.
 
 The progress bar shows named tape sections as dark ticks, your bookmarks as teal dots, and the last stop as an amber tick. When the tape is stopped, select a section or bookmark in the list or on the bar, then choose **Go to**. Only tapes with embedded names show sections. **Add bookmark...** names the current stopped position or a selected stop, and **Edit...** renames or deletes a bookmark. Rewinding and jumping leave the tape stopped and do not rewind the Spectrum.
 
@@ -274,13 +276,13 @@ Bookmarks reappear when you return to the same tape image during the session. Th
 
 1. Confirm the correct 48K/128K model was selected before mounting.
 2. Wait for the game to request the next section.
-3. If the game requests another tape side, press `Shift+F11` and select it.
+3. If the game requests another tape side, press `F7` and select it.
 4. After changing sides, choose the required position if needed, then press `F5` once to resume.
 5. If the game immediately errors, do not repeatedly toggle transport; record the displayed error and media filename for diagnosis.
 
 ### +3 Disk Images
 
-1. Press `F8` or choose **F8 - Disk Drive**, the first item in the right-click menu's media group. The dialog is available on every model and opening it does not reset the machine.
+1. Press `F8` or choose **F8 - Disk Drive** just below the tape controls. The dialog is available on every model and opening it does not reset the machine.
 2. Choose **Insert** and select a `.dsk` image. If another model is selected, DERBY asks before switching to +3 and resetting. Declining leaves the current model and session intact.
 3. Close the dialog and press Enter on **Loader** in the Spectrum +3 menu.
 
@@ -292,11 +294,11 @@ Drive A: is read-only. **Replace** and **Eject** work without resetting the +3.
 Use **Replace** if a running game asks for a different disk. The dialog pauses
 the emulator while open. Disks have no Play, Stop, Pause, or Rewind controls;
 the +3 reads them directly. A small on-screen `A:` badge indicates access.
-`F5`, `F11`, and `Shift+F11` still control tapes only.
+`F5`, `Shift+F5`, `F6`, and `F7` control tapes only.
 
 ## Chapter 7 - Quick State
 
-Press `F7` to open the paused Quick State Manager. It provides eight persistent
+Press `F10` to open the paused Quick State Manager. It provides eight persistent
 slots in a compact two-column window with no scrolling.
 
 ![Fixed Quick State Manager showing all eight persistent slots](images/quick-state-manager.png)
@@ -410,7 +412,7 @@ The default mapping is axes 1/2 as displayed by the UI, hat 1 where available, b
 
 ## Chapter 9 - Poke Manager
 
-Right-click the display and choose **Poke Manager...**. Emulation pauses while the manager is open.
+Right-click the display and choose **Poke Manager**. Emulation pauses while the manager is open.
 
 ![Poke Manager Library tab](images/poke-manager.png)
 
@@ -450,7 +452,7 @@ The initial library provides one-time writes. Continuously frozen values and con
 
 ## Chapter 10 - Debugger And Disassembler
 
-Press `F6` to open the debugger. The emulator pauses safely at an instruction boundary and presents an immutable capture.
+Press `F11` in the main window to open the debugger. The emulator pauses safely at an instruction boundary and presents an immutable capture. Inside the debugger, `F11` steps into an instruction and `Esc` closes the window.
 
 ![Bank-aware debugger and disassembler](images/debugger-bank-aware.png)
 

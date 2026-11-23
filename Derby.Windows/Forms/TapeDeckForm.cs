@@ -163,6 +163,7 @@ internal sealed class TapeDeckForm : Form
         if (!ReferenceEquals(previous?.Timeline, view?.Timeline))
         {
             tapeName.Text = view?.Timeline.FileName ?? "No tape mounted";
+            tips.SetToolTip(tapeName, view?.Timeline.FileName);
             EndBookmarkEdit();
             bookmarks.ClearSelected();
         }
