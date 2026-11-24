@@ -409,7 +409,7 @@ compatibility; completed milestones remain regression baselines.
 | 25 | Complete | Kempston and AMX Mouse with Windows pointer capture, touchpad support, and software validation |
 | 26 | Complete | 48K/128K/grey +2/+2A/+3 profiles and verified read-only +3 drive A: |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
-| 28 | Refinement in progress | Tape Transport window with named tape sections, session bookmarks, and rewind |
+| 28 | Complete | Tape Transport v1: named sections, session bookmarks, rewind, and stopped side changes |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
@@ -427,16 +427,17 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 - Use the ROM's **Loader** to boot after inserting a disk. A small transient `A:` badge shows disk activity without adding a title-bar status.
 - Captain Blood (Exxos), Garfield, and Into the Eagle's Nest load through the native Loader and enter gameplay. Disk writes, formatting, additional drives, full controller fidelity, and +3 Quick State are outside this read-only scope.
 
-### Milestone 28 - Advanced Tape Transport
+### Milestone 28 - Tape Transport v1
 - Open the modeless Tape Transport window with `Shift+F5`. It has a single Choose tape action, playback controls, and a progress bar with sections and bookmarks.
 - Named bookmarks remain available for the same image during the session. Rewind, section jumps, and exact bookmark restores leave the tape stopped without rewinding the Spectrum.
-- Insert Tape and Change Tape keep the running game and leave the selected tape stopped until Play. The title adds a short tape name only if it differs from the game source or there is no named game; Tape Transport shows the full filename. Persistent bookmarks, saved side pairing, and free scrubbing are outside the first version.
-- Validated with Impossamole in 128K mode: restore the Amazon cue after swapping sides, play into the level, and stop at the next tape marker.
+- Insert Tape and Change Tape keep the running game and leave the selected tape stopped until Play. The title adds a short tape name only if it differs from the game source or there is no named game; Tape Transport shows the full filename.
+- Verified with Impossamole (128K) for stopped side swaps, bookmark restoration, and the next tape marker; Target Renegade for the 48K level stop and 128K tape end; and Where Time Stood Still for rewinding an ended TAP without resetting the game. See [Verified Games And Media](docs/VERIFIED_GAMES.md).
 
 ---
 
 ## Longer-Term Improvements
 
+- Tape Transport beyond v1: persistent bookmarks, saved side pairing, and free scrubbing
 - Demo compatibility beyond the current validation matrix
 - Broader real-game validation
 - Selectable presentation palettes: an authentic CRT/composite-inspired default and the existing idealised `D7/FF` digital palette, without changing emulated colour attributes or saved state

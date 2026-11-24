@@ -54,7 +54,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Ikari Warriors | `.tzx` | Both the original and Encore releases load and run; transport stops after loading |
 | 🟢 | Impossible Mission | `.tap`, `.tzx` | The TAP plus primary, Bugfix, and Ricochet TZX releases complete protected loading and reach the control menu; protected chained BASIC stages retain exact ROM interpreter-cursor handling |
 | 🟢 | Impossible Mission II | `.tzx` | US Gold original and both Kixx sides complete protected loading and reach stable game/control screens |
-| 🟢 | Impossamole (Gremlin original, sides 1-2) | `.tzx` | Both 48K and 128K modes reach the control and level menus. Side 1 contains the main program and Klondike; Side 2 contains Orient, Iceland, Amazon, and the final level. At `START TAPE`, leave Side 1 mounted for Klondike. To load Amazon, use Change tape to mount Side 2 stopped, select the named Amazon section or restore its bookmark, then press Play. Verified in 128K: Amazon enters gameplay and stops the tape at the next marker. The game does not identify the required side; the wrong record can produce `LOAD ERROR` |
+| 🟢 | Impossamole (Gremlin original, sides 1-2) | `.tzx` | Both 48K and 128K modes reach the control and level menus. Side 1 contains the main program and Klondike; Side 2 contains Orient, Iceland, Amazon, and the final level. At `START TAPE`, leave Side 1 mounted for Klondike. Verified in 128K: Side 2 stays stopped until Play, a bookmark at the named Amazon section survives swapping away and back, and playing from it enters gameplay and stops at the next marker. The game does not identify the required side; the wrong record can produce `LOAD ERROR` |
 | 🟢 | Indiana Jones and the Last Crusade | `128k.tap`, Kixx/US Gold original `.tzx` side sets | The TAP initial load auto-stops at the picture and resumes into gameplay; in 48K mode both TZX releases reach title/options, request side 2, preserve live state across tape replacement, load The Cross of Coronado into gameplay, and stop at the next marker |
 | 🟢 | Indiana Jones and the Temple of Doom (Kixx and US Gold original) | `.tzx` | Both releases reach the stop-tape prompt and advance to the complete quest-start screen; the US Gold release requires 48K mode |
 | 🟢 | Into the Eagle's Nest (original release) | `.tzx` | Loading reaches the valuables/control screen and automatically stops transport at the completed handoff |
@@ -96,7 +96,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Starglider 2 (48K original) | `.tzx` | Loading reaches the complete title screen and ends cleanly |
 | 🟢 | Starglider 2 (Rainbird original, 128K) | `.tzx` | Hybrid protected loading preserves the 128K paging mirror, reaches the complete illustrated title screen, and ends cleanly |
 | 🟢 | Starquake (Bubblebus original and Ricochet) | `.sna`, `.tzx` | The repaired standard-size 48K SNA and both TZX releases reach the control menu and remain stable |
-| 🟢 | Target Renegade | `128k.tzx` | 128K mode loads the complete game; 48K mode loads the first level and automatically pauses at the level-at-a-time boundary with resumable transport; both modes remain responsive with good audio |
+| 🟢 | Target Renegade | `128k.tzx` | Both modes reach playable Level 1. In 48K, tape playback pauses automatically with later levels still on the tape; in 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
 | 🟢 | The Goonies | `.tzx` | Loading reaches active gameplay and remains stable |
 | 🟢 | The Great Escape (Ocean original) | `.tap`, `.tzx` | Both tape formats reach the control-selection menu and remain stable |
 | 🟢 | The Growing Pains of Adrian Mole (Ricochet) | `.tzx` | Loading reaches the illustrated opening story screen and remains stable |
@@ -112,7 +112,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Vixen (Martech original, sides 1 and 2) | `.tzx` | Both sides independently reach the control-selection menu and stop at their appropriate handoff boundaries |
 | 🟢 | Wanted! Monty Mole (Gremlin original) | `.tzx` | In 48K mode, the ROM-driven continuation completes, ends the tape cleanly, reaches the options menu, and enters gameplay |
 | 🟢 | WEC Le Mans (Imagine original, sides A and B) | `.tzx` | Protected loading reaches active racing in both machine modes. The 128K load consumes side A completely; in 48K mode, gameplay reaches the side-B request, the first side-B record stops at its explicit marker, and the later manual resume consumes the final record before the game reaches its high-score screen |
-| 🟢 | Where Time Stood Still | `.tap` | Fast load completes and terminal tape state is detected |
+| 🟢 | Where Time Stood Still | `.tap` | Reaches the control menu in 128K and reports tape end. Rewinding leaves the tape stopped at the first block without resetting the running game |
 | 🟢 | Willy's New Mansion: Special Edition | `.tap`, `.tzx` | Both formats reach the difficulty-selection menu and remain stable |
 
 ## Snapshots
