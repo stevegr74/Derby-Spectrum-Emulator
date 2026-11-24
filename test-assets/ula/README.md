@@ -12,9 +12,16 @@ project and keep the extracted files outside this working tree.
 
 ## Timing Test
 
+Build the Release harness before running the examples:
+
+```text
+dotnet build Derby.ManualHarness -c Release
+```
+
 Run `timing.tap` through the real-ROM path in each machine model. The harness key
 script selects a numbered test after BASIC has loaded the program; replace `N`
-with `0` through `7`.
+with `0` through `7`, or use `8` for the additional 128K test. Replace the
+example filenames with paths to the downloaded diagnostic tapes.
 
 ```text
 dotnet run --project Derby.ManualHarness -c Release --no-build -- <timing.tap> frames=6000 strategy=rom model=48 quiet=1 "140:N:down,142:N:up,150:enter:down,152:enter:up"
@@ -41,7 +48,7 @@ are not emulator output.
 
 ## Recorded Baseline
 
-The 2026-10-18 Milestone 16 run matched both floating-bus references and all
+The 2026-10-18 baseline matched both floating-bus references and all
 published Timing Test 0.3 reference captures pixel-for-pixel after excluding
 only their outer capture margins. Test 8 completed with a zero-delay matrix on
 the default uncontended 128K page.

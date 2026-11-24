@@ -8,28 +8,33 @@ namespace Derby
 
         private static readonly HelpSection[] Sections =
         [
-            new("Display and setup",
+            new("Main shortcuts",
             [
                 ("F1", "Show or close this help window"),
                 ("F2", "Show or hide compact FPS, model, tape, and display diagnostics"),
                 ("F3", "Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles"),
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
-                ("Right-click", "Open the emulator menu")
-            ]),
-            new("Tape and disk",
-            [
                 ("F5", "Play, stop, or resume the tape"),
-                ("Shift+F5", "Open Tape Transport to inspect, rewind, or choose a position"),
-                ("F6", "Load a .tap or .tzx tape as a new game"),
-                ("F7", "Insert or change tape without resetting. Press Play or F5 when ready."),
-                ("F8", "Open Disk Drive for read-only +3 disk images")
-            ]),
-            new("Saved states and diagnostics",
-            [
+                ("Shift+F5", "Open Tape Transport, even with an empty deck"),
+                ("F6", "Reset and load a .tap or .tzx tape as a new game"),
+                ("F7", "Insert or change a tape without resetting; the tape stays stopped"),
+                ("F8", "Open Disk Drive for read-only +3 disk images"),
                 ("F9", "Load a .sna, .z80, or .szx snapshot, or play an .rzx recording"),
                 ("F10", "Open the paused eight-slot Quick State Manager (not available on +3)"),
                 ("F11", "Open the paused debugger and disassembler"),
-                ("F12", "Write a machine diagnostic dump")
+                ("F12", "Save a diagnostic dump and briefly show an on-screen badge"),
+                ("Shift+F12", "Open Debug Dumps to view saved files or locate them in Explorer"),
+                ("Right-click", "Open the emulator menu, including Keyboard, Joystick, Mouse, and Poke Manager")
+            ]),
+            new("Tape and disk",
+            [
+                ("Load Tape", "Use F6 to start a new game from the selected tape"),
+                ("Insert / Change", "Use F7 to keep the running game. Press F5 or Play tape when ready."),
+                ("Tape Transport", "Use Shift+F5 to rewind, jump to a named section, or save a session bookmark"),
+                ("Tape at End", "The tape is still in the deck. Rewind or choose a position before playing."),
+                ("Choose tape", "Starts a new game with an empty deck; otherwise offers Change tape or Start new game"),
+                ("Disk Drive", "Use F8 to insert, replace, or eject a read-only .dsk image in drive A:"),
+                ("Disk loading", "After inserting a disk, close the drive window and choose Loader in the +3 ROM menu")
             ]),
             new("Debugger window",
             [
@@ -48,8 +53,10 @@ namespace Derby
                 ("Memory view", "Select mapped 64K, ROM banks, or RAM banks for the listing"),
                 ("CPU state links", "Inspect register addresses in Memory; use PC or stack values to navigate the listing"),
                 ("Memory tab", "Inspect hex/ASCII bytes from registers, stack, listing, or targets"),
-                ("Ctrl+L / Right-click", "Edit labels, mark code/data/unknown, manage symbols, or inspect memory"),
-                ("Ctrl+E", "Export a complete 64K mapped or 16K physical-bank listing")
+                ("Ctrl+L", "Edit the label at the selected address"),
+                ("Right-click", "Find label, code/data, memory inspection, and listing commands"),
+                ("Ctrl+E", "Export a complete 64K mapped or 16K physical-bank listing"),
+                ("Esc", "Close the debugger")
             ]),
             new("Spectrum keyboard",
             [
@@ -57,7 +64,8 @@ namespace Derby
                 ("Enter / Space", "Map directly to the Spectrum keyboard"),
                 ("Shift", "Maps to Spectrum CAPS SHIFT"),
                 ("Ctrl / Alt", "Map to Spectrum SYMBOL SHIFT"),
-                ("Keyboard", "Open from the right-click menu; choose the 48K or 128K layout"),
+                ("Keyboard", "Open the on-screen keyboard from the right-click menu"),
+                ("Page Up / Down", "Select the 48K or 128K layout when the on-screen keyboard has focus"),
                 ("PC punctuation", "Maps common BASIC punctuation to Spectrum SYMBOL SHIFT chords"),
                 ("Arrow keys", "Provide cursor-style Spectrum input chords")
             ]),
@@ -69,7 +77,22 @@ namespace Derby
                 ("Kempston", "Expose active-high directions and Fire through port 1FH"),
                 ("Cursor", "Map directions and Fire to keys 5, 8, 6, 7, and 0"),
                 ("Sinclair", "Sinclair 1 uses keys 1-5 (socket 2); Sinclair 2 uses keys 6-0 (socket 1)"),
-                ("Configure", "Map both controllers; duplicate devices and interfaces are rejected")
+                ("Configure", "Map both controllers; duplicate devices and interfaces are rejected"),
+                ("Identify", "Move a control or press a button to confirm which device you are holding")
+            ]),
+            new("Mouse",
+            [
+                ("Mouse submenu", "Choose Off, AMX Mouse, or Kempston Mouse to match the running software"),
+                ("Capture", "Click inside the display to capture the Windows pointer"),
+                ("Esc", "Release the pointer"),
+                ("AMX Mouse", "Shares the Kempston joystick port; choose Off or Kempston Mouse to free it")
+            ]),
+            new("Poke Manager",
+            [
+                ("Poke Manager", "Open from the right-click menu; emulation pauses while it is open"),
+                ("Library", "Choose the correct game and release, then preview the checked pokes"),
+                ("One-off", "Enter a mapped address or physical RAM bank and offset, then preview the write"),
+                ("Restore Last", "Undo the most recent application if the changed bytes still match")
             ])
         ];
 
@@ -193,7 +216,7 @@ namespace Derby
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             for (int row = 0; row < section.Rows.Length; row++)
             {
-                table.RowStyles.Add(new RowStyle(SizeType.Absolute, 29));
+                table.RowStyles.Add(new RowStyle(SizeType.Absolute, 27));
                 table.Controls.Add(new Label
                 {
                     Text = section.Rows[row].Key,

@@ -78,11 +78,11 @@ The main window keeps permanent controls out of the Spectrum picture. Every comm
 
 ### Built-in Help
 
-Press `F1` to open the quick-reference window. Emulation pauses while it is open. Choose a category on the left, then use `F1`, `Escape`, or **Close** to return.
+Press `F1` to open Help. Emulation pauses while it is open. The first page lists every main-window shortcut; select a section on the left for tape, disk, debugger, or input guidance. Use `F1`, `Escape`, or **Close** to return.
 
 ![Built-in Help window](images/help-controls.png)
 
-*Figure 2.1. Built-in Help showing the tape and disk shortcuts.*
+*Figure 2.1. Built-in Help opens on the complete list of main shortcuts.*
 
 | Key | Action |
 | --- | --- |
@@ -98,10 +98,11 @@ Press `F1` to open the quick-reference window. Emulation pauses while it is open
 | `F9` | Load a `.sna`, `.z80`, or `.szx` snapshot, or play an `.rzx` recording |
 | `F10` | Open the paused eight-slot Quick State Manager (not available on +3) |
 | `F11` | Open the paused debugger and disassembler |
-| `F12` | Write a machine diagnostic dump |
+| `F12` | Save a machine diagnostic dump and briefly show an on-screen badge |
+| `Shift+F12` | Open Debug Dumps to open saved reports or locate them in File Explorer |
 | Right-click | Open the complete context menu |
 
-The context menu keeps function keys in order and groups tape and disk, saved states and recordings, and debugging. Keyboard, Joystick, Mouse, and the Poke Manager follow those groups.
+The context menu keeps function keys in order and groups tape and disk, saved states and recordings, and debugging. Keyboard, Joystick, and Mouse share an input group. Poke Manager sits below it, separated by a divider.
 
 ![Complete right-click context menu](images/context-menu.png)
 
@@ -135,7 +136,7 @@ Tape state changes appear at the top left of the emulated display:
 
 - Full status text is shown for approximately three seconds.
 - While tape is running, the display then reduces to a compact play icon.
-- Paused, stopped, or ended indications disappear after approximately five seconds.
+- A pause or stop indication disappears after approximately five seconds; **Tape Ended** disappears after approximately three.
 - Replacing tape media with a snapshot or recording clears the old tape indication immediately.
 
 ## Chapter 4 - Keyboard Input
@@ -268,6 +269,10 @@ The emulator also handles supported TZX pauses, stop markers, tape end, and dete
 
 Press `Shift+F5` or choose **Tape Transport** from the right-click menu, then click **Choose tape...**. With an empty deck, this starts a new game. If there's already a tape in the deck, **Change tape** is the default and keeps the running game. The replacement stays stopped, so you can go to a section or bookmark before pressing Play. Choose **Start new game** to reset the Spectrum and load the tape from the start. Use `F7` to insert a stopped tape even when the deck is empty.
 
+![Tape Transport showing a stopped tape with a named section and a bookmark](images/tape-transport.png)
+
+*Figure 6.1. Tape Transport shows the inserted filename, current position, and selectable positions.*
+
 The progress bar shows named tape sections as dark ticks, your bookmarks as teal dots, and the last stop as an amber tick. When the tape is stopped, select a section or bookmark in the list or on the bar, then choose **Go to**. Only tapes with embedded names show sections. **Add bookmark...** names the current stopped position or a selected stop, and **Edit...** renames or deletes a bookmark. Rewinding and jumping leave the tape stopped and do not rewind the Spectrum.
 
 Bookmarks reappear when you return to the same tape image during the session. The transport window itself does not pause the Spectrum.
@@ -288,7 +293,7 @@ Bookmarks reappear when you return to the same tape image during the session. Th
 
 ![Read-only +3 Disk Drive dialog with drive A: empty](images/plus3-disk-drive.png)
 
-*Figure 6.1. The drive dialog pauses emulation and shows whether a disk is inserted.*
+*Figure 6.2. The drive dialog pauses emulation and shows whether a disk is inserted.*
 
 Drive A: is read-only. **Replace** and **Eject** work without resetting the +3.
 Use **Replace** if a running game asks for a different disk. The dialog pauses
@@ -402,7 +407,8 @@ available, with `VID/PID` and control counts shown beneath the selector. Select
 
 Move each controller and press Fire while the dialog is open. Its live preview
 shows the interface, direction, and Fire state. **Save mappings** stores the
-controller slots and reusable device profiles for the current Windows user.
+controller slots and reusable device profiles in
+`%LocalAppData%\Derby\joystick-settings.json`.
 Axis, hat, Fire, and dead-zone settings follow the device; enabled state and the
 chosen Spectrum interface remain specific to Controller 1 or Controller 2.
 Existing single-controller settings are retained as Controller 1 and Controller
@@ -541,7 +547,13 @@ The **References** tab lists conservative incoming and outgoing references for d
 
 ## Chapter 11 - Diagnostics
 
-Press `F12` to write a machine diagnostic dump. Use this when reporting a reproducible emulation problem; note the game/media filename, machine model, point reached, and visible error.
+Press `F12` to write a machine diagnostic dump to the `debug` folder beside the executable. **Debug Dump Saved** appears at the bottom right for about 2.5 seconds. It does not take focus and there is nothing to dismiss.
+
+Press `Shift+F12` or choose **Debug Dumps** in the right-click menu to see manual dumps, automatic dumps, and crash reports. The window opens without pausing emulation and lists the newest reports first. Select a report and choose **Open Dump** to view the text or **Show in Folder** to select the file in Explorer. Use **Refresh** to recheck the folder or press `Esc` to close the window.
+
+![Debug Dumps showing a list of reports and the Open Dump and Show in Folder buttons](images/debug-dumps.png)
+
+When reporting a reproducible problem, include the game or media filename, machine model, point reached, and visible error. Review the dump before posting it publicly.
 
 The optional `F2` overlay is useful for checking FPS, model, display, and tape state before collecting a dump.
 

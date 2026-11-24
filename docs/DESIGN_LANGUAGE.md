@@ -144,7 +144,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 
 - Retain native Windows menu rendering and submenu arrows.
 - Put keyboard shortcuts at the start of the label where the current menu does so.
-- Separate setup, tape and disk, saved states and recordings, debugging, and input tools.
+- Separate setup, tape and disk, saved states and recordings, debugging, input, and game tools.
 - Use an ellipsis when a command needs a file choice, confirmation, or other input. Omit it when the command only opens a named tool window.
 - Keep unavailable actions visible but disabled when their location is useful for learning the interface.
 - Avoid deep submenu nesting; one level is the normal maximum.
@@ -206,6 +206,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 - Present diagnostic values in Consolas with one labelled value per line.
 - Anchor persistent status at the top-right and transport feedback at the top-left.
 - Show +3 disk access with a small transient mint `A:` badge at the bottom-left, separate from tape feedback.
+- Confirm a manual diagnostic dump with a brief bottom-right badge above the mouse-capture hint. Keep file actions in Debug Dumps, not in a notification that takes focus.
 - Move or stack overlays when their bounds would collide; never allow status, tape, or Quick State feedback to obscure each other.
 - Keep overlays optional or temporary so the Spectrum display remains the primary content.
 

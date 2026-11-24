@@ -10,7 +10,8 @@ For this project, there is no separate private reporting channel.
 
 ## Scope
 
-This project is an emulator and does not handle sensitive user data.
+DERBY is a local desktop emulator. Diagnostic dumps can include media filenames
+and emulated memory; review them before sharing publicly.
 
 Security concerns are generally limited to:
 

@@ -24,16 +24,26 @@ namespace Derby.Tests
 
                     ListBox sections = Descendants(form).OfType<ListBox>().Single();
                     Assert.Equal(
-                        ["Display and setup", "Tape and disk", "Saved states and diagnostics",
-                            "Debugger window", "Spectrum keyboard", "Joystick"],
+                        ["Main shortcuts", "Tape and disk", "Debugger window", "Spectrum keyboard",
+                            "Joystick", "Mouse", "Poke Manager"],
                         sections.Items.Cast<object>().Select(section => section.ToString()));
                     GroupBox details = Descendants(form).OfType<GroupBox>()
                         .Single(group => group.Text != "Sections");
+                    Assert.Equal("Main shortcuts", details.Text);
+                    var shortcutRows = Descendants(details).OfType<TableLayoutPanel>().Single();
+                    Assert.Equal(
+                        ["F1", "F2", "F3", "F4", "F5", "Shift+F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Shift+F12", "Right-click"],
+                        Enumerable.Range(0, shortcutRows.RowCount)
+                            .Select(row => shortcutRows.GetControlFromPosition(0, row)!.Text));
+                    Assert.True(shortcutRows.Parent!.ClientRectangle.Contains(shortcutRows.Bounds),
+                        "The complete main shortcut list should fit without scrolling.");
 
                     for (int index = 0; index < sections.Items.Count; index++)
                     {
                         sections.SelectedIndex = index;
                         Application.DoEvents();
+                        if (details.Text == "Debugger window")
+                            Assert.Contains(Descendants(details).OfType<Label>(), label => label.Text == "Esc");
                         foreach (Label label in Descendants(details).OfType<Label>())
                         {
                             int textWidth = TextRenderer.MeasureText(label.Text, label.Font).Width;

@@ -42,10 +42,12 @@ namespace Derby.Tests
                             "---",
                             "F11 - Debugger / Disassembler",
                             "F12 - Write Machine Diagnostic Dump",
+                            "Shift+F12 - Debug Dumps",
                             "---",
                             "Keyboard",
                             "Joystick",
                             "Mouse",
+                            "---",
                             "Poke Manager"
                         ],
                         labels);
@@ -62,14 +64,15 @@ namespace Derby.Tests
                         (Keys.F9, "LoadSnapshotOrRecordingFromDialog"),
                         (Keys.F10, "OpenQuickStateManager"),
                         (Keys.F11, "ToggleDisassemblerWindow"),
-                        (Keys.F12, "DumpMachineDebugState")
+                        (Keys.F12, "DumpMachineDebugState"),
+                        (Keys.F12 | Keys.Shift, "OpenDebugDumps")
                     ];
                     foreach (var (key, method) in mediaShortcuts)
                     {
                         Assert.Equal(method, Assert.IsType<Action>(shortcut.Invoke(form, [key])).Method.Name);
                         Assert.Null(shortcut.Invoke(form, [key | Keys.Control]));
                         Assert.Null(shortcut.Invoke(form, [key | Keys.Alt]));
-                        if (key != Keys.F5 && (key & Keys.Shift) == 0)
+                        if (key is not (Keys.F5 or Keys.F12) && (key & Keys.Shift) == 0)
                             Assert.Null(shortcut.Invoke(form, [key | Keys.Shift]));
                     }
 
