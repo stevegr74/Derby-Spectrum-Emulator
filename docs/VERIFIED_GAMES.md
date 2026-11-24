@@ -97,7 +97,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Starglider 2 (48K original) | `.tzx` | Loading reaches the complete title screen and ends cleanly |
 | 🟢 | Starglider 2 (Rainbird original, 128K) | `.tzx` | Hybrid protected loading preserves the 128K paging mirror, reaches the complete illustrated title screen, and ends cleanly |
 | 🟢 | Starquake (Bubblebus original and Ricochet) | `.sna`, `.tzx` | The repaired standard-size 48K SNA and both TZX releases reach the control menu and remain stable |
-| 🟢 | Target Renegade | `128k.tzx` | Both modes reach playable Level 1. In 48K, tape playback pauses automatically with later levels still on the tape; in 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
+| 🟢 | Target Renegade | `128k.tzx` | Both modes reach playable Level 1. In 48K, the tape stops after Level 1; a level-advance-assisted run reaches `LOOKING FOR BLOCK 2`. Manual resume then loads playable Level 2 and stops again before consuming the Level 3 record. In 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
 | 🟢 | The Goonies | `.tzx` | Loading reaches active gameplay and remains stable |
 | 🟢 | The Great Escape (Ocean original) | `.tap`, `.tzx` | Both tape formats reach the control-selection menu and remain stable |
 | 🟢 | The Growing Pains of Adrian Mole (Ricochet) | `.tzx` | Loading reaches the illustrated opening story screen and remains stable |
