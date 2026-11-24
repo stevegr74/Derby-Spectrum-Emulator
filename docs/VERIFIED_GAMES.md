@@ -105,7 +105,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | The Oracle's Cave (Doric Computer) | `.tzx` | ROM-driven multi-stage loading completes; maze generation and level selection lead into the playable cave |
 | 🟢 | The Way of the Exploding Fist (Melbourne House original and Ricochet) | `.tzx` | Both releases complete their multi-file load and reach the animated title screen; explicit BASIC CODE destinations override conflicting header addresses |
 | 🟢 | Turbo Esprit (Durell original, side 2) | `.tzx` | ROM-driven loading and the explicit copyright prompts advance to the city-selection menu |
-| 🟢 | Turbo Out Run | `.tap` | Native ROM loading reaches the start/continue screen and automatically stops with the remaining multiload tape retained |
+| 🟢 | Turbo Out Run | `.tap` | In 128K, native ROM loading reaches the start screen and stops automatically. A timer-assisted gameplay run advances from New York to Washington: the tape resumes automatically, then stops again during Washington gameplay without consuming the following Pittsburgh record |
 | 🟢 | Universal Hero (Mastertronic original) | `.tzx` | Loads, stops tape playback automatically, and enters gameplay in both 48K and 128K. Raw loads that require real ROM behavior run through the tape signal |
 | 🟢 | Uridium and Uridium Plus (Hewson original) | `.tzx` | Both releases preserve their intentionally malformed BASIC headers under native ROM loading and reach the animated title sequence from 48K and 128K startup; Uridium auto-stops at its completed handoff and Uridium Plus ends cleanly |
 | 🟢 | V (Ocean original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the control-selection menu |
@@ -125,7 +125,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Alien | `alien.z80` | Snapshot reaches the illustrated title screen and remains stable for 2,000 frames with sustained audio output |
 | 🟢 | Amaurote | `Amaurote.z80`, `Amaurote 128.z80` | Both snapshots reach the title screen and remain stable for 2,000 frames; the 128K image produces sustained AY audio |
 | 🟢 | Ant Attack | `Ant Attack.sna` | Snapshot reaches the gender-selection prompt and remains stable for 2,000 frames |
-| 🟠 | The Artist II | `artist2.sna` | Resumes in keyboard mode despite the retained LOADING banner. Selecting **Extras → KEMPS MOUSE** enables pointer movement and button reads. The snapshot was saved without the program's AMX startup flag; use the +3 disk for AMX |
+| 🟢 | The Artist II | `artist2.sna` | Resumes in keyboard mode despite the retained LOADING banner. Kempston pointer movement and button reads are verified after selecting **Extras → KEMPS MOUSE**. The snapshot was saved without the program's AMX startup flag; use the verified +3 disk for AMX |
 | 🟢 | Athena | `athena.sna` | Snapshot reaches the active title/game screen and remains stable for 2,000 frames |
 | 🟢 | Auf Wiedersehen Monty | `.sna`, `.z80` | Both snapshots reach the control menu and remain stable for 2,000 frames |
 | 🟢 | Back to Skool | `.sna` | Snapshot reaches the active demonstration screen and remains stable for 2,000 frames |
