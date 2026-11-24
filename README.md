@@ -21,7 +21,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - 48K beeper and AY-3-8912 tone, noise, envelope, and mixing through a clock-driven audio pipeline
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
 - `.tap` and `.tzx` parsing, fast bootstrap, ROM-driven loading, protected/mounted playback, VERIFY, and multi-block sequencing
-- Manual/resumable tape transport with 48K stop-marker support and persistent status feedback
+- Tape Transport with named sections, session bookmarks, rewind, 48K stop-marker support, and on-screen playback feedback
 - Modeless on-screen keyboard with selectable 48K rubber-key and 128K layouts, pointer holds, and Shift chords
 - Optional Kempston or AMX Mouse with click-to-capture and Escape release
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
@@ -41,7 +41,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 
 ### Bank-Aware Debugger
 
-![Paused Z80 debugger showing the paging map, grouped CPU state, memory inspector, and execution controls](docs/images/debugger-bank-aware.png)
+![Paused Z80 debugger showing the paging map, grouped CPU state, disassembly, and execution controls](docs/images/debugger-bank-aware.png)
 
 ### Quick State Manager
 
@@ -129,6 +129,7 @@ Derby/
 |-- Derby.Core/                 net8.0 platform-neutral emulator
 |   |-- Audio/                  AY, beeper, and emulated sample timing
 |   |-- Debugging/              instruction-boundary execution control
+|   |-- Disk/                   read-only +3 drive and DSK parsing
 |   |-- Input/                  Spectrum joystick interfaces and state
 |   |-- Memory/                 model-specific paging state and address-slot mapping
 |   |-- Pokes/                  poke validation, matching, apply, and restore
@@ -185,7 +186,7 @@ dotnet run --project Derby.Windows
 ```
 
 ROM files must be present in the `ROMs` directory copied beside the executable
-(the project does this automatically for files under its local `ROMs` folder):
+(the project copies the repository's bundled `ROMs` folder automatically):
 
 ```text
 ROMs/
@@ -232,7 +233,8 @@ that do not consume a function key.
 | `F9` | Load a `.sna`, `.z80`, or `.szx` snapshot, or play an `.rzx` recording |
 | `F10` | Open the paused eight-slot Quick State Manager (not available on +3) |
 | `F11` | Open the debugger and disassembler, paused on an immutable machine capture |
-| `F12` | Write a machine diagnostic dump |
+| `F12` | Save a machine diagnostic dump and briefly show an on-screen badge |
+| `Shift+F12` | Open Debug Dumps to open saved reports or locate them in File Explorer |
 
 The right-click menu mirrors these actions, offers direct machine and display
 selection, and adds Keyboard, Joystick, Mouse, and the Poke Manager. The debugger,
@@ -318,7 +320,7 @@ Current snapshot status:
   - restores the SZX `WZ/MEMPTR` field alongside the documented CPU and execution state
   - self-contained 48K and 128K construction, load, and execution smoke tests cover the supported subset
 
-The `F9` picker loads `.sna`, `.z80`, and `.szx` snapshots and plays `.rzx` recordings.
+The `F9` picker loads `.sna`, `.z80`, and `.szx` snapshots and plays `.rzx` recordings. It shows both groups by default and offers separate **Snapshots** and **Recordings** filters.
 
 RZX replay accepts embedded SNA, Z80, and SZX start snapshots. The loader uses
 the last snapshot before recorded input begins and ignores later checkpoint

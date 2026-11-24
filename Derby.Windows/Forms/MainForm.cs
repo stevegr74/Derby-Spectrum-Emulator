@@ -238,11 +238,13 @@ namespace Derby
             disassemblerMenuItem.Click += (_, _) => ToggleDisassemblerWindow();
             displayContextMenu.Items.Add(disassemblerMenuItem);
             displayContextMenu.Items.Add("F12 - Write Machine Diagnostic Dump", null, (_, _) => DumpMachineDebugState());
+            displayContextMenu.Items.Add("Shift+F12 - Debug Dumps", null, (_, _) => OpenDebugDumps());
             displayContextMenu.Items.Add(new ToolStripSeparator());
             displayContextMenu.Items.Add("Keyboard", null, (_, _) => OpenOnScreenKeyboard());
             InitializeJoystickMenu();
             displayContextMenu.Items.Add(joystickMenuItem);
             displayContextMenu.Items.Add(CreateMouseMenu());
+            displayContextMenu.Items.Add(new ToolStripSeparator());
             pokeManagerMenuItem.Click += (_, _) => OpenPokeManager();
             displayContextMenu.Items.Add(pokeManagerMenuItem);
             displayContextMenu.Opening += (_, e) =>
@@ -688,7 +690,6 @@ namespace Derby
                         continue;
                     long tickStartTicks = frameClock.ElapsedTicks;
                     List<AudioFrame>? completedFramesToSubmit = null;
-                    string? autoReason = null;
                     string? autoDump = null;
                     bool hasAutoDebugDump = false;
                     int completedFrames = 0;
@@ -787,7 +788,7 @@ namespace Derby
                         }
 
                         executeSliceMilliseconds = (frameClock.ElapsedTicks - executeStartTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
-                        hasAutoDebugDump = activeMachine.TryConsumeAutoDebugDump(out autoReason!, out autoDump!);
+                        hasAutoDebugDump = activeMachine.TryConsumeAutoDebugDump(out _, out autoDump!);
                     }
 
                     if (completedFrames > 0 || !presentationState.HasValue)
@@ -812,7 +813,7 @@ namespace Derby
                     {
                         try
                         {
-                            BeginInvoke(new Action(() => WriteDebugDumpToFile(autoDump, autoReason ?? "Auto trap")));
+                            BeginInvoke(new Action(() => WriteDebugDumpToFile(autoDump, automatic: true)));
                         }
                         catch
                         {
@@ -961,6 +962,7 @@ namespace Derby
                 tapeTransportOverlay.IsFullOverlayVisible(now));
             if (mouseCaptured)
                 DrawMouseCaptureOverlay(presentationBitmap, layout.Scale);
+            debugDumpSavedOverlay.Draw(presentationBitmap, layout.Scale, now, mouseCaptured);
             long renderEndTicks = frameClock.ElapsedTicks;
 
             screenBox.Image = presentationBitmap;

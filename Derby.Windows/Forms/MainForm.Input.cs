@@ -122,6 +122,7 @@ namespace Derby
             Keys.F10 => OpenQuickStateManager,
             Keys.F11 => ToggleDisassemblerWindow,
             Keys.F12 => DumpMachineDebugState,
+            (Keys.Shift | Keys.F12) => OpenDebugDumps,
             _ => null
         };
 

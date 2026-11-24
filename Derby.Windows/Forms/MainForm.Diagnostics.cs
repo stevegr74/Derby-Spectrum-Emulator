@@ -2,6 +2,10 @@ namespace Derby
 {
     public partial class MainForm
     {
+        private static string DebugDumpFolder => Path.Combine(AppContext.BaseDirectory, "debug");
+        private readonly DebugDumpSavedOverlay debugDumpSavedOverlay = new();
+        private DebugDumpsForm? debugDumps;
+
         private void DumpMachineDebugState()
         {
             try
@@ -11,7 +15,7 @@ namespace Derby
                 {
                     dump = machine.BuildDebugDump("Manual F12 debug dump.");
                 });
-                WriteDebugDumpToFile(dump, "Manual F12");
+                WriteDebugDumpToFile(dump, automatic: false);
             }
             catch (Exception ex)
             {
@@ -21,16 +25,37 @@ namespace Derby
                     "Debug Dump Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+                return;
             }
+
+            debugDumps?.RefreshDumps(selectLatest: true);
+            long now = frameClock.ElapsedTicks;
+            debugDumpSavedOverlay.Show(now);
+            PresentCurrentMachineFrame(now, force: true);
         }
 
-        private void WriteDebugDumpToFile(string dump, string reason)
+        private void OpenDebugDumps()
         {
-            string debugFolder = Path.Combine(AppContext.BaseDirectory, "debug");
-            Directory.CreateDirectory(debugFolder);
-            string fileName = $"machine-debug-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt";
-            string path = Path.Combine(debugFolder, fileName);
-            File.WriteAllText(path, dump);
+            ReleaseSpectrumMouse();
+            if (debugDumps is { IsDisposed: false })
+            {
+                debugDumps.RefreshDumps(selectLatest: false);
+                debugDumps.Activate();
+                return;
+            }
+
+            var form = new DebugDumpsForm(DebugDumpFolder);
+            debugDumps = form;
+            form.FormClosed += (_, _) => debugDumps = null;
+            form.Show(this);
+        }
+
+        private static void WriteDebugDumpToFile(string dump, bool automatic)
+        {
+            Directory.CreateDirectory(DebugDumpFolder);
+            string prefix = automatic ? "machine-debug-auto" : "machine-debug";
+            string fileName = $"{prefix}-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt";
+            File.WriteAllText(Path.Combine(DebugDumpFolder, fileName), dump);
         }
 
         private void WriteCrashReport(Exception ex, string context)

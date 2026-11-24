@@ -9,9 +9,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Derby</AssemblyName>
     <RootNamespace>Derby</RootNamespace>
-    <Product>DERBY - ZX Spectrum 48K / 128K / +2A Emulator</Product>
+    <Product>DERBY - ZX Spectrum Emulator</Product>
     <AssemblyTitle>DERBY</AssemblyTitle>
-    <Description>A focused ZX Spectrum 48K, 128K, grey +2, and +2A emulator.</Description>
+    <Description>A ZX Spectrum 48K, 128K, grey +2, +2A, and +3 emulator.</Description>
     <ApplicationIcon>..\assets\branding\derby.ico</ApplicationIcon>
   </PropertyGroup>
 

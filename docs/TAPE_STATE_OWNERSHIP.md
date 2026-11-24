@@ -27,7 +27,8 @@ retain mutable tape objects for direct cross-thread control.
 
 ## Invariants
 
-1. `NoTape` means no tape is mounted.
+1. `NoTape` means no tape is mounted for active playback. A fully fast-loaded
+   image may still be retained in the deck and presented there as ended.
 2. `Playing` means a tape is mounted and the public transport remains engaged.
    Pulse decoding may briefly hold an exact synchronization preamble internally;
    this does not publish a stop/resume transition or change the user's transport
@@ -48,7 +49,7 @@ retain mutable tape objects for direct cross-thread control.
    EAR-sensitive read cancels the pending automatic stop.
 8. Mounting media replaces the previous tape, configures it for the current
    model clock, resets its cursor, and resets machine-level activity tracking.
-   A side replacement mounts stopped before the machine can consume any pulses.
+   Insert Tape and Change Tape mount stopped before the machine can consume any pulses.
 9. Physical tape ownership and loader continuation are separate. Loader policy
    decides when a continuation is created or cleared; a full machine reset
    clears both.
@@ -67,7 +68,7 @@ retain mutable tape objects for direct cross-thread control.
 | --- | --- |
 | New machine or reset | Tape released, continuation cleared, `NoTape` |
 | Mount tape | Existing media replaced, incoming tape reset, `Playing` unless the tape itself starts stopped |
-| Change tape | Running machine preserved, replacement mounted at the start, `Stopped` |
+| Insert or change tape | Running machine preserved, selected image mounted at the start, `Stopped` |
 | Manual stop | Cursor preserved, automatic tracking reset, `Stopped` |
 | Manual resume | Cursor preserved and resumed, `Playing` unless already complete |
 | Stop marker | Cursor held before the next block, `Stopped` |

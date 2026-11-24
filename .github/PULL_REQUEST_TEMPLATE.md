@@ -39,7 +39,8 @@ How was this tested manually?
 
 ## Checklist
 
-- [ ] No external libraries added
+- [ ] No third-party runtime dependencies added
+- [ ] User-facing documentation and screenshots are current where applicable
 - [ ] Changes are incremental (no large rewrites)
 - [ ] Follows project architecture
 - [ ] Maintainer guidance followed (if applicable)
