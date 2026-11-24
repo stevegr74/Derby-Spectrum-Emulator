@@ -77,6 +77,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Pac-Land | `.tzx` | In 48K mode, ROM-driven loading reaches the game/high-score screen and remains stable |
 | 🟢 | Paperboy (Elite original and Encore) | `.tzx` | Both releases reach the high-score/start screen and remain stable; Encore completes protected playback and ends the tape cleanly from both 48K and 128K startup selections |
 | 🟢 | Paperboy 2 (Mindscape) | `.tzx` | Loading reaches the character-selection menu and remains stable |
+| 🟢 | Pietro Bros. v1.91 (stop slip sliding fix) | `.tap` | In 48K and 128K modes the tape ends cleanly, accepts start input, and reaches active Phase 1 gameplay |
 | 🟢 | Rambo (Hit Squad) | `.tzx` | Long protected loader completes; title and game screens run |
 | 🟢 | Rambo (Ocean) | `.tzx` | Speedlock BASIC handoff uses real-ROM bootstrap; protected pulse loading completes without initial screen corruption |
 | 🟢 | Red Hawk (parts 1 and 2) | `.tap` | Both headered multi-stage CODE chains preserve their post-decompressor continuation, end the tape cleanly, and reach their distinct playable start screens |
@@ -151,6 +152,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Feud | `.z80` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Flying Shark | `flyshark.sna` | Repaired from the matching original tape image; player selection, active gameplay, repeated fire, life loss, and the high-score screen pass a 1,500-frame acceptance run |
 | 🟢 | Frankie Goes to Hollywood | `.sna` | Snapshot reaches the control menu and remains stable |
+| 🟢 | Fred | `Fred.z80` | From both 48K and 128K startup selections, the snapshot resumes at the control menu, accepts keyboard and start selections, and reaches active gameplay |
 | 🟢 | Garfield | `garfield.sna` | Snapshot reaches the illustrated control-selection menu and remains stable for 2,000 frames |
 | 🟢 | Glider Rider | `.sna` | Snapshot reaches the control-selection screen and remains stable |
 | 🟢 | Gods | `.sna`, `.z80` | Both snapshots reach the complete title screen and remain stable |
