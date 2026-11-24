@@ -29,13 +29,16 @@ target twice.
 
 The shipped catalogue combines exact-image definitions with conservative
 filename-suggested additions awaiting local release validation. The Ocean 128K
-RoboCop infinite-lives entry has been verified during gameplay. The catalogue is
-based on entries published by
-[World of Spectrum Hackers Anonymous](https://worldofspectrum.org/hackersanon/).
-Target layouts for exact-image entries were checked against the local
-snapshot checksums recorded in `pokes.json`; filename-suggested entries exclude
-variable-value, unknown-purpose, untested, and unresolved edition-specific
-patches. Individual gameplay results should still be confirmed progressively.
+RoboCop infinite-lives entry and the 128K Turbo Out Run timer poke have been
+verified during gameplay. Sources include
+[World of Spectrum Hackers Anonymous](https://worldofspectrum.net/hackersanon/)
+and contributor submissions to The Tipshop, including
+[Cabal](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Cabal),
+[Turbo Out Run](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Turbo%20Out%20Run),
+[Pietro Bros](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Pietro%20Bros), and
+[Universal Hero](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Universal%20Hero).
+Exact-image entries use the media checksums recorded in `pokes.json`. Suggested
+entries use published fixed values and may require local release validation.
 Filename-only matches remain suggestions and are never treated as trusted
 automatic matches.
 
