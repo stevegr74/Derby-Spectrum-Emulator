@@ -78,6 +78,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Lunar Jetman (Ultimate) | `.tap`, `.tzx` | Both tape formats reach the stable game-selection menu |
 | 🟢 | Magician | `.tap` | Loading reaches the illustrated adventure opening and remains stable |
 | 🟢 | Manic Miner | `.tzx` | Standard header/data loading completes in 48K mode and reaches the stable animated game/attract screen |
+| 🟢 | MASK II (Gremlin original) | `Mask II (Gremlin, OR).tzx` | In 48K and 128K, the tape stops at its explicit marker and the controls menu accepts input into the mission briefings. Mission gameplay was not checked |
 | 🟢 | Match Day II (original and Hit Squad releases) | `.tzx` | Both releases reach their stable joystick-selection menus |
 | 🟢 | Nebulus (Hewson slow-load release) | `.tzx` | Loading completes, ends the tape cleanly, and reaches the stable title/high-score screen |
 | 🟢 | NARC (Ocean, 128K program and levels) | `.tzx` | Insert side B when requested and press Play. The tape stops automatically at the intro and both first-mission Space prompts. Select `D` for one player and resume when the game says `START TAPE`. The Junkyard reaches gameplay with no rewind or seek |
@@ -115,7 +116,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | The Goonies | `.tzx` | Loading reaches active gameplay and remains stable |
 | 🟢 | The Great Escape (Ocean original) | `.tap`, `.tzx` | Both tape formats reach the control-selection menu and remain stable |
 | 🟢 | The Growing Pains of Adrian Mole (Ricochet) | `.tzx` | Loading reaches the illustrated opening story screen and remains stable |
-| 🟢 | The New Zealand Story (Hit Squad) | `.tzx` | 128K protected loading reaches the menu, automatically resumes after the game enters its stable ROM tape-search loop, loads level 1-1, and auto-stops at the next multiload boundary |
+| 🟢 | The New Zealand Story (Hit Squad) | `.tzx` | On the original 128K, native ROM loading reaches the menu. Starting the game automatically resumes the tape, loads the first group of levels, and stops before reading the next data block. The 1-1 to 1-2 transition plays from RAM without restarting the tape. At the next tape request, the tape resumes automatically, loads the next group, and stops before reading the following data block. Level transitions were exercised with the game's built-in level skip |
 | 🟢 | The Oracle's Cave (Doric Computer) | `.tzx` | ROM-driven multi-stage loading completes; maze generation and level selection lead into the playable cave |
 | 🟢 | The Way of the Exploding Fist (Melbourne House original and Ricochet) | `.tzx` | Both releases complete their multi-file load and reach the animated title screen; explicit BASIC CODE destinations override conflicting header addresses |
 | 🟢 | Turbo Esprit (Durell original, side 2) | `.tzx` | ROM-driven loading and the explicit copyright prompts advance to the city-selection menu |
@@ -234,6 +235,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Garfield | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 | 🟢 | Into the Eagle's Nest (original release) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 | 🟢 | The Artist II (Softechnics, +3) | `The Artist 2.dsk` | Boots through the +3 Loader; AMX pointer movement and left-button drawing are verified. Answer `Y` at the AMX prompt, select **Mouse → AMX Mouse** in DERBY, then activate **Extras → AMX MOUSE** in the editor with `M`. Kempston was not tested on this disk |
+| 🔴 | The Secret of Monkey Island (discs 1–3) | `.mgt` | All three files are rejected as an unsupported format. The +3 drive accepts `.dsk` images; gameplay could not be tested |
 
 ## Replay Images
 

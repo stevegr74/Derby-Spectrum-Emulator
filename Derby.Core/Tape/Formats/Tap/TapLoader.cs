@@ -410,10 +410,13 @@ namespace Derby.Tape
         }
 
         internal static bool HasTwoStageBasicPrefixBeforeElectricallyDecodedProtectedStream(
-            IReadOnlyList<TapeBlock> blocks)
+            IReadOnlyList<TapeBlock> blocks,
+            out bool chainsFromNumberedAutorunToLineZero)
         {
             int index = 0;
             int programCount = 0;
+            bool startsAtNumberedLine = false;
+            chainsFromNumberedAutorunToLineZero = false;
             while (index < blocks.Count)
             {
                 while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
@@ -429,6 +432,11 @@ namespace Derby.Tape
                 TapHeaderInfo header = ParseHeaderInfo(blocks[index]);
                 if (header.Type != ProgramType)
                     break;
+
+                if (programCount == 0)
+                    startsAtNumberedLine = header.AutoStartLine is > 0 and < 32768;
+                else if (programCount == 1)
+                    chainsFromNumberedAutorunToLineZero = startsAtNumberedLine && header.AutoStartLine == 0;
 
                 programCount++;
                 index += 2;

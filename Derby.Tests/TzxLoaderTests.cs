@@ -388,6 +388,46 @@ namespace Derby.Tests
             Assert.Contains("EarLevel=0", tape.DebugPlaybackState, StringComparison.Ordinal);
         }
 
+        [Theory]
+        [InlineData(SpectrumMachineModel.Spectrum48K)]
+        [InlineData(SpectrumMachineModel.Spectrum128K)]
+        public void LoadWithPolicy_NumberedBasicChainingToLineZero_UsesNativeRomLoad(
+            SpectrumMachineModel model)
+        {
+            string path = Path.Combine(Path.GetTempPath(), $"line-zero-continuation-{Guid.NewGuid():N}.tzx");
+            try
+            {
+                byte[] bootstrap = BuildBasicProgram(BuildBasicLine(10, Token(239), Ascii("\"\"")));
+                byte[] continuation = BuildBasicProgram(BuildBasicLine(0,
+                    Token(244), Ascii("32768"), NumberMarker(32768), Ascii(","), Ascii("42"), NumberMarker(42)));
+
+                File.WriteAllBytes(path, BuildTzx(
+                    BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(0, "BOOT", (ushort)bootstrap.Length, 10, (ushort)bootstrap.Length), pauseMs: 1000),
+                    BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(bootstrap), pauseMs: 1000),
+                    BuildStandardSpeedDataBlock(BuildSpectrumHeaderBlock(0, "NEXT", (ushort)continuation.Length, 0, (ushort)continuation.Length), pauseMs: 1000),
+                    BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(continuation), pauseMs: 1000),
+                    BuildPureToneBlock(2168, 32),
+                    BuildPureDataBlock(new byte[] { 0xAA, 0x55 }, usedBitsInLastByte: 8, pauseMs: 250)));
+
+                var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+                machine.Reset(model);
+                Tape.TapeExecutionResult result = Tape.TzxLoader.LoadWithPolicy(machine, path);
+
+                Assert.Equal(Tape.TapeLoadStrategy.RomBootstrapMounted, result.Strategy);
+                Assert.Equal(Tape.TapeLoadPlanReason.LineZeroContinuationRequiresNativeLoad, result.ReasonCode);
+                Assert.Equal(0, result.ConsumedBlockCount);
+
+                for (int frame = 0; frame < 2000 && machine.PeekMemory(32768) != 42; frame++)
+                    machine.ExecuteFrame();
+
+                Assert.Equal(42, machine.PeekMemory(32768));
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
         [Fact]
         public void LoadWithPolicy_Uses_Explicit_TapePlan_Layer()
         {

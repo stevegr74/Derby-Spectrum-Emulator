@@ -107,8 +107,17 @@ namespace Derby.Tape
                     "All blocks are standard header/data pairs and can be fully fake-loaded.");
             }
 
-            if (TapLoader.HasTwoStageBasicPrefixBeforeElectricallyDecodedProtectedStream(blocks))
+            if (TapLoader.HasTwoStageBasicPrefixBeforeElectricallyDecodedProtectedStream(
+                    blocks, out bool chainsFromNumberedAutorunToLineZero))
             {
+                if (canStartNativeRom && chainsFromNumberedAutorunToLineZero)
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.LineZeroContinuationRequiresNativeLoad,
+                        "A numbered BASIC autorun chains into a line-zero protected loader that needs native ROM LOAD state.");
+                }
+
                 return new TapeLoadPlan(
                     TapeLoadStrategy.RomBootstrapMounted,
                     TapeLoadPlanReason.ProtectedContinuationRequiresRom,
