@@ -28,10 +28,10 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Batman | `.tzx` | Chained BASIC and protected loading complete; game runs |
 | 🟢 | Bear Grud | `.tap` | Loading reaches the control-selection menu and remains stable through an extended execution soak |
 | 🟢 | Booze Up | `.tzx` | Interactive BASIC loading remains under real-ROM control, reaches the loaded program, and detects the terminal tape state correctly |
-| 🟢 | Cabal | `48k.tzx`, `128k.tzx` | Both editions reach the player-selection menu through real-ROM bootstrap; 48K stops at its first multiload marker, while 128K completes and ends the tape cleanly |
+| 🟢 | Cabal | `.tzx` | Both editions reach the player-selection menu through real-ROM bootstrap; 48K stops at its first multiload marker, while 128K completes and ends the tape cleanly |
 | 🟢 | Captain America | `.tzx` | Protected loader completes; game runs |
 | 🟢 | Captain Blood | `.tap` | Verified in both 48K and 128K modes; the complete tape loads, transport ends automatically, and the game reaches its cockpit screen |
-| 🟢 | Castlevania: Spectral Interlude v1.1 | `castlevania_si_en v1.1.tap` | 128K: tape stops automatically at the stop-tape prompt; press a key, then select New Game and a difficulty to enter gameplay. 48K is not supported by this release |
+| 🟢 | Castlevania: Spectral Interlude v1.1 | `.tap` | 128K: tape stops automatically at the stop-tape prompt; press a key, then select New Game and a difficulty to enter gameplay. 48K is not supported by this release (`castlevania_si_en v1.1.tap`) |
 | 🟢 | Cauldron (original and Silverbird/Cyberlode 1.1 releases) | `.tzx` | Both releases reach their complete title/control screens; standard-speed custom flags below `0x80` retain the required long pilot tone |
 | 🟢 | Cauldron II (Erbe, original, and Silverbird/Cyberlode releases) | `.tzx` | All three releases reach the control-selection menu and remain stable; malformed accelerated expressions in the Cyberlode loader fall back before execution |
 | 🟢 | Chase HQ (Portuguese, sides 1 and 2) | `.tzx` | Its noncanonical protected BASIC layout starts through the native ROM in both machine modes. The 48K multiloader reaches active Stage 1 gameplay and loads Stage 2 after a manual tape resume. For the complete 128K load, manually resume side 1 at its explicit stage markers, replace it with side 2 after side 1 ends, and let the two leading 16K bank records load; transport then stops automatically and the stable title/options screen is reached |
@@ -55,14 +55,14 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Heavy on the Magick (Gargoyle original) | `.tzx` | 128K loading reaches the same introductory advice screen as the snapshots |
 | 🟢 | Heavy on the Magick (Rebound) | `.tzx` | Native loading ends the tape in 48K and 128K. Space advances to the menu showing Axil's stats |
 | 🟢 | Herbert's Dummy Run | `.tzx` | 128K loading reaches the illustrated title and press-any-key prompt |
-| 🟢 | How to Be a Complete Bastard (128K TAP and TZX) | `Bastard 128k.tap`, `.tzx` | Both images reach the control menu in 128K. The TZX automatically pauses near its end |
+| 🟢 | How to Be a Complete Bastard (128K TAP and TZX) | `.tap`, `.tzx` | Both images reach the control menu in 128K. The TZX automatically pauses near its end (`Bastard 128k.tap`) |
 | 🟢 | Hunchback | `.tzx` | 128K loading reaches the illustrated title. Space advances to the control menu |
 | 🟢 | Hydrofool (original and Rack-It) | `.tzx` | Both releases complete their mounted continuation, end the tape cleanly, and reach the control-selection menu |
 | 🟢 | Ikari Warriors | `.tzx` | Both the original and Encore releases load and run; transport stops after loading |
 | 🟢 | Impossible Mission | `.tap`, `.tzx` | The TAP plus primary, Bugfix, and Ricochet TZX releases complete protected loading and reach the control menu; protected chained BASIC stages retain exact ROM interpreter-cursor handling |
 | 🟢 | Impossible Mission II | `.tzx` | US Gold original and both Kixx sides complete protected loading and reach stable game/control screens |
 | 🟢 | Impossamole (Gremlin original, sides 1-2) | `.tzx` | Both 48K and 128K modes reach the control and level menus. Side 1 contains the main program and Klondike; Side 2 contains Orient, Iceland, Amazon, and the final level. At `START TAPE`, leave Side 1 mounted for Klondike. Verified in 128K: Side 2 stays stopped until Play, a bookmark at the named Amazon section survives swapping away and back, and playing from it enters gameplay and stops at the next marker. The game does not identify the required side; the wrong record can produce `LOAD ERROR` |
-| 🟢 | Indiana Jones and the Last Crusade | `128k.tap`, Kixx/US Gold original `.tzx` side sets | The TAP initial load auto-stops at the picture and resumes into gameplay; in 48K mode both TZX releases reach title/options, request side 2, preserve live state across tape replacement, load The Cross of Coronado into gameplay, and stop at the next marker |
+| 🟢 | Indiana Jones and the Last Crusade (128K TAP and Kixx/US Gold TZX releases) | `.tap`, `.tzx` | The TAP initial load auto-stops at the picture and resumes into gameplay; in 48K mode both TZX releases reach title/options, request side 2, preserve live state across tape replacement, load The Cross of Coronado into gameplay, and stop at the next marker |
 | 🟢 | Indiana Jones and the Temple of Doom (Kixx and US Gold original) | `.tzx` | Both releases reach the stop-tape prompt and advance to the complete quest-start screen; the US Gold release requires 48K mode |
 | 🟢 | Into the Eagle's Nest (original release) | `.tzx` | Loading reaches the valuables/control screen and automatically stops transport at the completed handoff |
 | 🟢 | Jack the Nipper (Kixx and original releases) | `.tzx` | Both releases reach their stable title/control screens |
@@ -78,15 +78,19 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Lunar Jetman (Ultimate) | `.tap`, `.tzx` | Both tape formats reach the stable game-selection menu |
 | 🟢 | Magician | `.tap` | Loading reaches the illustrated adventure opening and remains stable |
 | 🟢 | Manic Miner | `.tzx` | Standard header/data loading completes in 48K mode and reaches the stable animated game/attract screen |
-| 🟢 | MASK II (Gremlin original) | `Mask II (Gremlin, OR).tzx` | In 48K and 128K, the tape stops at its explicit marker and the controls menu accepts input into the mission briefings. Mission gameplay was not checked |
+| 🟢 | MASK II (Gremlin original) | `.tzx` | In 48K and 128K, the tape stops at its explicit marker and the controls menu accepts input into the mission briefings. Mission gameplay was not checked (`Mask II (Gremlin, OR).tzx`) |
 | 🟢 | Match Day II (original and Hit Squad releases) | `.tzx` | Both releases reach their stable joystick-selection menus |
 | 🟢 | Nebulus (Hewson slow-load release) | `.tzx` | Loading completes, ends the tape cleanly, and reaches the stable title/high-score screen |
 | 🟢 | NARC (Ocean, 128K program and levels) | `.tzx` | Insert side B when requested and press Play. The tape stops automatically at the intro and both first-mission Space prompts. Select `D` for one player and resume when the game says `START TAPE`. The Junkyard reaches gameplay with no rewind or seek |
 | 🟢 | Navy Moves (Dinamic Serie Leyenda English and Hit Squad, both parts) | `.tzx` | In 128K, both Part 1 editions reach the control menu, and both Part 2 editions accept a key and reach the access-code prompt. Code entry and gameplay were not checked |
 | 🟢 | Navy SEALs (Ocean, 128K, sides A and B) | `.tzx` | Side A loads Mission 1 (The Harbour); side B loads Mission 2 (The Streets of Beirut). Both reach gameplay in 128K and end the tape. The two missions load independently: use Load Tape for side B, not Insert Tape and resume. There is no live handoff or following stage record to preserve |
 | 🟢 | Nifty Lifty (Currys) | `.tzx` | In both 48K and 128K, the native ROM starts at the next BASIC line after the saved autorun line number. Selecting a speed starts Level 1 |
-| 🟠 | The Ninja Warriors (Tronix, sides 1 and 2) | `.tzx` | Side 1 reaches the controls menu and first stage in 48K and +2A. Original 128K cold loading still stalls at the copyright notice. From a recorded end-of-Mission-3 checkpoint on original 128K, inserting and playing side 2 loads Mission 4; manually stopping at the fire prompt preserves the next record, and gameplay resumes |
-| 🟢 | North Star (Gremlin) | `Northstar (Gremlin).tzx` | Native loading reads the headerless continuation and ends the tape. The control menu and opening gameplay work in 48K and 128K |
+| 🟢 | The Ninja Warriors (Dro Soft, side A) | `.tzx` | Cold-boots at normal tape speed and enters gameplay in both 48K and original 128K. In 128K, side A ends automatically |
+| 🟢 | The Ninja Warriors (Dro Soft, side B) | `.tzx` | On original 128K, complete Mission 1 from side A, then insert side B and press Play at `PRESS PLAY ON TAPE`. Mission 2 loads as part of the same session without `DATA ERROR`. Manually stop at `PRESS FIRE TO PLAY` to leave the next data record unread, then press Fire to continue. Verified with keyboard input only, without restoring a snapshot or skipping a mission |
+| 🟠 | The Ninja Warriors (TAP edition) | `.tap` | Cold-boots and enters gameplay in 48K. Original 128K reaches the controls menu, but starting a game did not reach stable gameplay (`NINJAWAR.TAP`) |
+| 🟠 | The Ninja Warriors (Tronix, sides 1 and 2) | `.tzx` | Side 1 reaches the controls menu and first stage in 48K and +2A. The unmodified side 1 image stalls at the copyright notice on original 128K. A separate copy with 10.9% longer protected pulse timings cold-boots and enters gameplay on that model. In the same session, advancing to the Mission 4 tape request with debugger assistance, then inserting and playing the unmodified side 2, reaches the fire prompt and gameplay. Manually stopping at the prompt preserves the next record |
+| 🟠 | The Ninja Warriors (Virgin, Speedlock 4 and 7) | `.tzx` | Both editions enter gameplay in 48K but stall at the copyright notice on an original 128K cold boot. The Speedlock 7 side B loads Mission 4 and enters gameplay from a saved checkpoint; manually stopping at the fire prompt preserves the next record (`The Ninja Warriors.tzx`, `Ninja Warriors - Side A.tzx`, `Ninja Warriors - Side B.tzx`) |
+| 🟢 | North Star (Gremlin) | `.tzx` | Native loading reads the headerless continuation and ends the tape. The control menu and opening gameplay work in 48K and 128K (`Northstar (Gremlin).tzx`) |
 | 🟢 | Nosferatu the Vampyre (Piranha) | `.tzx` | 128K loading reaches the main menu |
 | 🟢 | OutRun | `.tap` | Native ROM loading automatically stops at the complete loading picture with the first unclaimed level record preserved; a key reaches the game mode menu, selecting OutRun automatically resumes and loads Stage 1, then transport stops again at the untouched next-level record while gameplay continues |
 | 🟢 | Pac-Land | `.tzx` | In 48K mode, ROM-driven loading reaches the game/high-score screen and remains stable |
@@ -112,7 +116,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Starglider 2 (48K original) | `.tzx` | Loading reaches the complete title screen and ends cleanly |
 | 🟢 | Starglider 2 (Rainbird original, 128K) | `.tzx` | Hybrid protected loading preserves the 128K paging mirror, reaches the complete illustrated title screen, and ends cleanly |
 | 🟢 | Starquake (Bubblebus original and Ricochet) | `.sna`, `.tzx` | The repaired standard-size 48K SNA and both TZX releases reach the control menu and remain stable |
-| 🟢 | Target Renegade | `128k.tzx` | Both modes reach playable Level 1. In 48K, the tape stops after Level 1; a level-advance-assisted run reaches `LOOKING FOR BLOCK 2`. Manual resume then loads playable Level 2 and stops again before consuming the Level 3 record. In 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
+| 🟢 | Target Renegade | `.tzx` | Both modes reach playable Level 1. In 48K, the tape stops after Level 1; a level-advance-assisted run reaches `LOOKING FOR BLOCK 2`. Manual resume then loads playable Level 2 and stops again before consuming the Level 3 record. In 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
 | 🟢 | The Goonies | `.tzx` | Loading reaches active gameplay and remains stable |
 | 🟢 | The Great Escape (Ocean original) | `.tap`, `.tzx` | Both tape formats reach the control-selection menu and remain stable |
 | 🟢 | The Growing Pains of Adrian Mole (Ricochet) | `.tzx` | Loading reaches the illustrated opening story screen and remains stable |
@@ -135,75 +139,75 @@ that every level, control path, or hardware edge case has been tested.
 
 | Status | Title / file | Format | Verified checkpoint and notes |
 | :---: | --- | --- | --- |
-| 🟢 | 720 Degrees | `720°.sna` | Snapshot reaches the control-selection screen and remains stable for 2,000 frames |
-| 🟢 | Airwolf | `airwolf.sna` | Snapshot reaches the illustrated title screen and remains stable for 2,000 frames |
-| 🟢 | Alien | `alien.z80` | Snapshot reaches the illustrated title screen and remains stable for 2,000 frames with sustained audio output |
-| 🟢 | Amaurote | `Amaurote.z80`, `Amaurote 128.z80` | Both snapshots reach the title screen and remain stable for 2,000 frames; the 128K image produces sustained AY audio |
-| 🟢 | Army Moves | `Army Moves.z80` | Restores to the control and play menu |
-| 🟢 | Ant Attack | `Ant Attack.sna` | Snapshot reaches the gender-selection prompt and remains stable for 2,000 frames |
-| 🟢 | The Artist II | `artist2.sna` | Resumes in keyboard mode despite the retained LOADING banner. Kempston pointer movement and button reads are verified after selecting **Extras → KEMPS MOUSE**. The snapshot was saved without the program's AMX startup flag; use the verified +3 disk for AMX |
-| 🟢 | Athena | `athena.sna` | Snapshot reaches the active title/game screen and remains stable for 2,000 frames |
+| 🟢 | 720 Degrees | `.sna` | Snapshot reaches the control-selection screen and remains stable for 2,000 frames (`720°.sna`) |
+| 🟢 | Airwolf | `.sna` | Snapshot reaches the illustrated title screen and remains stable for 2,000 frames (`airwolf.sna`) |
+| 🟢 | Alien | `.z80` | Snapshot reaches the illustrated title screen and remains stable for 2,000 frames with sustained audio output (`alien.z80`) |
+| 🟢 | Amaurote | `.z80` | Both snapshots reach the title screen and remain stable for 2,000 frames; the 128K image produces sustained AY audio (`Amaurote.z80`, `Amaurote 128.z80`) |
+| 🟢 | Army Moves | `.z80` | Restores to the control and play menu (`Army Moves.z80`) |
+| 🟢 | Ant Attack | `.sna` | Snapshot reaches the gender-selection prompt and remains stable for 2,000 frames (`Ant Attack.sna`) |
+| 🟢 | The Artist II | `.sna` | Resumes in keyboard mode despite the retained LOADING banner. Kempston pointer movement and button reads are verified after selecting **Extras → KEMPS MOUSE**. The snapshot was saved without the program's AMX startup flag; use the verified +3 disk for AMX (`artist2.sna`) |
+| 🟢 | Athena | `.sna` | Snapshot reaches the active title/game screen and remains stable for 2,000 frames (`athena.sna`) |
 | 🟢 | Auf Wiedersehen Monty | `.sna`, `.z80` | Both snapshots reach the control menu and remain stable for 2,000 frames |
 | 🟢 | Back to Skool | `.sna` | Snapshot reaches the active demonstration screen and remains stable for 2,000 frames |
 | 🟢 | Barbarian / Barbarian II | `.sna` | Both snapshots reach their complete title or demonstration-selection screens and remain stable for 2,000 frames |
-| 🟢 | Barry Burger | `hamburge.z80` | Snapshot reaches active gameplay and remains stable for 2,000 frames with sustained audio output |
-| 🟢 | Candy | `CANDY.Z80` | Snapshot reaches the illustrated title screen and remains stable |
+| 🟢 | Barry Burger | `.z80` | Snapshot reaches active gameplay and remains stable for 2,000 frames with sustained audio output (`hamburge.z80`) |
+| 🟢 | Candy | `.z80` | Snapshot reaches the illustrated title screen and remains stable (`CANDY.Z80`) |
 | 🟢 | Captain America Defies the Doom Tube | `.z80` | Snapshot reaches the complete title screen and remains stable |
-| 🟢 | Captain Blood | `Captain Blood.z80` | Snapshot reaches the controller-selection menu and remains stable for 2,000 frames |
-| 🟢 | Castlevania (Spanish translation) | `Castlevania si en.z80` | Snapshot reaches the illustrated story opening and remains stable for 2,000 frames |
+| 🟢 | Captain Blood | `.z80` | Snapshot reaches the controller-selection menu and remains stable for 2,000 frames (`Captain Blood.z80`) |
+| 🟢 | Castlevania (Spanish translation) | `.z80` | Snapshot reaches the illustrated story opening and remains stable for 2,000 frames (`Castlevania si en.z80`) |
 | 🟢 | Cauldron / Cauldron II | `.sna`, `.z80` | Both snapshots reach their control menus and remain stable |
-| 🟢 | CD Player | `cdplayer.sna` | Snapshot loads and runs responsively with good audio |
-| 🟢 | Chase HQ | `chasehq.z80` | Snapshot reaches the options prompt and remains stable |
+| 🟢 | CD Player | `.sna` | Snapshot loads and runs responsively with good audio (`cdplayer.sna`) |
+| 🟢 | Chase HQ | `.z80` | Snapshot reaches the options prompt and remains stable (`chasehq.z80`) |
 | 🟢 | Cliff Hanger | `.sna` | Snapshot reaches the control-selection menu and waits for deliberate input; an unassigned Kempston interface remains neutral |
 | 🟢 | Contact Sam Cruise | `.sna` | Snapshot reaches active gameplay and remains stable |
-| 🟢 | Cybernoid: The Fighting Machine | `.sna`, `Cybernoid_The_Fighting_Machine_1988_Hewson_Consultants_a_128K.z80` | Both snapshots reach the title/control screen; the 128K Z80 remains responsive with good AY audio |
-| 🟢 | Dan Dare | `dandare.sna` | Snapshot reaches the title screen and remains stable for 2,000 frames |
-| 🟢 | Dan Dare III | `dandare3.sna` | Snapshot reaches the controller-selection menu and remains stable for 2,000 frames |
-| 🟢 | Donkey Kong | `DONKKONG.Z80` | Snapshot reaches the control menu and remains stable |
-| 🟢 | Donkey Kong (Ocean) | `Donkey Kong (Ocean).sna` | Snapshot reaches the game/control menu and remains stable for 2,000 frames |
-| 🟢 | Dynamite Dan | `dynamite-dan.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
-| 🟢 | Dynamite Dan II | `dynamite dan 2.sna` | Snapshot reaches the title screen and remains stable for 2,000 frames |
-| 🟢 | Elite | `Elite.sna`, `Elite128.z80` | Both snapshots reach the commander prompt and remain stable |
+| 🟢 | Cybernoid: The Fighting Machine | `.sna`, `.z80` | Both snapshots reach the title/control screen; the 128K Z80 remains responsive with good AY audio (`Cybernoid_The_Fighting_Machine_1988_Hewson_Consultants_a_128K.z80`) |
+| 🟢 | Dan Dare | `.sna` | Snapshot reaches the title screen and remains stable for 2,000 frames (`dandare.sna`) |
+| 🟢 | Dan Dare III | `.sna` | Snapshot reaches the controller-selection menu and remains stable for 2,000 frames (`dandare3.sna`) |
+| 🟢 | Donkey Kong | `.z80` | Snapshot reaches the control menu and remains stable (`DONKKONG.Z80`) |
+| 🟢 | Donkey Kong (Ocean) | `.sna` | Snapshot reaches the game/control menu and remains stable for 2,000 frames (`Donkey Kong (Ocean).sna`) |
+| 🟢 | Dynamite Dan | `.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames (`dynamite-dan.sna`) |
+| 🟢 | Dynamite Dan II | `.sna` | Snapshot reaches the title screen and remains stable for 2,000 frames (`dynamite dan 2.sna`) |
+| 🟢 | Elite | `.sna`, `.z80` | Both snapshots reach the commander prompt and remain stable (`Elite.sna`, `Elite128.z80`) |
 | 🟢 | Exolon | `.sna`, `.szx`, `.z80` | All three snapshot forms load and reach the title/control screen; the SNA and Z80 run with 128K audio |
 | 🟢 | Feud | `.z80` | Snapshot reaches the control menu and remains stable |
-| 🟢 | Flying Shark | `flyshark.sna` | Repaired from the matching original tape image; player selection, active gameplay, repeated fire, life loss, and the high-score screen pass a 1,500-frame acceptance run |
+| 🟢 | Flying Shark | `.sna` | Repaired from the matching original tape image; player selection, active gameplay, repeated fire, life loss, and the high-score screen pass a 1,500-frame acceptance run (`flyshark.sna`) |
 | 🟢 | Frankie Goes to Hollywood | `.sna` | Snapshot reaches the control menu and remains stable |
-| 🟢 | Fred | `Fred.z80` | From both 48K and 128K startup selections, the snapshot resumes at the control menu, accepts keyboard and start selections, and reaches active gameplay |
-| 🟢 | Garfield | `garfield.sna` | Snapshot reaches the illustrated control-selection menu and remains stable for 2,000 frames |
+| 🟢 | Fred | `.z80` | From both 48K and 128K startup selections, the snapshot resumes at the control menu, accepts keyboard and start selections, and reaches active gameplay (`Fred.z80`) |
+| 🟢 | Garfield | `.sna` | Snapshot reaches the illustrated control-selection menu and remains stable for 2,000 frames (`garfield.sna`) |
 | 🟢 | Glider Rider | `.sna` | Snapshot reaches the control-selection screen and remains stable |
 | 🟢 | Gods | `.sna`, `.z80` | Both snapshots reach the complete title screen and remain stable |
 | 🟢 | Green Beret | `.sna`, `.z80` | Both snapshots reach the control-selection screen and remain stable |
 | 🟢 | Harrier Attack | `.sna` | Snapshot reaches the illustrated skill-selection screen and remains stable for 2,000 frames |
-| 🟢 | Halls of the Things | `Halls Of The Things.sna` | Restores to the maze and control-selection menu |
-| 🟢 | Heavy on the Magick | `Heavy On The Magick.sna`, `Heavy On The Magick.z80` | Both snapshots reach the introductory advice screen |
-| 🟢 | Herbert's Dummy Run | `Herbert.sna`, `Herbert's Dummy Run.z80` | Both snapshots restore to the illustrated title and press-any-key prompt |
-| 🟢 | How to Be a Complete Bastard | `Bastard 48k.Z80` | Restores to the loading artwork and advances to the control menu after Space |
-| 🟢 | Hunchback | `hunchbck.sna` | Restores to the illustrated title |
+| 🟢 | Halls of the Things | `.sna` | Restores to the maze and control-selection menu (`Halls Of The Things.sna`) |
+| 🟢 | Heavy on the Magick | `.sna`, `.z80` | Both snapshots reach the introductory advice screen (`Heavy On The Magick.sna`, `Heavy On The Magick.z80`) |
+| 🟢 | Herbert's Dummy Run | `.sna`, `.z80` | Both snapshots restore to the illustrated title and press-any-key prompt (`Herbert.sna`, `Herbert's Dummy Run.z80`) |
+| 🟢 | How to Be a Complete Bastard | `.z80` | Restores to the loading artwork and advances to the control menu after Space (`Bastard 48k.Z80`) |
+| 🟢 | Hunchback | `.sna` | Restores to the illustrated title (`hunchbck.sna`) |
 | 🟢 | Hydrofool | `.z80` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
 | 🟢 | Ikari Warriors | `.sna`, `.z80` | Both snapshots reach the control/title screen and remain stable |
-| 🟢 | Into the Eagle's Nest | `eaglenes.sna` | Snapshot reaches the control screen and remains stable for 2,000 frames with sustained audio output |
-| 🟢 | Jack the Nipper | `Jach The Nipper.sna`, `Jack The Nipper.z80` | Both snapshots reach stable menu/game screens and remain stable for 2,000 frames |
-| 🟢 | Jack the Nipper II: In Coconut Capers | `jacknip2.z80` | Snapshot reaches the title screen and remains stable for 2,000 frames |
-| 🟢 | Jet Set Willy | `JETSETW1.Z80`, `jsw013 (2016 edition, bugfixed).sna`, `jswx.sna` | All three variants reach active title/game screens and remain stable |
-| 🟢 | Jet Set Willy April | `JSWAPRIL.Z80` | Snapshot loads and executes |
-| 🟢 | Jet Set Willy II | `jsw2.sna` | Snapshot restores to BASIC with `RANDOMIZE USR 25762`; submitting the restored line and running it reaches the Jet Set Willy II title screen |
-| 🟢 | Joe Blade 3 | `joeblade3.sna`, `joblade3 (hacked).sna` | The standard snapshot reaches its control menu and the hacked snapshot reaches its cheat prompt; both remain stable for 2,000 frames |
-| 🟢 | Kokotoni Wilf | `kokotoni_wilf.sna` | Snapshot reaches the complete Elite/Kokotoni Wilf title screen and remains stable for 2,000 frames |
-| 🟢 | Lunar Jetman | `Lunar Jetman (1983)(Ultimate).z80` | Snapshot reaches the game-selection menu and remains stable for 2,000 frames |
-| 🟢 | WEC Le Mans | `lemans.sna` | Snapshot reaches the control-selection menu and remains stable |
-| 🟢 | Match Day II | `matchda2.sna` | Snapshot reaches the options screen and remains stable for 2,000 frames |
-| 🟢 | Mayhem | `MAYHEM.SNA` | Snapshot reaches the title screen and remains stable |
-| 🟢 | Nebulus | `nebulus.z80` | Snapshot reaches the stable title/high-score screen and remains stable for 2,000 frames with sustained audio output |
-| 🟢 | Nifty Lifty | `nifty.sna` | Restores to the speed and control-selection prompt |
-| 🟢 | Nosferatu the Vampyre | `nosferat.sna` | Restores to the main menu |
-| 🟢 | Oracle's Cave | `oracle.sna` | Snapshot reaches quest selection and remains stable |
-| 🟢 | Pac-Land | `Pacland.sna` | Snapshot reaches the high-score screen and remains stable |
-| 🟢 | Paperboy | `Paperboy.sna` | Snapshot reaches the high-score/start screen and remains stable |
+| 🟢 | Into the Eagle's Nest | `.sna` | Snapshot reaches the control screen and remains stable for 2,000 frames with sustained audio output (`eaglenes.sna`) |
+| 🟢 | Jack the Nipper | `.sna`, `.z80` | Both snapshots reach stable menu/game screens and remain stable for 2,000 frames (`Jach The Nipper.sna`, `Jack The Nipper.z80`) |
+| 🟢 | Jack the Nipper II: In Coconut Capers | `.z80` | Snapshot reaches the title screen and remains stable for 2,000 frames (`jacknip2.z80`) |
+| 🟢 | Jet Set Willy | `.z80`, `.sna` | All three variants reach active title/game screens and remain stable (`JETSETW1.Z80`, `jsw013 (2016 edition, bugfixed).sna`, `jswx.sna`) |
+| 🟢 | Jet Set Willy April | `.z80` | Snapshot loads and executes (`JSWAPRIL.Z80`) |
+| 🟢 | Jet Set Willy II | `.sna` | Snapshot restores to BASIC with `RANDOMIZE USR 25762`; submitting the restored line and running it reaches the Jet Set Willy II title screen (`jsw2.sna`) |
+| 🟢 | Joe Blade 3 | `.sna` | The standard snapshot reaches its control menu and the hacked snapshot reaches its cheat prompt; both remain stable for 2,000 frames (`joeblade3.sna`, `joblade3 (hacked).sna`) |
+| 🟢 | Kokotoni Wilf | `.sna` | Snapshot reaches the complete Elite/Kokotoni Wilf title screen and remains stable for 2,000 frames (`kokotoni_wilf.sna`) |
+| 🟢 | Lunar Jetman | `.z80` | Snapshot reaches the game-selection menu and remains stable for 2,000 frames (`Lunar Jetman (1983)(Ultimate).z80`) |
+| 🟢 | WEC Le Mans | `.sna` | Snapshot reaches the control-selection menu and remains stable (`lemans.sna`) |
+| 🟢 | Match Day II | `.sna` | Snapshot reaches the options screen and remains stable for 2,000 frames (`matchda2.sna`) |
+| 🟢 | Mayhem | `.sna` | Snapshot reaches the title screen and remains stable (`MAYHEM.SNA`) |
+| 🟢 | Nebulus | `.z80` | Snapshot reaches the stable title/high-score screen and remains stable for 2,000 frames with sustained audio output (`nebulus.z80`) |
+| 🟢 | Nifty Lifty | `.sna` | Restores to the speed and control-selection prompt (`nifty.sna`) |
+| 🟢 | Nosferatu the Vampyre | `.sna` | Restores to the main menu (`nosferat.sna`) |
+| 🟢 | Oracle's Cave | `.sna` | Snapshot reaches quest selection and remains stable (`oracle.sna`) |
+| 🟢 | Pac-Land | `.sna` | Snapshot reaches the high-score screen and remains stable (`Pacland.sna`) |
+| 🟢 | Paperboy | `.sna` | Snapshot reaches the high-score/start screen and remains stable (`Paperboy.sna`) |
 | 🟢 | Rainbow Islands | `.z80` | Snapshot reaches the complete title screen and remains stable |
-| 🟢 | Rambo | `rambo.sna` | Snapshot reaches the high-score/title screen and remains stable |
-| 🟢 | Red Hawk | `redhawk.sna` | Snapshot reaches active gameplay and remains stable |
+| 🟢 | Rambo | `.sna` | Snapshot reaches the high-score/title screen and remains stable (`rambo.sna`) |
+| 🟢 | Red Hawk | `.sna` | Snapshot reaches active gameplay and remains stable (`redhawk.sna`) |
 | 🟢 | Target Renegade (Hit Squad filenames) | `.sna`, `.z80` | Both 128K snapshots reach the title/high-score screen and remain stable; the converted SNA also passes exact representable-state round-trip validation; menu-level checks confirm Sinclair 1 responds to keys 1-5 and Sinclair 2 to keys 6-0 |
-| 🟢 | Robocop | `Robocop_1988_Ocean_a_128K.z80` | 128K snapshot loads and executes |
+| 🟢 | Robocop | `.z80` | 128K snapshot loads and executes (`Robocop_1988_Ocean_a_128K.z80`) |
 | 🟢 | Robocop 3 | `.z80` | Snapshot reaches active gameplay and remains stable |
 | 🟢 | Rockford | `.sna` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Roller Coaster | `.sna` | Snapshot reaches the title/start screen and remains stable |
@@ -215,15 +219,15 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Starglider | `.sna` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Star Wars | `.sna` | Snapshot reaches the complete title screen and remains stable |
 | 🟢 | The Great Escape | `.sna`, `.z80` | Both snapshots reach the control-selection screen and remain stable |
-| 🟢 | The Thompson Twins | `ttwins.sna` | Snapshot reaches active gameplay and remains stable |
-| 🟢 | The Way of the Exploding Fist | `fist.sna` | Snapshot reaches active gameplay and remains stable |
-| 🟢 | Universal Hero | `unihero.sna` | Snapshot reaches active gameplay and remains stable for 2,000 frames |
-| 🟢 | Uridium / Uridium Plus | `Uridium.sna`, `uridplus.z80` | Both snapshots reach stable title/game screens |
-| 🟢 | V | `v.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
-| 🟢 | Virus | `virus.sna` | Snapshot reaches the title/input prompt and remains stable for 2,000 frames |
-| 🟢 | Vixen | `vixen.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames |
+| 🟢 | The Thompson Twins | `.sna` | Snapshot reaches active gameplay and remains stable (`ttwins.sna`) |
+| 🟢 | The Way of the Exploding Fist | `.sna` | Snapshot reaches active gameplay and remains stable (`fist.sna`) |
+| 🟢 | Universal Hero | `.sna` | Snapshot reaches active gameplay and remains stable for 2,000 frames (`unihero.sna`) |
+| 🟢 | Uridium / Uridium Plus | `.sna`, `.z80` | Both snapshots reach stable title/game screens (`Uridium.sna`, `uridplus.z80`) |
+| 🟢 | V | `.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames (`v.sna`) |
+| 🟢 | Virus | `.sna` | Snapshot reaches the title/input prompt and remains stable for 2,000 frames (`virus.sna`) |
+| 🟢 | Vixen | `.sna` | Snapshot reaches the control-selection menu and remains stable for 2,000 frames (`vixen.sna`) |
 | 🟢 | Wanted! Monty Mole | `.sna` | Snapshot reaches the complete title screen and remains stable |
-| 🟢 | Who Dares Wins | `who_dare.sna` | Snapshot reaches active gameplay and remains stable |
+| 🟢 | Who Dares Wins | `.sna` | Snapshot reaches active gameplay and remains stable (`who_dare.sna`) |
 | 🟢 | Xenon | `.z80` | Snapshot reaches the control-selection screen and remains stable |
 | 🟢 | Xevious | `.sna` | Snapshot reaches the high-score/title screen and remains stable |
 
@@ -234,14 +238,15 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Captain Blood (Exxos) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 | 🟢 | Garfield | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 | 🟢 | Into the Eagle's Nest (original release) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
-| 🟢 | The Artist II (Softechnics, +3) | `The Artist 2.dsk` | Boots through the +3 Loader; AMX pointer movement and left-button drawing are verified. Answer `Y` at the AMX prompt, select **Mouse → AMX Mouse** in DERBY, then activate **Extras → AMX MOUSE** in the editor with `M`. Kempston was not tested on this disk |
+| 🟢 | The Artist II (Softechnics, +3) | `.dsk` | Boots through the +3 Loader; AMX pointer movement and left-button drawing are verified. Answer `Y` at the AMX prompt, select **Mouse → AMX Mouse** in DERBY, then activate **Extras → AMX MOUSE** in the editor with `M`. Kempston was not tested on this disk (`The Artist 2.dsk`) |
+| 🟢 | The Ninja Warriors (Dro Soft, +3) | `.dsk` | Boots through the +3 Loader from read-only drive A: and enters first-mission gameplay with responsive keyboard controls (`The Ninja Warriors (Dro Soft).dsk`) |
 | 🔴 | The Secret of Monkey Island (discs 1–3) | `.mgt` | All three files are rejected as an unsupported format. The +3 drive accepts `.dsk` images; gameplay could not be tested |
 
 ## Replay Images
 
 | Status | Title / file | Format | Verified checkpoint and notes |
 | :---: | --- | --- | --- |
-| 🟢 | Auf Wiedersehen Monty | `aufmonty.rzx` | Replay loads and runs through the RZX input path |
+| 🟢 | Auf Wiedersehen Monty | `.rzx` | Replay loads and runs through the RZX input path (`aufmonty.rzx`) |
 
 ## Recording New Results
 

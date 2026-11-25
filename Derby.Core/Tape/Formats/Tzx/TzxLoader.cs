@@ -124,7 +124,7 @@ namespace Derby.Tape
 
         internal static IReadOnlyList<TapeBlock> PrepareBlocksForExecution(IReadOnlyList<TapeBlock> blocks)
         {
-            return NormalizeRomLoadableStandardDataBlocks(blocks);
+            return NormalizePaddedRomRecords(blocks);
         }
 
         private static bool UsesStandardRomSignalStart(IReadOnlyList<TapeBlock> blocks)
@@ -168,31 +168,17 @@ namespace Derby.Tape
                    oneBit == StandardOneBitPulseLength;
         }
 
-        private static int? FindLogicalRomRecordByteCount(byte[] streamData, bool canUseRomLoadTrap)
+        private static IReadOnlyList<TapeBlock> NormalizePaddedRomRecords(IReadOnlyList<TapeBlock> blocks)
         {
             const int headerRecordByteCount = 19;
-            if (!canUseRomLoadTrap ||
-                streamData.Length <= headerRecordByteCount ||
-                streamData[0] != 0x00 ||
-                streamData[1] > 0x03)
-            {
-                return null;
-            }
-
-            byte checksum = 0;
-            for (int index = 0; index < headerRecordByteCount; index++)
-                checksum ^= streamData[index];
-
-            return checksum == 0 ? headerRecordByteCount : null;
-        }
-
-        private static IReadOnlyList<TapeBlock> NormalizeRomLoadableStandardDataBlocks(IReadOnlyList<TapeBlock> blocks)
-        {
             var normalized = new List<TapeBlock>(blocks);
             for (int headerIndex = 0; headerIndex < normalized.Count; headerIndex++)
             {
                 TapeBlock headerBlock = normalized[headerIndex];
-                if (!TapLoader.IsStandardHeaderBlock(headerBlock))
+                bool paddedHeader = headerBlock.StreamByteCount > headerRecordByteCount &&
+                    HasValidRomRecordPrefix(headerBlock, HeaderFlag, headerRecordByteCount) &&
+                    headerBlock.GetStreamByte(1) <= 3;
+                if (!paddedHeader && !TapLoader.IsStandardHeaderBlock(headerBlock))
                     continue;
 
                 int dataIndex = headerIndex + 1;
@@ -202,33 +188,33 @@ namespace Derby.Tape
                     continue;
 
                 TapeBlock dataBlock = normalized[dataIndex];
-                TapHeaderInfo header = TapLoader.ParseHeaderInfo(headerBlock);
-                int logicalByteCount = header.DataLength + 2;
-                if (!CanUseLogicalRomRecordPrefix(dataBlock, expectedFlag: 0xFF, logicalByteCount))
+                int logicalByteCount = (headerBlock.GetStreamByte(12) | (headerBlock.GetStreamByte(13) << 8)) + 2;
+                if (!HasValidRomRecordPrefix(dataBlock, expectedFlag: 0xFF, logicalByteCount))
                     continue;
 
-                normalized[dataIndex] = TapeBlock.CreateData(
-                    dataBlock.StreamData!,
-                    dataBlock.PilotPulseLength,
-                    dataBlock.PilotPulseCount,
-                    dataBlock.SyncFirstPulseLength,
-                    dataBlock.SyncSecondPulseLength,
-                    dataBlock.ZeroBitPulseLength,
-                    dataBlock.OneBitPulseLength,
-                    dataBlock.UsedBitsInLastByte,
-                    dataBlock.PauseAfterBlockMs,
-                    dataBlock.CanUseRomLoadTrap,
-                    romRecordByteCount: logicalByteCount);
+                // A custom data block can start with a valid header checksum by
+                // coincidence. Require its matching ROM data record as evidence.
+                if (paddedHeader)
+                    normalized[headerIndex] = WithLogicalRomRecordLength(headerBlock, headerRecordByteCount);
+                if (dataBlock.StreamByteCount > logicalByteCount)
+                    normalized[dataIndex] = WithLogicalRomRecordLength(dataBlock, logicalByteCount);
             }
 
             return normalized;
         }
 
-        private static bool CanUseLogicalRomRecordPrefix(TapeBlock block, byte expectedFlag, int logicalByteCount)
+        private static TapeBlock WithLogicalRomRecordLength(TapeBlock block, int length) =>
+            TapeBlock.CreateData(
+                block.StreamData!, block.PilotPulseLength, block.PilotPulseCount,
+                block.SyncFirstPulseLength, block.SyncSecondPulseLength,
+                block.ZeroBitPulseLength, block.OneBitPulseLength, block.UsedBitsInLastByte,
+                block.PauseAfterBlockMs, block.CanUseRomLoadTrap, romRecordByteCount: length);
+
+        private static bool HasValidRomRecordPrefix(TapeBlock block, byte expectedFlag, int logicalByteCount)
         {
             if (!block.CanUseRomLoadTrap ||
                 block.StreamData == null ||
-                block.StreamData.Length <= logicalByteCount ||
+                block.StreamData.Length < logicalByteCount ||
                 logicalByteCount < 2 ||
                 block.StreamData[0] != expectedFlag)
             {
@@ -269,8 +255,7 @@ namespace Derby.Tape
                             StandardZeroBitPulseLength,
                             StandardOneBitPulseLength,
                             usedBitsInLastByte: 8,
-                            pauseAfterBlockMs: pauseMs,
-                            romRecordByteCount: FindLogicalRomRecordByteCount(streamData, canUseRomLoadTrap: true))));
+                            pauseAfterBlockMs: pauseMs)));
                         break;
                     }
 
@@ -310,8 +295,7 @@ namespace Derby.Tape
                                 oneBit,
                                 usedBits,
                                 pauseMs,
-                                canUseRomLoadTrap: true,
-                                romRecordByteCount: FindLogicalRomRecordByteCount(streamData, canUseRomLoadTrap: true))
+                                canUseRomLoadTrap: true)
                             : TapeBlock.CreateTurboByteStreamData(
                                 streamData,
                                 pilotPulseLength,

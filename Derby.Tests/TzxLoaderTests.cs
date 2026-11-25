@@ -42,7 +42,7 @@ namespace Derby.Tests
         }
 
         [Fact]
-        public void ParseBlocks_RecognizesValidRomHeaderPrefix_WithoutDiscardingTrailingTapeBytes()
+        public void PrepareBlocks_RecognizesPaddedHeaderWithMatchingData_WithoutDiscardingPulses()
         {
             byte[] header = BuildSpectrumHeaderBlock(
                 type: 0,
@@ -54,8 +54,12 @@ namespace Derby.Tests
             Array.Resize(ref header, header.Length + 1);
             header[^1] = 0x80;
 
-            Tape.TapeBlock block = Assert.Single(Tape.TzxLoader.ParseBlocks(BuildTzx(
-                BuildStandardSpeedDataBlock(header, pauseMs: 1000))));
+            IReadOnlyList<Tape.TapeBlock> blocks = Tape.TzxLoader.PrepareBlocksForExecution(
+                Tape.TzxLoader.ParseBlocks(BuildTzx(
+                    BuildStandardSpeedDataBlock(header, pauseMs: 1000),
+                    BuildTextDescriptionBlock("separator"),
+                    BuildStandardSpeedDataBlock(BuildSpectrumDataBlock(new byte[123]), pauseMs: 1000))));
+            Tape.TapeBlock block = blocks[0];
 
             Assert.Equal(20, block.StreamByteCount);
             Assert.Equal(17, block.Payload!.Length);
@@ -63,6 +67,41 @@ namespace Derby.Tests
             Assert.Equal((byte)0x80, block.GetStreamByte(19));
             Assert.True(Tape.TapLoader.IsStandardHeaderBlock(block));
             Assert.Equal("PADDED", Tape.TapLoader.ParseHeaderInfo(block).FileName);
+        }
+
+        [Fact]
+        public void Mount_ZeroFlagContinuationWithHeaderLikePrefix_LoadsWholeRomRecord()
+        {
+            string path = Path.Combine(Path.GetTempPath(), $"raw-zero-flag-{Guid.NewGuid():N}.tzx");
+            try
+            {
+                byte[] payload = new byte[64];
+                payload[^1] = 0x42;
+                File.WriteAllBytes(path, BuildTzx(
+                    BuildStandardSpeedDataBlock([0, .. payload, 0x42], pauseMs: 1000),
+                    BuildStandardSpeedDataBlock([0, 0x55, 0x55], pauseMs: 1000)));
+
+                var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+                Tape.TzxLoader.Mount(machine, path);
+                machine.Cpu.Regs.PC = machine.RomProfile.LoadBytesTrapAddress;
+                machine.Cpu.Regs.SP = 0x9000;
+                machine.Cpu.Regs.IX = 0x8000;
+                machine.Cpu.Regs.DE = (ushort)payload.Length;
+                machine.Cpu.Regs.A_ = 0;
+                machine.Cpu.Regs.F_ = 1;
+                machine.PokeMemory(0x9000, 0x34);
+                machine.PokeMemory(0x9001, 0x92);
+
+                Assert.True(machine.TryServiceTapeTrap());
+                Assert.Equal(0x9234, machine.Cpu.Regs.PC);
+                Assert.True((machine.Cpu.Regs.F & 1) != 0);
+                Assert.Equal(0x42, machine.PeekMemory(0x803F));
+                Assert.Contains("NextBlock=1/2", machine.GetMountedTapeDebugState(), StringComparison.Ordinal);
+            }
+            finally
+            {
+                File.Delete(path);
+            }
         }
 
         [Fact]
