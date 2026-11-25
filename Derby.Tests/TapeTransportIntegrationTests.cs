@@ -210,8 +210,12 @@ namespace Derby.Tests
             }
         }
 
-        [Fact]
-        public void Machine_AutoStopsTape_WhenLoaderHandsOffToKeyboardOnlyWaitLoop()
+        [Theory]
+        [InlineData(false, 0xC9, true)]
+        [InlineData(true, 0xC9, true)]
+        [InlineData(true, 0xE6, false)]
+        public void Machine_AutoStopsTape_OnlyForARecognizedKeyboardWaitLoop(
+            bool rotateThroughCarry, byte fallthrough, bool stops)
         {
             string tempFolder = CreateTempRoms();
             try
@@ -236,14 +240,11 @@ namespace Derby.Tests
                 machine.PokeMemory(pc++, 0x00);
                 machine.PokeMemory(pc, 0x81);
 
-                machine.PokeMemory(0x8100, 0xAF); // XOR A
-                machine.PokeMemory(0x8101, 0xDB); // IN A,(FE)
-                machine.PokeMemory(0x8102, 0xFE);
-                machine.PokeMemory(0x8103, 0x2F); // CPL
-                machine.PokeMemory(0x8104, 0xE6); // AND 1F discards EAR bit 6.
-                machine.PokeMemory(0x8105, 0x1F);
-                machine.PokeMemory(0x8106, 0x28); // JR Z,8100
-                machine.PokeMemory(0x8107, 0xF8);
+                byte[] waitCode = rotateThroughCarry
+                    ? [0x3E, 0x7F, 0xDB, 0xFE, 0x1F, 0x38, 0xF9, fallthrough, 0x20]
+                    : [0xAF, 0xDB, 0xFE, 0x2F, 0xE6, 0x1F, 0x28, 0xF8];
+                for (int index = 0; index < waitCode.Length; index++)
+                    machine.PokeMemory((ushort)(0x8100 + index), waitCode[index]);
                 machine.Cpu.Regs.PC = 0x8000;
 
                 machine.ExecuteFrame();
@@ -254,8 +255,8 @@ namespace Derby.Tests
                 machine.ExecuteFrame();
 
                 Assert.False(machine.Cpu.IsHalted);
-                Assert.Equal(TapeTransportState.Stopped, machine.TapeTransportState);
-                Assert.True(machine.MountedTape!.IsPlaybackPaused);
+                Assert.Equal(stops ? TapeTransportState.Stopped : TapeTransportState.Playing, machine.TapeTransportState);
+                Assert.Equal(stops, machine.MountedTape!.IsPlaybackPaused);
             }
             finally
             {
