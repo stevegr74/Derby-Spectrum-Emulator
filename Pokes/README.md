@@ -35,10 +35,13 @@ verified during gameplay. Sources include
 and contributor submissions to The Tipshop, including
 [Cabal](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Cabal),
 [Turbo Out Run](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Turbo%20Out%20Run),
-[Pietro Bros](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Pietro%20Bros), and
-[Universal Hero](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Universal%20Hero).
+[Pietro Bros](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Pietro%20Bros),
+[Universal Hero](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Universal%20Hero),
+[Army Moves](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Army%20Moves),
+and [Navy Moves](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Navy%20Moves).
 Exact-image entries use the media checksums recorded in `pokes.json`. Suggested
 entries use published fixed values and may require local release validation.
+Apply part-specific pokes only after that part has loaded.
 Filename-only matches remain suggestions and are never treated as trusted
 automatic matches.
 

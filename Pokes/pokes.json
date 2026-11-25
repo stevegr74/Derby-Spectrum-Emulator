@@ -900,6 +900,104 @@
       "pokes": [
         { "id": "infinite-lives", "name": "Infinite lives", "description": "Prevents life loss in the Spectrum 48K/128K release of v1.91, not the Pentagon build.", "writes": [{ "space": "mapped", "address": "37629", "value": "0" }] }
       ]
+    },
+    {
+      "id": "army-moves-48k", "title": "Army Moves (48K)", "aliases": ["Army Moves"], "models": ["48K"], "sha256": [],
+      "pokes": [
+        { "id": "part-1-lives", "name": "Part 1: Infinite lives", "writes": [{ "space": "mapped", "address": "54600", "value": "0" }] },
+        { "id": "part-2-lives", "name": "Part 2: Infinite lives", "writes": [{ "space": "mapped", "address": "53771", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "army-moves-128k", "title": "Army Moves (128K)", "aliases": ["Army Moves"], "models": ["128K"], "sha256": [],
+      "pokes": [
+        { "id": "part-1-lives", "name": "Part 1: Infinite lives", "writes": [{ "space": "mapped", "address": "33067", "value": "0" }] },
+        { "id": "part-2-lives", "name": "Part 2: Infinite lives", "writes": [{ "space": "mapped", "address": "32211", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "halls-of-the-things", "title": "Halls of the Things", "aliases": [], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-energy", "name": "Infinite energy", "writes": [{ "space": "mapped", "address": "32717", "value": "0" }] },
+        { "id": "infinite-arrows", "name": "Infinite arrows", "writes": [{ "space": "mapped", "address": "32477", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "heavy-on-the-magick", "title": "Heavy on the Magick", "aliases": [], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-stamina", "name": "Infinite stamina", "writes": [{ "space": "mapped", "address": "33152", "value": "24" }] },
+        { "id": "open-locked-doors", "name": "Open locked doors", "writes": [{ "space": "mapped", "address": "31298", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "herberts-dummy-run", "title": "Herbert's Dummy Run", "aliases": ["Herbert"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives (English release)", "writes": [{ "space": "mapped", "address": "39696", "value": "0" }, { "space": "mapped", "address": "39698", "value": "58" }] }
+      ]
+    },
+    {
+      "id": "hunchback", "title": "Hunchback", "aliases": ["hunchbck"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "writes": [{ "space": "mapped", "address": "26888", "value": "0" }] },
+        { "id": "always-get-bonus", "name": "Always get bonus", "writes": [{ "space": "mapped", "address": "27288", "value": "1" }] }
+      ]
+    },
+    {
+      "id": "narc", "title": "NARC", "aliases": [], "models": ["128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-credits", "name": "Infinite credits", "writes": [{ "space": "mapped", "address": "35135", "value": "183" }] },
+        { "id": "infinite-ammunition", "name": "Infinite ammunition", "writes": [{ "space": "mapped", "address": "35986", "value": "183" }] },
+        { "id": "infinite-rockets", "name": "Infinite rockets", "writes": [{ "space": "mapped", "address": "36023", "value": "183" }] },
+        { "id": "infinite-lives", "name": "Infinite lives", "writes": [{ "space": "mapped", "address": "27804", "value": "182" }, { "space": "mapped", "address": "35690", "value": "182" }] }
+      ]
+    },
+    {
+      "id": "navy-moves", "title": "Navy Moves", "aliases": [], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "part-1-lives", "name": "Part 1: Infinite lives (English release)", "writes": [{ "space": "mapped", "address": "49923", "value": "0" }] },
+        { "id": "part-1-mine-immunity", "name": "Part 1: Mine immunity (English release)", "writes": [{ "space": "mapped", "address": "53536", "value": "201" }] },
+        { "id": "part-2-lives", "name": "Part 2: Infinite lives (English release)", "writes": [{ "space": "mapped", "address": "54035", "value": "0" }] },
+        { "id": "part-2-bullets", "name": "Part 2: Infinite bullets (English release)", "writes": [{ "space": "mapped", "address": "55845", "value": "0" }] },
+        { "id": "part-2-flamethrower", "name": "Part 2: Infinite flamethrower fuel (English release)", "writes": [{ "space": "mapped", "address": "55877", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "navy-seals", "title": "Navy SEALs", "aliases": [], "models": ["128K"], "sha256": [],
+      "pokes": [
+        { "id": "part-1-lives", "name": "Part 1: Infinite lives", "writes": [{ "space": "mapped", "address": "37805", "value": "0" }] },
+        { "id": "part-1-time", "name": "Part 1: Infinite time", "writes": [{ "space": "mapped", "address": "25223", "value": "0" }] },
+        { "id": "part-2-lives", "name": "Part 2: Infinite lives", "writes": [{ "space": "mapped", "address": "53048", "value": "0" }] },
+        { "id": "part-2-time", "name": "Part 2: Infinite time", "writes": [{ "space": "mapped", "address": "25221", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "nifty-lifty", "title": "Nifty Lifty", "aliases": ["nifty"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "writes": [{ "space": "mapped", "address": "43526", "value": "0" }, { "space": "mapped", "address": "50526", "value": "0" }] },
+        { "id": "infinite-time", "name": "Infinite time", "writes": [{ "space": "mapped", "address": "42877", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "ninja-warriors", "title": "The Ninja Warriors", "aliases": ["Ninja Warriors"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-shuriken-p1", "name": "Player 1: Infinite shuriken", "writes": [{ "space": "mapped", "address": "24599", "value": "0" }] },
+        { "id": "infinite-shuriken-p2", "name": "Player 2: Infinite shuriken", "writes": [{ "space": "mapped", "address": "24624", "value": "0" }] }
+      ]
+    },
+    {
+      "id": "north-star", "title": "North Star", "aliases": ["Northstar"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "writes": [{ "space": "mapped", "address": "48371", "value": "182" }] },
+        { "id": "infinite-ammunition", "name": "Infinite ammunition", "writes": [{ "space": "mapped", "address": "43680", "value": "0" }] },
+        { "id": "infinite-oxygen", "name": "Infinite oxygen", "writes": [{ "space": "mapped", "address": "48228", "value": "182" }] }
+      ]
+    },
+    {
+      "id": "nosferatu-the-vampyre", "title": "Nosferatu the Vampyre", "aliases": ["nosferat"], "models": ["48K", "128K"], "sha256": [],
+      "pokes": [
+        { "id": "infinite-time", "name": "Infinite time", "writes": [{ "space": "mapped", "address": "32499", "value": "0" }] },
+        { "id": "infinite-energy", "name": "Infinite energy", "writes": [{ "space": "mapped", "address": "36863", "value": "183" }] }
+      ]
     }
   ]
 }
