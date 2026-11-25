@@ -6,8 +6,20 @@ namespace Derby.Tape
 {
     public static partial class TapLoader
     {
+        private const int NativeTapeMenuStartupFrames = 260;
+        private const int NativeTapeMenuEnterFrames = 20;
+
         internal static bool HasLeadingStandardCodePair(IReadOnlyList<TapeBlock> blocks)
+            => TryGetLeadingStandardPair(blocks, CodeType, out _);
+
+        internal static bool TryGetLeadingStandardBasicPair(
+            IReadOnlyList<TapeBlock> blocks, out string? fileName)
+            => TryGetLeadingStandardPair(blocks, ProgramType, out fileName);
+
+        private static bool TryGetLeadingStandardPair(
+            IReadOnlyList<TapeBlock> blocks, byte type, out string? fileName)
         {
+            fileName = null;
             int index = 0;
             while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
                 index++;
@@ -17,8 +29,41 @@ namespace Derby.Tape
 
             TapHeaderInfo header = ParseHeaderInfo(blocks[index]);
             TapeBlock data = blocks[index + 1];
-            return header.Type == CodeType && blocks[index].IsLoadableRomBlock && data.Kind == TapeBlockKind.Data &&
-                data.Flag == DataFlag && data.IsLoadableRomBlock && data.Payload?.Length == header.DataLength;
+            if (header.Type != type || !blocks[index].IsLoadableRomBlock || data.Kind != TapeBlockKind.Data ||
+                data.Flag != DataFlag || !data.IsLoadableRomBlock || data.Payload?.Length != header.DataLength)
+                return false;
+
+            fileName = header.FileName;
+            return true;
+        }
+
+        internal static TapBootstrapResult StartNativeMenuTapeLoader(
+            SpectrumMachine machine,
+            string displayName,
+            IReadOnlyList<TapeBlock> blocks,
+            bool initialEarLevelHigh)
+        {
+            machine.Reset(SpectrumMachineModel.Spectrum128K);
+
+            // Let the bundled ROM finish startup. Its default menu entry loads tape.
+            // No ROM workspace addresses or fast-load traps are used on these models.
+            ExecuteRomInputFrames(machine, NativeTapeMenuStartupFrames);
+            machine.SetKey(6, 0, true); // Enter.
+            try
+            {
+                ExecuteRomInputFrames(machine, NativeTapeMenuEnterFrames);
+                machine.MountTape(new MountedTape(displayName, blocks,
+                    skipCustomHeaderForEarPlayback: false,
+                    initialEarLevelHigh: initialEarLevelHigh,
+                    allowRomLoadTraps: false));
+            }
+            finally
+            {
+                machine.ClearKeyboard();
+            }
+
+            TryGetLeadingStandardBasicPair(blocks, out string? fileName);
+            return new TapBootstrapResult(blocks.Count, 0, displayName, fileName);
         }
 
         internal static bool HasCodeOverlappingBootstrapStack(IReadOnlyList<TapeBlock> blocks)

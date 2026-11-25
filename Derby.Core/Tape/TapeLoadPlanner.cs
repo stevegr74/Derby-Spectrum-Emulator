@@ -11,6 +11,14 @@ namespace Derby.Tape
 
             if (!machine.SupportsRomTapeAcceleration)
             {
+                if (machine.RomProfile.HasNativeTapeMenu && TapLoader.TryGetLeadingStandardBasicPair(blocks, out _))
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.NativeMenuWithoutAcceleration,
+                        "The selected ROM starts this BASIC tape through its native Loader menu without acceleration.");
+                }
+
                 return new TapeLoadPlan(
                     TapeLoadStrategy.MountedRealtime,
                     TapeLoadPlanReason.IncompatibleRomProfile,

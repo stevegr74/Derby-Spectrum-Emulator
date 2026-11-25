@@ -18,14 +18,16 @@ namespace Derby
             "8EC5CB9FD7EC24A041800314BB5A2C99BE02F7E50745194EB649ED6D9085BD1F"
         ];
 
-        private SpectrumRomProfile(string name, bool supportsAddressBasedTapeServices)
+        private SpectrumRomProfile(string name, bool supportsAddressBasedTapeServices, bool hasNativeTapeMenu = false)
         {
             Name = name;
             SupportsAddressBasedTapeServices = supportsAddressBasedTapeServices;
+            HasNativeTapeMenu = hasNativeTapeMenu;
         }
 
         public string Name { get; }
         public bool SupportsAddressBasedTapeServices { get; }
+        internal bool HasNativeTapeMenu { get; }
 
         internal static SpectrumRomProfile SyntheticTest { get; } =
             new SpectrumRomProfile("Synthetic test ROMs", supportsAddressBasedTapeServices: true);
@@ -93,7 +95,8 @@ namespace Derby
                 return new SpectrumRomProfile("Sinclair ZX Spectrum 128K", supportsAddressBasedTapeServices: true);
 
             if (rom0Hash == Plus2Rom0Sha256 && rom1Hash == Plus2Rom1Sha256)
-                return new SpectrumRomProfile("Sinclair ZX Spectrum +2 Grey", supportsAddressBasedTapeServices: false);
+                return new SpectrumRomProfile("Sinclair ZX Spectrum +2 Grey", supportsAddressBasedTapeServices: false,
+                    hasNativeTapeMenu: true);
 
             string description = model == SpectrumMachineModel.Spectrum48K
                 ? "Unknown 48K ROM"
@@ -116,7 +119,8 @@ namespace Derby
 
             return new SpectrumRomProfile(
                 bundled ? "Sinclair ZX Spectrum +2A/+3" : "Unknown +2A/+3 ROM set",
-                supportsAddressBasedTapeServices: false);
+                supportsAddressBasedTapeServices: false,
+                hasNativeTapeMenu: bundled);
         }
 
         private static bool IsInRange(ushort value, ushort minimum, ushort maximum) =>
