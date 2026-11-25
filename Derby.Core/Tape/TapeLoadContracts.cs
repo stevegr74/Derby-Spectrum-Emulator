@@ -82,7 +82,8 @@ namespace Derby.Tape
         CodeLoadReplacesRomWorkspace,
         LeadingCodeRequiresNativeLoad,
         CodeLoadOverlapsBootstrapStack,
-        HeaderlessContinuationRequiresNativeLoad
+        HeaderlessContinuationRequiresNativeLoad,
+        NativeMenuWithoutAcceleration
     }
 
     public sealed class TapeLoadPlan

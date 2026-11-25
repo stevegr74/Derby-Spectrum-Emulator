@@ -48,6 +48,12 @@ namespace Derby.Tape
 
                 case TapeLoadStrategy.RomBootstrapMounted:
                 {
+                    if (plan.ReasonCode == TapeLoadPlanReason.NativeMenuWithoutAcceleration)
+                    {
+                        return CreateResult(plan, TapLoader.StartNativeMenuTapeLoader(
+                            machine, displayName, blocks, initialEarLevelHigh));
+                    }
+
                     bool requiresNativeRomLoader =
                         plan.ReasonCode is TapeLoadPlanReason.InconsistentStandardBasicPair or
                             TapeLoadPlanReason.NonCanonicalBasicProgram or

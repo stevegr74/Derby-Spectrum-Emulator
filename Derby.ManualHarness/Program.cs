@@ -25,9 +25,11 @@ if (args.Length > 0)
     List<ushort> watchedMemoryWriteAddresses = new();
     List<(ushort Address, int Length)> memoryDumpRequests = new();
     bool dumpTapeBlocks = false;
+    bool insertTapeOnly = false;
     bool enableMachineTrace = false;
     TapeLoadStrategy? forcedTapeStrategy = null;
     SpectrumMachineModel? forcedMachineModel = null;
+    SpectrumRomSet? forcedRomSet = null;
     (ushort Start, ushort End)? focusedTraceRange = null;
     int focusedTraceStartFrame = 0;
     int focusedTraceFrameLimit = 0;
@@ -112,6 +114,10 @@ if (args.Length > 0)
         {
             dumpTapeBlocks = true;
         }
+        else if (arg.Equals("insert=1", StringComparison.OrdinalIgnoreCase))
+        {
+            insertTapeOnly = true;
+        }
         else if (arg.Equals("machinetrace=1", StringComparison.OrdinalIgnoreCase))
         {
             enableMachineTrace = true;
@@ -122,12 +128,16 @@ if (args.Length > 0)
         }
         else if (arg.StartsWith("model=", StringComparison.OrdinalIgnoreCase))
         {
-            forcedMachineModel = arg["model=".Length..].Trim() switch
+            forcedRomSet = arg["model=".Length..].Trim().ToLowerInvariant() switch
             {
-                "48" or "48k" => SpectrumMachineModel.Spectrum48K,
-                "128" or "128k" => SpectrumMachineModel.Spectrum128K,
+                "48" or "48k" => SpectrumRomSet.Bundled48K(romFolder),
+                "128" or "128k" => SpectrumRomSet.Bundled128K(romFolder),
+                "+2" => SpectrumRomSet.BundledPlus2(romFolder),
+                "+2a" => SpectrumRomSet.BundledPlus2A(romFolder),
+                "+3" => SpectrumRomSet.BundledPlus3(romFolder),
                 _ => throw new InvalidOperationException($"Unsupported machine model '{arg}'.")
             };
+            forcedMachineModel = forcedRomSet.Model;
         }
         else if (arg.Equals("mouse=amx", StringComparison.OrdinalIgnoreCase))
         {
@@ -228,12 +238,10 @@ if (args.Length > 0)
 
     Console.WriteLine($"Loading image: {snapshotPath}");
 
-    if (forcedMachineModel.HasValue)
+    if (forcedRomSet != null)
     {
-        machine = forcedMachineModel.Value == SpectrumMachineModel.Spectrum48K
-            ? new SpectrumMachine(SpectrumRomSet.Bundled48K(romFolder))
-            : new SpectrumMachine(SpectrumRomSet.Bundled128K(romFolder));
-        Console.WriteLine($"Machine model: {forcedMachineModel.Value}");
+        machine = new SpectrumMachine(forcedRomSet);
+        Console.WriteLine($"Machine model: {forcedRomSet.Model} ({forcedRomSet.Name})");
     }
 
     if (enableMachineTrace)
@@ -286,6 +294,14 @@ if (args.Length > 0)
         else if (extension.Equals(".szx", StringComparison.OrdinalIgnoreCase))
         {
             SzxSnapshotLoader.Load(machine, snapshotPath);
+        }
+        else if (insertTapeOnly && (extension.Equals(".tap", StringComparison.OrdinalIgnoreCase) ||
+                                    extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase)))
+        {
+            TapMountResult result = extension.Equals(".tzx", StringComparison.OrdinalIgnoreCase)
+                ? TzxLoader.Mount(machine, snapshotPath, startStopped: true)
+                : TapLoader.Mount(machine, snapshotPath, startStopped: true);
+            Console.WriteLine($"Tape inserted stopped: {result.DisplayName}");
         }
         else if (extension.Equals(".tap", StringComparison.OrdinalIgnoreCase))
         {

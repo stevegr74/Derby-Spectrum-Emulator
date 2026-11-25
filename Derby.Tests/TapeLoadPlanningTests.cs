@@ -10,6 +10,39 @@ namespace Derby.Tests
     public partial class TapLoaderTests
     {
         [Theory]
+        [InlineData("+2")]
+        [InlineData("+2A")]
+        [InlineData("+3")]
+        public void KnownAmstradMenu_StartsBasicTapeWithoutRomTraps(string model)
+        {
+            string romFolder = Path.Combine(AppContext.BaseDirectory, "ROMs");
+            SpectrumRomSet romSet = model switch
+            {
+                "+2" => SpectrumRomSet.BundledPlus2(romFolder),
+                "+2A" => SpectrumRomSet.BundledPlus2A(romFolder),
+                "+3" => SpectrumRomSet.BundledPlus3(romFolder),
+                _ => throw new ArgumentOutOfRangeException(nameof(model))
+            };
+            var machine = new SpectrumMachine(romSet);
+            byte[] program = BuildBasicProgram(BuildBasicLine(10,
+                Token(244), Ascii("36864"), NumberMarker(36864), Ascii(","), Ascii("123"), NumberMarker(123)));
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program)));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            TapeExecutionResult result = TapLoader.ExecutePlan(machine, "rom-menu.tap", blocks, plan);
+            Assert.Equal(TapeLoadPlanReason.NativeMenuWithoutAcceleration, result.ReasonCode);
+            Assert.Equal(0, result.ConsumedBlockCount);
+            Assert.False(machine.SupportsRomTapeAcceleration);
+            Assert.Equal(romSet.PagingModel, machine.MemoryPagingModel);
+            for (int frame = 0; frame < 700; frame++)
+                machine.ExecuteFrame();
+
+            Assert.Equal((byte)123, machine.PeekMemory(0x9000));
+        }
+
+        [Theory]
         [InlineData(SpectrumMachineModel.Spectrum48K)]
         [InlineData(SpectrumMachineModel.Spectrum128K)]
         public void LeadingCodePair_LoadsThroughRomWithoutStartingCode(SpectrumMachineModel model)
