@@ -60,7 +60,8 @@ namespace Derby.Tape
                             TapeLoadPlanReason.CodeLoadReplacesRomWorkspace or
                             TapeLoadPlanReason.LeadingCodeRequiresNativeLoad or
                             TapeLoadPlanReason.CodeLoadOverlapsBootstrapStack or
-                            TapeLoadPlanReason.HeaderlessContinuationRequiresNativeLoad;
+                            TapeLoadPlanReason.HeaderlessContinuationRequiresNativeLoad or
+                            TapeLoadPlanReason.LineZeroContinuationRequiresNativeLoad;
                     bool requiresNative128Basic =
                         machine.MachineModel == SpectrumMachineModel.Spectrum128K &&
                         !ReferenceEquals(machine.RomProfile, SpectrumRomProfile.SyntheticTest) &&
