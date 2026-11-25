@@ -79,7 +79,10 @@ namespace Derby.Tape
         BasicBootstrapMounted,
         NoSafeAccelerationPath,
         TrailingCodeOverlapsBootstrapEntry,
-        CodeLoadReplacesRomWorkspace
+        CodeLoadReplacesRomWorkspace,
+        LeadingCodeRequiresNativeLoad,
+        CodeLoadOverlapsBootstrapStack,
+        HeaderlessContinuationRequiresNativeLoad
     }
 
     public sealed class TapeLoadPlan

@@ -9,6 +9,86 @@ namespace Derby.Tests
 {
     public partial class TapLoaderTests
     {
+        [Theory]
+        [InlineData(SpectrumMachineModel.Spectrum48K)]
+        [InlineData(SpectrumMachineModel.Spectrum128K)]
+        public void LeadingCodePair_LoadsThroughRomWithoutStartingCode(SpectrumMachineModel model)
+        {
+            var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+            machine.Reset(model);
+            byte[] code = [0x76, 0xA5];
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(3, "DATA", (ushort)code.Length, 0x9000, 0),
+                BuildDataBlock(code)));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            TapeExecutionResult result = TapLoader.ExecutePlan(machine, "code.tap", blocks, plan);
+
+            Assert.Equal(TapeLoadPlanReason.LeadingCodeRequiresNativeLoad, result.ReasonCode);
+            Assert.Equal(0, result.ConsumedBlockCount);
+            Assert.Equal(model, machine.MachineModel);
+            for (int frame = 0; frame < 650; frame++)
+                machine.ExecuteFrame();
+
+            Assert.Equal((byte)0x76, machine.PeekMemory(0x9000));
+            Assert.Equal((byte)0xA5, machine.PeekMemory(0x9001));
+            Assert.InRange(machine.Cpu.Regs.PC, (ushort)0, (ushort)0x3FFF);
+        }
+
+        [Fact]
+        public void AutorunBetweenBasicLines_StartsAtNextLineInNativeRom()
+        {
+            var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+            machine.Reset(SpectrumMachineModel.Spectrum48K);
+            byte[] program = BuildBasicProgram(BuildBasicLine(10,
+                Token(244), Ascii("36864"), NumberMarker(36864), Ascii(","), Ascii("123"), NumberMarker(123)));
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 5, (ushort)program.Length),
+                BuildDataBlock(program)));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            Assert.Equal(TapeLoadPlanReason.NonCanonicalBasicProgram, plan.ReasonCode);
+            TapLoader.ExecutePlan(machine, "sparse-lines.tap", blocks, plan);
+            for (int frame = 0; frame < 650; frame++)
+                machine.ExecuteFrame();
+
+            Assert.Equal((byte)123, machine.PeekMemory(0x9000));
+        }
+
+        [Theory]
+        [InlineData(0xFF58, TapeLoadPlanReason.CodeLoadOverlapsBootstrapStack)]
+        [InlineData(0xFF50, TapeLoadPlanReason.StandardTapeRequiresMountedSemantics)]
+        public void NamedCodeLoad_UsesNativeRomWhenDataOverlapsBootstrapStack(
+            int codeStart, TapeLoadPlanReason expected)
+        {
+            var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+            byte[] program = BuildBasicProgram(BuildBasicLine(10,
+                Token(239), Ascii("\"DATA\""), Token(175)));
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program),
+                BuildHeaderBlock(3, "DATA", 1, (ushort)codeStart, 0),
+                BuildDataBlock(new byte[] { 0xC9 })));
+
+            Assert.Equal(expected, TapeLoadPlanner.Create(machine, blocks).ReasonCode);
+        }
+
+        [Theory]
+        [InlineData(0xFF, true)]
+        [InlineData(0x42, false)]
+        public void HeaderlessContinuation_DistinguishesStandardDataFromCustomFlags(int flag, bool expected)
+        {
+            byte[] program = BuildBasicProgram(BuildBasicLine(10, Token(226)));
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program),
+                BuildHeaderBlock(3, "CODE", 1, 0x9000, 0),
+                BuildDataBlock(new byte[] { 0xC9 }),
+                BuildDataBlock(new byte[] { 0x42 }, (byte)flag)));
+
+            Assert.Equal(expected, TapLoader.HasHeaderlessStandardDataAfterHeaderedPrefix(blocks));
+        }
+
         [Fact]
         public void WorkspaceReplacingLoad_UsesNative48BasicWithoutSwitching128kModel()
         {

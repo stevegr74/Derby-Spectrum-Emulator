@@ -2152,7 +2152,7 @@ namespace Derby.Tape
                 header.AutoStartLine);
         }
 
-        internal static bool HasNonCanonicalLeadingBasicProgram(IReadOnlyList<TapeBlock> blocks)
+        internal static bool HasNonCanonicalLeadingBasicProgram(IReadOnlyList<TapeBlock> blocks, bool checkAutoStartLine = false)
         {
             int index = 0;
             while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
@@ -2174,6 +2174,7 @@ namespace Derby.Tape
 
             int cursor = 0;
             int previousLineNumber = -1;
+            bool hasExactAutoStartLine = false;
             while (cursor < header.ProgramLength)
             {
                 if (header.ProgramLength - cursor < 4)
@@ -2190,11 +2191,14 @@ namespace Derby.Tape
                     return true;
                 }
 
+                hasExactAutoStartLine |= lineNumber == header.AutoStartLine;
                 previousLineNumber = lineNumber;
                 cursor = nextLineOffset;
             }
 
-            return false;
+            // The ROM can start at the next line; the bootstrap requires an exact line.
+            return checkAutoStartLine && header.AutoStartLine is > 0 and < 32768 &&
+                header.AutoStartLine < previousLineNumber && !hasExactAutoStartLine;
         }
 
         private readonly record struct BootstrapExecutionResult(int IgnoredLoadCount, int ConsumedMountedLoadCount)

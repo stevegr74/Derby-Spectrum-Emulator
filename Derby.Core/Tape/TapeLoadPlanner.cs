@@ -17,6 +17,15 @@ namespace Derby.Tape
                     $"ROM profile '{machine.RomProfile.Name}' is not compatible with address-based tape acceleration.");
             }
 
+            bool canStartNativeRom = !ReferenceEquals(machine.RomProfile, SpectrumRomProfile.SyntheticTest);
+            if (canStartNativeRom && TapLoader.HasLeadingStandardCodePair(blocks))
+            {
+                return new TapeLoadPlan(
+                    TapeLoadStrategy.RomBootstrapMounted,
+                    TapeLoadPlanReason.LeadingCodeRequiresNativeLoad,
+                    "Tape starts with a standard CODE file rather than an autorun BASIC program.");
+            }
+
             if (TapLoader.HasInconsistentStandardBasicHeaderDataPair(blocks))
             {
                 return new TapeLoadPlan(
@@ -25,12 +34,12 @@ namespace Derby.Tape
                     "Tape contains an internally inconsistent BASIC header/data pair that must be interpreted by the real ROM loader.");
             }
 
-            if (TapLoader.HasNonCanonicalLeadingBasicProgram(blocks))
+            if (TapLoader.HasNonCanonicalLeadingBasicProgram(blocks, checkAutoStartLine: canStartNativeRom))
             {
                 return new TapeLoadPlan(
                     TapeLoadStrategy.RomBootstrapMounted,
                     TapeLoadPlanReason.NonCanonicalBasicProgram,
-                    "Tape begins with a noncanonical BASIC program whose exact line layout must be interpreted by the real ROM loader.");
+                    "The leading BASIC program's line layout or autorun line requires the real ROM loader.");
             }
 
             if (TapLoader.CanLoadAllStandardTapeBlocks(blocks))
@@ -54,6 +63,14 @@ namespace Derby.Tape
 
                 if (TapLoader.RequiresMountedLoadSemanticsForStandardTape(machine, blocks, use128kMode))
                 {
+                    if (canStartNativeRom && TapLoader.HasCodeOverlappingBootstrapStack(blocks))
+                    {
+                        return new TapeLoadPlan(
+                            TapeLoadStrategy.RomBootstrapMounted,
+                            TapeLoadPlanReason.CodeLoadOverlapsBootstrapStack,
+                            "Mounted CODE crosses the bootstrap stack; run the BASIC loader and its stack setup in the native ROM.");
+                    }
+
                     if (!TapLoader.CanExecuteLeadingBasicProgramWithBootstrap(machine, blocks, use128kMode))
                     {
                         return new TapeLoadPlan(
@@ -111,6 +128,14 @@ namespace Derby.Tape
                 bool use128kMode = TapLoader.Use128kTapeLoadMode(machine);
                 if (!TapLoader.CanExecuteLeadingBasicProgramWithBootstrap(machine, blocks, use128kMode))
                 {
+                    if (canStartNativeRom && TapLoader.HasHeaderlessStandardDataAfterHeaderedPrefix(blocks))
+                    {
+                        return new TapeLoadPlan(
+                            TapeLoadStrategy.RomBootstrapMounted,
+                            TapeLoadPlanReason.HeaderlessContinuationRequiresNativeLoad,
+                            "Unsupported BASIC bootstrap precedes headerless ROM-speed data; keep the complete tape under native ROM control.");
+                    }
+
                     return new TapeLoadPlan(
                         TapeLoadStrategy.RomBootstrapMounted,
                         TapeLoadPlanReason.UnsupportedMixedBootstrapControlFlow,

@@ -51,9 +51,9 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Head Over Heels | `.tap` | Loading reaches the complete illustrated title screen and remains stable |
 | 🟢 | Glider Rider (Bug-Byte and Quicksilva original) | `.tzx` | The Bug-Byte release reaches its complete title screen in 48K mode; the Quicksilva 128K release completes native ROM pulse loading, reaches its control menu, accepts Kempston selection, and enters gameplay |
 | 🟢 | Harrier Attack | `.tzx` | Standard loading completes and reaches the illustrated skill-selection screen |
-| 🔴 | Halls of the Things (Clam case and MC box) | `.tzx` | Both tapes mount, but leave a black display without reaching the menu in either 48K or 128K |
+| 🟢 | Halls of the Things (Clam case and MC box) | `.tzx` | In 48K and 128K, Load Tape issues the native `LOAD "" CODE` command and playback ends. Press Space to continue. The Clam Case edition reaches the maze; the MC Box edition reaches the in-game status screen |
 | 🟢 | Heavy on the Magick (Gargoyle original) | `.tzx` | 128K loading reaches the same introductory advice screen as the snapshots |
-| 🔴 | Heavy on the Magick (Rebound) | `.tzx` | Tape mounts, but neither 48K nor 128K reaches the introductory advice screen |
+| 🟢 | Heavy on the Magick (Rebound) | `.tzx` | Native loading ends the tape in 48K and 128K. Space advances to the menu showing Axil's stats |
 | 🟢 | Herbert's Dummy Run | `.tzx` | 128K loading reaches the illustrated title and press-any-key prompt |
 | 🟢 | How to Be a Complete Bastard (128K TAP and TZX) | `Bastard 128k.tap`, `.tzx` | Both images reach the control menu in 128K. The TZX automatically pauses near its end |
 | 🟢 | Hunchback | `.tzx` | 128K loading reaches the illustrated title. Space advances to the control menu |
@@ -80,12 +80,12 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Manic Miner | `.tzx` | Standard header/data loading completes in 48K mode and reaches the stable animated game/attract screen |
 | 🟢 | Match Day II (original and Hit Squad releases) | `.tzx` | Both releases reach their stable joystick-selection menus |
 | 🟢 | Nebulus (Hewson slow-load release) | `.tzx` | Loading completes, ends the tape cleanly, and reaches the stable title/high-score screen |
-| 🟠 | NARC (Ocean, 128K program and levels) | `.tzx` | The program requests the start of side B. Inserting and playing the levels tape reaches the stop-tape prompt; pressing Space advances to the high-score display. Gameplay was not confirmed |
+| 🟢 | NARC (Ocean, 128K program and levels) | `.tzx` | Insert side B when requested and press Play. The tape stops automatically at the intro and both first-mission Space prompts. Select `D` for one player and resume when the game says `START TAPE`. The Junkyard reaches gameplay with no rewind or seek |
 | 🟢 | Navy Moves (Dinamic Serie Leyenda English and Hit Squad, both parts) | `.tzx` | In 128K, both Part 1 editions reach the control menu, and both Part 2 editions accept a key and reach the access-code prompt. Code entry and gameplay were not checked |
 | 🟢 | Navy SEALs (Ocean, 128K, sides A and B) | `.tzx` | Each side boots independently to the illustrated control menu in 128K. A side change during gameplay was not checked |
-| 🔴 | Nifty Lifty (Currys) | `.tzx` | Tape mounts but leaves a black screen instead of the speed-selection screen in both 48K and 128K |
-| 🟠 | The Ninja Warriors (Tronix, sides 1 and 2) | `.tzx` | Side 1 reaches the copyright notice in 128K but never advances to a menu. Side 2 mounts and can play, but no valid handoff or gameplay was reached |
-| 🔴 | North Star (Gremlin) | `Northstar (Gremlin).tzx` | Tape runs to the end in 48K and 128K, but the display remains black and no menu appears |
+| 🟢 | Nifty Lifty (Currys) | `.tzx` | In both 48K and 128K, the native ROM starts at the next BASIC line after the saved autorun line number. Selecting a speed starts Level 1 |
+| 🟠 | The Ninja Warriors (Tronix, sides 1 and 2) | `.tzx` | In 48K, side 1 reaches the controls menu and first stage. In 128K, side 1 stalls at the copyright notice, and manually inserting and playing side 2 does not get past it |
+| 🟢 | North Star (Gremlin) | `Northstar (Gremlin).tzx` | Native loading reads the headerless continuation and ends the tape. The control menu and opening gameplay work in 48K and 128K |
 | 🟢 | Nosferatu the Vampyre (Piranha) | `.tzx` | 128K loading reaches the main menu |
 | 🟢 | OutRun | `.tap` | Native ROM loading automatically stops at the complete loading picture with the first unclaimed level record preserved; a key reaches the game mode menu, selecting OutRun automatically resumes and loads Stage 1, then transport stops again at the untouched next-level record while gameplay continues |
 | 🟢 | Pac-Land | `.tzx` | In 48K mode, ROM-driven loading reaches the game/high-score screen and remains stable |

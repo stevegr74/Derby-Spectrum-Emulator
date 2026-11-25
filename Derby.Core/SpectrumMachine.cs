@@ -1349,6 +1349,20 @@ namespace Derby
                 return false;
 
             byte nextOpcode = PeekMemory(pc);
+            // A closed single-key wait can branch on bit 0 via carry without testing EAR.
+            // Require an immediate port read, a reload of A on the back edge, and no
+            // consumer of the shifted accumulator inside the loop.
+            if (nextOpcode == 0x1F &&
+                PeekMemory((ushort)(pc - 4)) == 0x3E &&
+                PeekMemory((ushort)(pc - 2)) == 0xDB &&
+                (PeekMemory((ushort)(pc - 1)) & 1) == 0 &&
+                PeekMemory((ushort)(pc + 1)) is 0x30 or 0x38 &&
+                PeekMemory((ushort)(pc + 2)) == 0xF9 &&
+                PeekMemory((ushort)(pc + 3)) == 0xC9)
+            {
+                return true;
+            }
+
             if (nextOpcode == 0x2F) // CPL is commonly used before testing active-low keys.
             {
                 pc++;
