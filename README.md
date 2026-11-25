@@ -437,7 +437,7 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 
 ## Longer-Term Improvements
 
-- MGT +D disk interface support for compatible Spectrum models, including G+DOS and read-only `.mgt` media, separate from the +3 drive
+- MGT +D disk interface support for compatible Spectrum models, including G+DOS and read-only `.mgt` media, separate from the +3 drive. Reference: [MGT filesystem](https://sinclair.wiki.zxnet.co.uk/wiki/MGT_filesystem).
 - Tape Transport beyond v1: persistent bookmarks, saved side pairing, and free scrubbing
 - Demo compatibility beyond the current validation matrix
 - Broader real-game validation
