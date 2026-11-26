@@ -23,6 +23,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
 - `.tap` and `.tzx` parsing, fast bootstrap, ROM-driven loading, protected/mounted playback, VERIFY, and multi-block sequencing
 - Tape Transport with named sections, persistent bookmarks, saved side pairing, stopped scrubbing and audio preview, rewind, and 48K stop-marker support
+- Digital, Soft CRT (with an optional phosphor mask at 3x), and PAL TV presentation
 - Modeless on-screen keyboard with selectable 48K rubber-key and 128K layouts, pointer holds, and Shift chords
 - Optional Kempston or AMX Mouse with click-to-capture and Escape release
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
@@ -229,6 +230,7 @@ that do not consume a function key.
 | `F2` | Toggle compact mint top-right FPS, model, tape, and display diagnostics |
 | `F3` | Reset and cycle 128K, 48K, grey +2, +2A, and +3 machine profiles |
 | `F4` | Cycle fixed display size |
+| `Shift+F4` | Cycle display filters |
 | `F5` | Play, stop, or resume the inserted tape without ejecting it |
 | `Shift+F5` | Open Tape Transport |
 | `F6` | Load a `.tap` or `.tzx` tape as a new game |
@@ -430,6 +432,7 @@ compatibility; completed milestones remain regression baselines.
 | 30 | Complete | Persistent Tape Transport bookmarks keyed to the tape image |
 | 31 | Complete | Saved tape side pairing and manual, stopped swaps without resetting the game |
 | 32 | Complete | Stopped tape scrubbing and a host-only audio preview |
+| 33 | Complete | Digital, Soft CRT, and PAL TV display filters with independent size and filter shortcuts |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
@@ -460,7 +463,7 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 - Broader +D controller and disk compatibility beyond read-only drive 1. Reference: [MGT filesystem](https://sinclair.wiki.zxnet.co.uk/wiki/MGT_filesystem).
 - Demo compatibility beyond the current validation matrix
 - Broader real-game validation
-- Selectable presentation palettes: an authentic CRT/composite-inspired default and the existing idealised `D7/FF` digital palette, without changing emulated colour attributes or saved state
+- Calibrate the CRT display filters against a documented real Spectrum and CRT setup. The current filters are visual approximations, not measured composite or RF signal models.
 - Optional game library window with searchable artwork tiles, recent items, and an explicit file picker; prefer a scalable grid over a carousel-only interface
 - Additional platform frontends, including a browser/WebAssembly adapter using the established headless engine boundary
 

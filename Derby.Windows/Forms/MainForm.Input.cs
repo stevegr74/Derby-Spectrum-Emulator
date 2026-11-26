@@ -113,6 +113,7 @@ namespace Derby
             Keys.F2 => ToggleStatusOverlay,
             Keys.F3 => CycleMachineProfile,
             Keys.F4 => () => SelectDisplayMode(SpectrumDisplayModes.Next(displayMode)),
+            (Keys.Shift | Keys.F4) => CycleDisplayFilter,
             Keys.F5 => ToggleTapeTransport,
             (Keys.Shift | Keys.F5) => OpenTapeDeck,
             Keys.F6 => LoadTapeFromDialog,

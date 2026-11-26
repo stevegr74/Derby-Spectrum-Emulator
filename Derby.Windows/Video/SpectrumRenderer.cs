@@ -48,7 +48,8 @@ namespace Derby
             }
         }
 
-        public static void RenderScaledToBitmap(Bitmap bitmap, SpectrumFrameBuffer frameBuffer, int scale)
+        public static void RenderScaledToBitmap(Bitmap bitmap, SpectrumFrameBuffer frameBuffer, int scale,
+            SpectrumDisplayFilter filter = SpectrumDisplayFilter.Digital)
         {
             if (bitmap == null)
                 throw new ArgumentNullException(nameof(bitmap));
@@ -70,13 +71,15 @@ namespace Derby
                     uint* destination = (uint*)data.Scan0;
                     int stridePixels = data.Stride / sizeof(uint);
                     var destinationPixels = new Span<uint>(destination, stridePixels * bitmap.Height);
-                    SpectrumDisplayScaler.Scale(
-                        frameBuffer.Pixels.Span,
-                        SpectrumFrameBuffer.Width,
-                        SpectrumFrameBuffer.Height,
-                        destinationPixels,
-                        stridePixels,
-                        scale);
+                    if (filter == SpectrumDisplayFilter.Digital)
+                        SpectrumDisplayScaler.Scale(frameBuffer.Pixels.Span, SpectrumFrameBuffer.Width,
+                            SpectrumFrameBuffer.Height, destinationPixels, stridePixels, scale);
+                    else if (filter == SpectrumDisplayFilter.PalTv)
+                        PalTvFilter.Scale(frameBuffer.Pixels.Span, SpectrumFrameBuffer.Width, SpectrumFrameBuffer.Height,
+                            destinationPixels, stridePixels, scale);
+                    else
+                        SoftCrtFilter.Scale(frameBuffer.Pixels.Span, SpectrumFrameBuffer.Width, SpectrumFrameBuffer.Height,
+                            destinationPixels, stridePixels, scale, filter == SpectrumDisplayFilter.SoftCrtWithMask);
                 }
             }
             finally

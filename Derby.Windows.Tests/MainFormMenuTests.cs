@@ -29,7 +29,7 @@ namespace Derby.Tests
                             "---",
                             "F2 - Status Overlay",
                             "F3 - Machine",
-                            "F4 - Display Size",
+                            "F4 - Display",
                             "---",
                             "F5 - No Tape Inserted",
                             "Shift+F5 - Tape Transport",
@@ -105,6 +105,29 @@ namespace Derby.Tests
                     Assert.True(machineMenu.DropDownItems.OfType<ToolStripMenuItem>()
                         .Single(item => item.Text == "ZX Spectrum 128K").Checked);
                     Assert.DoesNotContain(menu.Items.OfType<ToolStripMenuItem>(), item => item.Text == "ROM Set");
+
+                    var sizes = menu.Items.OfType<ToolStripMenuItem>().Single(item => item.Text == "F4 - Display");
+                    var filter = sizes.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Text == "Display Filter");
+                    var filters = filter.DropDownItems.OfType<ToolStripMenuItem>().ToArray();
+                    Assert.Equal(["Digital", "Soft CRT", "Soft CRT with Mask", "PAL TV"], filters.Select(item => item.Text));
+                    Assert.True(filters[0].Checked);
+                    var sizeBefore = form.ClientSize;
+                    filters[3].PerformClick();
+                    Assert.True(filters[3].Checked);
+                    Assert.False(filters[0].Checked);
+                    Assert.Equal(sizeBefore, form.ClientSize);
+                    Assert.Null(shortcut.Invoke(form, [Keys.Alt | Keys.F4]));
+                    Assert.Null(shortcut.Invoke(form, [Keys.Control | Keys.Shift | Keys.F4]));
+                    Action cycleFilter = Assert.IsType<Action>(shortcut.Invoke(form, [Keys.Shift | Keys.F4]));
+                    foreach (var expected in filters)
+                    {
+                        cycleFilter();
+                        Assert.Same(expected, Assert.Single(filters, item => item.Checked));
+                        Assert.Equal(sizeBefore, form.ClientSize);
+                    }
+                    Assert.IsType<Action>(shortcut.Invoke(form, [Keys.F4]))();
+                    Assert.NotEqual(sizeBefore, form.ClientSize);
+                    Assert.True(filters[3].Checked);
                 }
                 catch (Exception exception)
                 {
