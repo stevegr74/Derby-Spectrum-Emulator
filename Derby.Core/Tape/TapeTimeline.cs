@@ -63,7 +63,10 @@ public sealed class TapeCue
 public sealed record TapeTimelineMarker(int BlockIndex, string Label, TapeCue? Cue);
 
 public sealed record TapeDeckView(TapeTimeline Timeline, TapeTransportState State, int BlockIndex,
-    bool CanSeek, IReadOnlyList<TapeTimelineMarker> Markers);
+    bool CanSeek, IReadOnlyList<TapeTimelineMarker> Markers)
+{
+    public double Position { get; init; } = BlockIndex;
+}
 
 public sealed partial class MountedTape
 {
@@ -124,6 +127,8 @@ public sealed partial class MountedTape
             state.PendingPrePlaybackPauseTStates < 0 || state.RomStreamTrapByteIndex < 0 ||
             state.EarStreamByteIndex < 0 || state.EarPulseSequenceIndex < 0 ||
             state.EarBitIndex is < 0 or > 7 || state.EarPulseRepeatCount is < 0 or > 1 ||
+            (state.ScrubbedSignalBlock is int scrubbed && (uint)scrubbed >= (uint)blocks.Count) ||
+            (state.ScrubPosition is double position && (!double.IsFinite(position) || position < 0 || position > blocks.Count)) ||
             !Enum.IsDefined((TapeState)state.TapeStateValue) || !Enum.IsDefined((EarPlaybackState)state.EarPlaybackStateValue))
             return false;
 

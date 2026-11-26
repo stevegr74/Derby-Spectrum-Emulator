@@ -18,7 +18,7 @@ public partial class MainForm
         }
 
         var form = new TapeDeckForm(ReadTapeDeck, CaptureTapeBookmark, ControlTapeDeck,
-            tapeBookmarks, ChooseTapeFromDialog, GetTapeSideActions);
+            tapeBookmarks, ChooseTapeFromDialog, GetTapeSideActions, ScrubTapeDeck, RenderTapePreview);
         tapeDeck = form;
         form.FormClosed += (_, _) => tapeDeck = null;
         form.Show(this);
@@ -57,5 +57,24 @@ public partial class MainForm
             tapeTransportOverlay.Show(state, marker, frameClock.ElapsedTicks);
         UpdateTapeTransportMenuItem();
         return true;
+    }
+
+    private bool ScrubTapeDeck(TapeTimeline timeline, double position)
+    {
+        bool changed;
+        lock (machineLock)
+            changed = machine.TryScrubTape(timeline, position);
+        if (changed)
+        {
+            tapeTransportOverlay.SetObservedState(TapeTransportState.Stopped, false);
+            UpdateTapeTransportMenuItem();
+        }
+        return changed;
+    }
+
+    private short[]? RenderTapePreview(TapeTimeline timeline)
+    {
+        lock (machineLock)
+            return machine.RenderTapePreview(timeline);
     }
 }

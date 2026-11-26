@@ -146,9 +146,9 @@ namespace Derby.Tape
             if (DeckTape is not { } tape)
                 return null;
             TapeTransportState deckState = MountedTape == null ? TapeTransportState.Ended : State;
-            return new(tape.Timeline, deckState,
-                deckState == TapeTransportState.Ended ? tape.Timeline.BlockCount : tape.TimelinePosition,
-                canSeek && CanSeek && tape.Timeline.BlockCount != 0, markers);
+            int index = deckState == TapeTransportState.Ended ? tape.Timeline.BlockCount : tape.TimelinePosition;
+            return new(tape.Timeline, deckState, index, canSeek && CanSeek && tape.Timeline.BlockCount != 0, markers)
+                { Position = deckState == TapeTransportState.Stopped ? tape.ScrubPosition ?? index : index };
         }
 
         private bool CanSeek => State == TapeTransportState.Stopped || (MountedTape == null && endedTape != null);
@@ -157,6 +157,17 @@ namespace Derby.Tape
             => State == TapeTransportState.Stopped && Matches(expected) ? DeckTape!.CaptureCue() : null;
 
         public bool Matches(TapeTimeline expected) => ReferenceEquals(DeckTape?.Timeline, expected);
+
+        public bool Scrub(TapeTimeline expected, double position)
+        {
+            if (State != TapeTransportState.Stopped || !Matches(expected) || MountedTape?.Scrub(position) != true)
+                return false;
+            LastTransition = TapeTransportTransition.ManualSeek;
+            return true;
+        }
+
+        public short[]? Preview(TapeTimeline expected) =>
+            State == TapeTransportState.Stopped && Matches(expected) ? MountedTape?.RenderPreview() : null;
 
         public bool Seek(TapeTimeline expected, int blockIndex, TapeCue? cue)
         {

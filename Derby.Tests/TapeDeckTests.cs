@@ -7,6 +7,96 @@ public sealed class TapeDeckTests
 {
     private static SpectrumMachine CreateMachine() => new(Path.Combine(AppContext.BaseDirectory, "ROMs"));
 
+    [Fact]
+    public void ScrubSeeksInsideAPulseAndPreviewDoesNotDriveTheTapeOrEar()
+    {
+        var machine = CreateMachine();
+        var tape = new MountedTape("seek.tzx", [TapeBlock.CreatePureTone(3500, 1000),
+            TapeBlock.CreateStopTape(), TapeBlock.CreatePureTone(7000, 500)]);
+        machine.MountTape(tape, startStopped: true);
+        machine.Cpu.AddTStates(20000);
+        TapeDeckView initial = machine.CaptureTapeDeck()!;
+        Assert.False(machine.TryScrubTape(initial.Timeline, double.NaN));
+        Assert.True(machine.TryScrubTape(initial.Timeline, 0.1255));
+        TapeDeckView scrubbed = machine.CaptureTapeDeck()!;
+        Assert.Equal(0.1255, scrubbed.Position);
+        Assert.Equal(TapeTransportState.Stopped, scrubbed.State);
+        string position = machine.CaptureTapeCue(initial.Timeline)!.SaveBookmarkPosition().GetRawText();
+        ulong time = machine.Cpu.TStates;
+        byte ear = machine.ReadPort(0xFFFE);
+
+        short[] audio = Assert.IsType<short[]>(machine.RenderTapePreview(initial.Timeline));
+        Assert.Equal(35280, audio.Length);
+        Assert.Contains(audio, sample => sample > 0);
+        Assert.Contains(audio, sample => sample < 0);
+        Assert.Equal(audio, machine.RenderTapePreview(initial.Timeline));
+        Assert.Equal(position, machine.CaptureTapeCue(initial.Timeline)!.SaveBookmarkPosition().GetRawText());
+        Assert.Equal(ear, machine.ReadPort(0xFFFE));
+        Assert.Equal(time, machine.Cpu.TStates);
+        Assert.Equal(TapeTransportState.Stopped, machine.TapeTransportState);
+        var exact = tape.CaptureQuickState();
+        Assert.InRange(exact.PausedPulseElapsedTStates, 1UL, (ulong)exact.EarPulseLengthTStates - 1);
+
+        Assert.True(machine.TryToggleTapeDeck(initial.Timeline, TapeTransportState.Stopped));
+        Assert.False(machine.TryScrubTape(initial.Timeline, 2));
+        Assert.Null(machine.RenderTapePreview(initial.Timeline));
+        ulong untilEdge = (ulong)exact.EarPulseLengthTStates - exact.PausedPulseElapsedTStates;
+        Assert.Equal(exact.EarLevel, tape.ReadEarBit(time + untilEdge - 1));
+        Assert.NotEqual(exact.EarLevel, tape.ReadEarBit(time + untilEdge));
+
+        machine.MountTape(new MountedTape("replacement.tap", [TapeBlock.CreatePureTone(500, 60)]), startStopped: true);
+        Assert.False(machine.TryScrubTape(initial.Timeline, 0));
+        Assert.Null(machine.RenderTapePreview(initial.Timeline));
+    }
+
+    [Fact]
+    public void ScrubbedDataCursorMatchesLivePulsePlaybackAndSurvivesBookmarkRestore()
+    {
+        var block = TapeBlock.CreateByteStreamData([0xAA, 0xF7, 0xC3, 0xA0], 100, 253, 4, 0);
+        TapeBlock[] blocks = [block, TapeBlock.CreateStopTape()];
+        var machine = CreateMachine();
+        var tape = new MountedTape("data.tzx", blocks);
+        machine.MountTape(tape, startStopped: true);
+        tape.ConfigurePlaybackClock(3500000);
+        TapeTimeline timeline = machine.CaptureTapeDeck()!.Timeline;
+        const double fraction = 0.732;
+        Assert.True(machine.TryScrubTape(timeline, fraction));
+        var actual = tape.CaptureQuickState();
+        var reference = new MountedTape("reference.tzx", blocks);
+        reference.ReadEarBit(100);
+        reference.PausePlayback(100 + (ulong)(TapeBlockTiming.EstimateDuration(block) * fraction));
+        var expected = reference.CaptureQuickState();
+        Assert.Equal(expected.EarStreamByteIndex, actual.EarStreamByteIndex);
+        Assert.Equal(expected.EarBitIndex, actual.EarBitIndex);
+        Assert.Equal(expected.EarPulseRepeatCount, actual.EarPulseRepeatCount);
+        Assert.Equal(expected.EarLevel, actual.EarLevel);
+        Assert.Equal(expected.PausedPulseElapsedTStates, actual.PausedPulseElapsedTStates);
+        var saved = machine.CaptureTapeCue(timeline)!.SaveBookmarkPosition();
+        var restored = Assert.IsType<TapeCue>(TapeCue.ReadBookmarkPosition(saved, timeline));
+        Assert.True(machine.TrySeekTape(timeline, 0));
+        Assert.True(machine.TrySeekTape(timeline, 0, restored));
+        Assert.Equal(fraction, machine.CaptureTapeDeck()!.Position);
+    }
+
+    [Fact]
+    public void ScrubbedRomRecordCannotBeFastLoadedFromItsMiddle()
+    {
+        var machine = CreateMachine();
+        byte[] bytes = [0xFF, 0x34, 0xCB];
+        var block = TapeBlock.CreateData(bytes, 2168, 3223, 667, 735, 855, 1710, 8, 200);
+        machine.MountTape(new MountedTape("rom.tap", [block]), startStopped: true);
+        TapeTimeline timeline = machine.CaptureTapeDeck()!.Timeline;
+        Assert.True(machine.TryScrubTape(timeline, 0.5));
+        Assert.True(machine.TryToggleTapeDeck(timeline, TapeTransportState.Stopped));
+        machine.Cpu.Regs.PC = machine.RomProfile.LoadBytesTrapAddress;
+        machine.Cpu.Regs.A = 0xFF;
+        machine.Cpu.Regs.F = 1;
+        machine.Cpu.Regs.DE = 1;
+        machine.Cpu.Regs.IX = 0x8000;
+        Assert.False(machine.MountedTape!.TryHandleRomLoadTrap(machine, machine.Cpu));
+        Assert.NotEqual(0x34, machine.PeekMemory(0x8000));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

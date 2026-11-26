@@ -1,3 +1,4 @@
+using Derby.Audio;
 using Derby.Tape;
 
 namespace Derby;
@@ -27,6 +28,11 @@ internal sealed class TapeDeckForm : Form
     };
     private readonly Button toggle = CreateButton("Play tape", primary: true);
     private readonly Button rewind = CreateButton("Rewind");
+    private readonly Button preview = CreateButton("Preview");
+    private readonly System.Windows.Forms.Timer previewTimer = new() { Interval = 900 };
+    private WaveOutAudioOutput? previewOutput;
+    private readonly Func<TapeTimeline, short[]?>? renderPreview;
+    private readonly Func<TapeTimeline, double, bool>? scrubTape;
     private readonly Button goTo = CreateButton("Go to");
     private readonly Button add = CreateButton("Add bookmark...");
     private readonly Button edit = CreateButton("Edit...");
@@ -42,12 +48,15 @@ internal sealed class TapeDeckForm : Form
 
     public TapeDeckForm(Func<TapeDeckView?> read, Func<TapeTimeline, TapeCue?> capture,
         Func<TapeDeckView, int?, TapeCue?, bool> control, TapeBookmarkStore store,
-        Action<Form> chooseTape, Func<Form, TapeDeckView?, TapeSideAction[]>? getSideActions = null)
+        Action<Form> chooseTape, Func<Form, TapeDeckView?, TapeSideAction[]>? getSideActions = null,
+        Func<TapeTimeline, double, bool>? scrubTape = null, Func<TapeTimeline, short[]?>? renderPreview = null)
     {
         this.read = read;
         this.capture = capture;
         this.control = control;
         this.store = store;
+        this.scrubTape = scrubTape;
+        this.renderPreview = renderPreview;
         EmulatorUiStyle.ApplyForm(this);
         AutoScaleMode = AutoScaleMode.Dpi;
         AutoScaleDimensions = new(96F, 96F);
@@ -94,7 +103,7 @@ internal sealed class TapeDeckForm : Form
         transport.AutoSize = true;
         transport.ColumnStyles.Add(new(SizeType.Percent, 100));
         transport.ColumnStyles.Add(new(SizeType.AutoSize));
-        transport.Controls.Add(Row(toggle, rewind), 0, 0);
+        transport.Controls.Add(renderPreview == null ? Row(toggle, rewind) : Row(toggle, rewind, preview), 0, 0);
         tapeOptions.AccessibleName = "Tape side options";
         tapeOptions.AutoSize = false;
         tapeOptions.MinimumSize = Size.Empty;
@@ -125,7 +134,8 @@ internal sealed class TapeDeckForm : Form
 
         tips.SetToolTip(edit, "Rename or delete the selected bookmark.");
         tips.SetToolTip(tapeOptions, "Pair or switch tape sides.");
-        choose.Click += (_, _) => { sideMenu.Hide(); chooseTape(this); RefreshDeck(); };
+        tips.SetToolTip(preview, "Listen briefly without moving the tape or sending sound to the Spectrum.");
+        choose.Click += (_, _) => { StopPreview(); sideMenu.Hide(); chooseTape(this); RefreshDeck(); };
         tapeOptions.Click += (_, _) =>
         {
             if (sideMenu.Visible)
@@ -139,6 +149,8 @@ internal sealed class TapeDeckForm : Form
         close.Click += (_, _) => Close();
         toggle.Click += (_, _) => Run(null);
         rewind.Click += (_, _) => Run(0);
+        preview.Click += (_, _) => StartPreview();
+        previewTimer.Tick += (_, _) => StopPreview();
         goTo.Click += (_, _) => GoToSelection();
         add.Click += (_, _) => BeginBookmarkEdit(create: true);
         edit.Click += (_, _) => BeginBookmarkEdit(create: false);
@@ -148,6 +160,7 @@ internal sealed class TapeDeckForm : Form
         bookmarks.SelectedIndexChanged += (_, _) => UpdateButtons();
         name.TextChanged += (_, _) => UpdateButtons();
         timeline.PositionSelected += SelectTimelinePosition;
+        timeline.ScrubRequested += Scrub;
         Resize += (_, _) => sideMenu.Hide();
         refresh.Tick += (_, _) => RefreshDeck();
         Shown += (_, _) => { RefreshDeck(); refresh.Start(); };
@@ -158,6 +171,8 @@ internal sealed class TapeDeckForm : Form
     {
         if (disposing)
         {
+            StopPreview();
+            previewTimer.Dispose();
             refresh.Dispose();
             tips.Dispose();
             sideMenu.Dispose();
@@ -209,6 +224,7 @@ internal sealed class TapeDeckForm : Form
             tips.SetToolTip(button, action.Label);
             button.Click += (_, _) =>
             {
+                StopPreview();
                 sideMenu.Hide();
                 tapeOptions.Focus();
                 action.Invoke?.Invoke();
@@ -227,6 +243,9 @@ internal sealed class TapeDeckForm : Form
     {
         TapeDeckView? previous = view;
         view = read();
+        if (previous?.State != view?.State || previous?.Position != view?.Position ||
+            !ReferenceEquals(previous?.Timeline, view?.Timeline))
+            StopPreview();
         if (!ReferenceEquals(previous?.Timeline, view?.Timeline))
         {
             sideMenu.Hide();
@@ -248,8 +267,8 @@ internal sealed class TapeDeckForm : Form
         };
         hint.Text = feedback != null && Environment.TickCount64 < feedbackUntil ? feedback : view?.State switch
         {
-            TapeTransportState.Playing => "Stop the tape before jumping to a section or bookmark.",
-            TapeTransportState.Stopped when view.CanSeek => "Bookmarks are saved for this tape image.",
+            TapeTransportState.Playing => "Stop the tape before seeking or previewing.",
+            TapeTransportState.Stopped when view.CanSeek => "Drag the bar to seek, or use Preview to listen.",
             TapeTransportState.Stopped => "Seeking is unavailable while the loader is handing off.",
             TapeTransportState.Ended => "Rewind or choose a position to play again.",
             _ => "Choose a tape to get started."
@@ -283,7 +302,10 @@ internal sealed class TapeDeckForm : Form
         UpdateButtons();
     }
 
-    private void RedrawTimeline() => timeline.UpdatePositions(view?.Timeline.BlockCount ?? 0, view?.BlockIndex ?? 0);
+    private bool CanScrub => view is { State: TapeTransportState.Stopped, CanSeek: true };
+
+    private void RedrawTimeline() =>
+        timeline.UpdatePositions(view?.Timeline.BlockCount ?? 0, view?.Position ?? 0, CanScrub && scrubTape != null);
 
     private void UpdateButtons()
     {
@@ -294,6 +316,7 @@ internal sealed class TapeDeckForm : Form
         SetPrimary(choose, view == null);
         SetPrimary(toggle, toggle.Enabled);
         rewind.Enabled = canSeek;
+        preview.Enabled = CanScrub;
         var selected = bookmarks.SelectedItem as PositionEntry;
         goTo.Enabled = canSeek && selected?.CanGoTo == true;
         add.Enabled = !editing && (stopped || selected is { Kind: TapeMarkKind.Stop, Cue: not null });
@@ -309,11 +332,58 @@ internal sealed class TapeDeckForm : Form
 
     private void Run(int? index, TapeCue? cue = null)
     {
+        StopPreview();
         sideMenu.Hide();
         bool executed = view != null && control(view, index, cue);
         feedback = executed ? null : "Could not move to that position. Check the tape and try again.";
         feedbackUntil = Environment.TickCount64 + 3500;
         RefreshDeck();
+    }
+
+    private void Scrub(double position)
+    {
+        StopPreview();
+        sideMenu.Hide();
+        if (CanScrub && scrubTape != null)
+        {
+            feedback = scrubTape(view!.Timeline, position) ? null : "No seekable tape signal at that position.";
+            feedbackUntil = Environment.TickCount64 + 3500;
+        }
+        RefreshDeck();
+    }
+
+    private void StartPreview()
+    {
+        StopPreview();
+        if (!CanScrub || renderPreview == null)
+            return;
+        short[]? samples = renderPreview(view!.Timeline);
+        if (samples == null)
+        {
+            RefreshDeck();
+            return;
+        }
+        try
+        {
+            previewOutput = new WaveOutAudioOutput();
+            previewOutput.WriteSamples(samples);
+            previewTimer.Start();
+            feedback = Array.Exists(samples, sample => sample != 0) ? "Preview only. Tape stays stopped." : "No audible signal here.";
+        }
+        catch (InvalidOperationException)
+        {
+            StopPreview();
+            feedback = "Tape preview audio is unavailable.";
+        }
+        feedbackUntil = Environment.TickCount64 + 2500;
+        RefreshDeck();
+    }
+
+    private void StopPreview()
+    {
+        previewTimer.Stop();
+        previewOutput?.Dispose();
+        previewOutput = null;
     }
 
     private void SelectTimelinePosition(TapeMark mark)
