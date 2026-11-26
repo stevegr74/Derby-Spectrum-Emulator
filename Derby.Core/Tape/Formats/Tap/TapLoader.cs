@@ -90,16 +90,20 @@ namespace Derby.Tape
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
-            byte[] fileData = File.ReadAllBytes(path);
+            return MountImage(machine, Path.GetFileName(path), File.ReadAllBytes(path), startStopped);
+        }
+
+        public static TapMountResult MountImage(SpectrumMachine machine, string displayName, byte[] fileData, bool startStopped)
+        {
             IReadOnlyList<TapeBlock> blocks = TapFileParser.Parse(fileData);
             if (blocks.Count == 0)
                 throw new InvalidOperationException("The .tap file does not contain any blocks.");
 
-            var tape = new MountedTape(Path.GetFileName(path), blocks);
+            var tape = new MountedTape(displayName, blocks);
             machine.MountTape(tape, startStopped);
             machine.IdentifyTapeImage(fileData);
             LogMountedTape(tape, blocks);
-            return new TapMountResult(blocks.Count, Path.GetFileName(path));
+            return new TapMountResult(blocks.Count, displayName);
         }
 
         public static TapeExecutionResult LoadWithPolicy(SpectrumMachine machine, string path)

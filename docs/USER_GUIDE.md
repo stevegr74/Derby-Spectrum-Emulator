@@ -284,6 +284,23 @@ Use the same machine timing mode when jumping to a saved position. A bookmark
 sets the tape position, not the game state. The transport window itself does not
 pause the Spectrum.
 
+#### Saved Side Pairing
+
+With one tape inserted, open the arrow next to **Choose tape...** and select
+**Pair another side...**. Choose the other tape file. This saves the link
+without changing the inserted tape. DERBY remembers the pair in both directions
+after a restart. Use **Remove pairing** to unlink them without deleting images
+or bookmarks.
+
+![Tape Transport with the saved side switch and remove pairing options](images/tape-side-pairing.png)
+
+When a game asks for the other side, stop playback if needed and select
+**Switch to [side name]** from the same dropdown. DERBY inserts the other side
+at the beginning and leaves it stopped without resetting the game. Select a
+section or bookmark if needed, then press **Play tape** or `F5`. If DERBY cannot
+find the saved file, locate a copy with identical contents; a different image
+is rejected without changing the current tape.
+
 ### If A Multi-load Fails
 
 1. Confirm the correct 48K/128K model was selected before mounting.

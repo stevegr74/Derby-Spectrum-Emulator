@@ -7,6 +7,45 @@ namespace Derby.Tests;
 public sealed class TapeDeckFormTests
 {
     [Fact]
+    public void SideOptionsLeaveTheTimelineAndBookmarkListLayoutUnchanged()
+    {
+        Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                bool invoked = false;
+                using var form = new TapeDeckForm(() => null, _ => null, (_, _, _) => false,
+                    new TapeBookmarkStore(), _ => { }, (_, _) =>
+                    [
+                        new("Switch to Side 2", () => invoked = true),
+                        new("Remove pairing", () => { })
+                    ]);
+                form.Size = form.MinimumSize;
+                form.Show();
+                var timeline = Descendants(form).OfType<TapeTimelineStrip>().Single();
+                var timelineBounds = timeline.Bounds;
+                var markers = MarkerList(form);
+                var markerBounds = markers.Bounds;
+                Descendants(form).OfType<Button>().Single(button => button.AccessibleName == "Tape side options").PerformClick();
+                var action = GetButton(form, "Switch to Side 2");
+                Assert.True(action.Visible);
+                Assert.Equal(timelineBounds, timeline.Bounds);
+                Assert.Equal(markerBounds, markers.Bounds);
+                action.PerformClick();
+                Assert.True(invoked);
+                Assert.False(action.Visible);
+            }
+            catch (Exception ex) { failure = ex; }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "Tape side options test timed out.");
+        if (failure != null)
+            throw new Xunit.Sdk.XunitException(failure.ToString());
+    }
+
+    [Fact]
     public void TapeWindowRestoresAndEditsBookmarksInFreshEmulatorSessions()
     {
         string folder = Path.Combine(Path.GetTempPath(), "derby-bookmarks-test-" + Guid.NewGuid().ToString("N"));

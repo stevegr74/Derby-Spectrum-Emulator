@@ -6,6 +6,8 @@ public partial class MainForm
 {
     private TapeDeckForm? tapeDeck;
     private readonly TapeBookmarkStore tapeBookmarks = new();
+    private readonly TapeSidePairStore tapeSidePairs = new();
+    private readonly Dictionary<string, string> tapePaths = new(StringComparer.Ordinal);
 
     private void OpenTapeDeck()
     {
@@ -16,7 +18,7 @@ public partial class MainForm
         }
 
         var form = new TapeDeckForm(ReadTapeDeck, CaptureTapeBookmark, ControlTapeDeck,
-            tapeBookmarks, ChooseTapeFromDialog);
+            tapeBookmarks, ChooseTapeFromDialog, GetTapeSideActions);
         tapeDeck = form;
         form.FormClosed += (_, _) => tapeDeck = null;
         form.Show(this);
