@@ -136,6 +136,11 @@ but not overlays, the machine state, or the F4 size cycle.
 
 ![The same Arkanoid loading frame at 3x in Digital and PAL TV](images/display-filters.png)
 
+PAL TV's colour spread and cyan highlight were tuned using the composite photo
+of the original 128K ROM menu in [Paul Farrow's video lead guide, page 11](https://mts.speccy.cz/doc/128_rgb.pdf#page=11).
+The photograph is a reference for relative contrast and edge softness, not a
+calibrated capture of every Spectrum colour. Digital does not use this tuning.
+
 ### Status Overlay
 
 Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, model, tape state, and display mode appear on separate right-aligned lines, moving below full tape feedback when necessary. The model line shows `+3` for the +3 and the 48K/128K timing family for other profiles.

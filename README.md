@@ -463,7 +463,7 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 - Broader +D controller and disk compatibility beyond read-only drive 1. Reference: [MGT filesystem](https://sinclair.wiki.zxnet.co.uk/wiki/MGT_filesystem).
 - Demo compatibility beyond the current validation matrix
 - Broader real-game validation
-- Calibrate the CRT display filters against a documented real Spectrum and CRT setup. The current filters are visual approximations, not measured composite or RF signal models.
+- Extend PAL TV validation from a documented 128K composite ROM-menu photograph to a calibrated capture of the full colour range and transitions. The filters are visual approximations, not measured composite or RF signal models.
 - Optional game library window with searchable artwork tiles, recent items, and an explicit file picker; prefer a scalable grid over a carousel-only interface
 - Additional platform frontends, including a browser/WebAssembly adapter using the established headless engine boundary
 

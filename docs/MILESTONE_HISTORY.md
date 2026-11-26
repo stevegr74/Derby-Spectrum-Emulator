@@ -165,4 +165,7 @@ status table in the main README remains the authoritative roadmap summary.
 - Filters run after the Spectrum frame is rendered and before host overlays are
   drawn. The phosphor mask is applied only at 3x.
 - Compared the modes using the same Arkanoid loading frame and verified 128
-  BASIC text at 2x and 3x. Calibration against a specific CRT remains separate.
+  BASIC text at 2x and 3x.
+- Tuned PAL TV's cyan highlight and horizontal colour spread against a
+  documented original 128K composite ROM-menu photograph. Digital remained
+  pixel-identical; calibration across the full colour range remains open.
