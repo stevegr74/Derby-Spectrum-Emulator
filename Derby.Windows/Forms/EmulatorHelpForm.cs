@@ -33,6 +33,7 @@ namespace Derby
                 ("Tape Transport", "Use Shift+F5 to rewind, jump to sections, or save bookmarks across restarts"),
                 ("Tape at End", "The tape is still in the deck. Rewind or choose a position before playing."),
                 ("Choose tape", "Starts a new game with an empty deck; otherwise offers Change tape or Start new game"),
+                ("Tape side options", "Use the arrow by Choose tape to pair or switch sides. Swaps stay stopped."),
                 ("Disk Drive", "Use F8 to insert, replace, or eject a read-only .dsk or .mgt image"),
                 ("+3 disk loading", "After inserting a .dsk image, choose Loader in the +3 ROM menu"),
                 ("+D firmware", "Uses ROMs\\plusd.rom. If it is missing, browse when asked."),

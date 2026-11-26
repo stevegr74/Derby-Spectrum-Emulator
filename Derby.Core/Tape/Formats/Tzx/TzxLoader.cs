@@ -26,19 +26,23 @@ namespace Derby.Tape
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("Tape path must be provided.", nameof(path));
 
-            byte[] fileData = File.ReadAllBytes(path);
+            return MountImage(machine, Path.GetFileName(path), File.ReadAllBytes(path), startStopped);
+        }
+
+        public static TapMountResult MountImage(SpectrumMachine machine, string displayName, byte[] fileData, bool startStopped)
+        {
             var blocks = ParseBlocksForNewTapeLoad(fileData, machine.MachineModel);
             if (blocks.Count == 0)
                 throw new InvalidOperationException("The .tzx file does not contain any supported tape blocks.");
 
             var tape = new MountedTape(
-                Path.GetFileName(path),
+                displayName,
                 blocks,
                 skipCustomHeaderForEarPlayback: false,
                 initialEarLevelHigh: false);
             machine.MountTape(tape, startStopped);
             machine.IdentifyTapeImage(fileData);
-            return new TapMountResult(blocks.Count, Path.GetFileName(path));
+            return new TapMountResult(blocks.Count, displayName);
         }
 
         public static TapeExecutionResult LoadWithPolicy(SpectrumMachine machine, string path)

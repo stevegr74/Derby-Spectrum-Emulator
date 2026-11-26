@@ -2,6 +2,8 @@ using Derby.Tape;
 
 namespace Derby;
 
+internal sealed record TapeSideAction(string Label, Action? Invoke);
+
 internal sealed class TapeDeckForm : Form
 {
     private readonly Func<TapeDeckView?> read;
@@ -17,6 +19,12 @@ internal sealed class TapeDeckForm : Form
     private readonly ListBox bookmarks = CreateList("Tape sections and bookmarks");
     private readonly TextBox name = new() { Width = 188, MaxLength = 60, PlaceholderText = "Bookmark name", AccessibleName = "Bookmark name" };
     private readonly Button choose = CreateButton("Choose tape...");
+    private readonly Button tapeOptions = CreateButton("\u25BE");
+    private readonly FlowLayoutPanel sideMenu = new()
+    {
+        AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, FlowDirection = FlowDirection.TopDown,
+        WrapContents = false, Visible = false, BackColor = EmulatorUiStyle.Panel, BorderStyle = BorderStyle.FixedSingle
+    };
     private readonly Button toggle = CreateButton("Play tape", primary: true);
     private readonly Button rewind = CreateButton("Rewind");
     private readonly Button goTo = CreateButton("Go to");
@@ -34,7 +42,7 @@ internal sealed class TapeDeckForm : Form
 
     public TapeDeckForm(Func<TapeDeckView?> read, Func<TapeTimeline, TapeCue?> capture,
         Func<TapeDeckView, int?, TapeCue?, bool> control, TapeBookmarkStore store,
-        Action<Form> chooseTape)
+        Action<Form> chooseTape, Func<Form, TapeDeckView?, TapeSideAction[]>? getSideActions = null)
     {
         this.read = read;
         this.capture = capture;
@@ -87,8 +95,16 @@ internal sealed class TapeDeckForm : Form
         transport.ColumnStyles.Add(new(SizeType.Percent, 100));
         transport.ColumnStyles.Add(new(SizeType.AutoSize));
         transport.Controls.Add(Row(toggle, rewind), 0, 0);
-        transport.Controls.Add(Row(choose), 1, 0);
+        tapeOptions.AccessibleName = "Tape side options";
+        tapeOptions.AutoSize = false;
+        tapeOptions.MinimumSize = Size.Empty;
+        tapeOptions.Size = new Size(28, choose.Height);
+        tapeOptions.Margin = new Padding(0, choose.Margin.Top, choose.Margin.Right, choose.Margin.Bottom);
+        choose.Margin = new Padding(choose.Margin.Left, choose.Margin.Top, 0, choose.Margin.Bottom);
+        transport.Controls.Add(getSideActions == null ? Row(choose) : Row(choose, tapeOptions), 1, 0);
         root.Controls.Add(transport, 0, 2);
+        Controls.Add(sideMenu);
+        sideMenu.BringToFront();
 
         var cancelEdit = CreateButton("Cancel");
         bookmarkActions = Row(goTo, add, edit);
@@ -108,7 +124,18 @@ internal sealed class TapeDeckForm : Form
         CancelButton = close;
 
         tips.SetToolTip(edit, "Rename or delete the selected bookmark.");
-        choose.Click += (_, _) => { chooseTape(this); RefreshDeck(); };
+        tips.SetToolTip(tapeOptions, "Pair or switch tape sides.");
+        choose.Click += (_, _) => { sideMenu.Hide(); chooseTape(this); RefreshDeck(); };
+        tapeOptions.Click += (_, _) =>
+        {
+            if (sideMenu.Visible)
+            {
+                sideMenu.Hide();
+                return;
+            }
+            RefreshDeck();
+            ShowSideOptions(getSideActions?.Invoke(this, view) ?? []);
+        };
         close.Click += (_, _) => Close();
         toggle.Click += (_, _) => Run(null);
         rewind.Click += (_, _) => Run(0);
@@ -121,6 +148,7 @@ internal sealed class TapeDeckForm : Form
         bookmarks.SelectedIndexChanged += (_, _) => UpdateButtons();
         name.TextChanged += (_, _) => UpdateButtons();
         timeline.PositionSelected += SelectTimelinePosition;
+        Resize += (_, _) => sideMenu.Hide();
         refresh.Tick += (_, _) => RefreshDeck();
         Shown += (_, _) => { RefreshDeck(); refresh.Start(); };
         RefreshDeck();
@@ -132,12 +160,20 @@ internal sealed class TapeDeckForm : Form
         {
             refresh.Dispose();
             tips.Dispose();
+            sideMenu.Dispose();
+            tapeOptions.Dispose();
         }
         base.Dispose(disposing);
     }
 
     protected override bool ProcessDialogKey(Keys keyData)
     {
+        if (sideMenu.Visible && keyData == Keys.Escape)
+        {
+            sideMenu.Hide();
+            tapeOptions.Focus();
+            return true;
+        }
         if (editingCue != null && keyData == Keys.Escape)
         {
             EndBookmarkEdit();
@@ -156,12 +192,44 @@ internal sealed class TapeDeckForm : Form
         return base.ProcessDialogKey(keyData);
     }
 
+    private void ShowSideOptions(TapeSideAction[] actions)
+    {
+        foreach (Control item in sideMenu.Controls.Cast<Control>().ToArray())
+            item.Dispose();
+        foreach (TapeSideAction action in actions)
+        {
+            var button = CreateButton(action.Label);
+            button.AutoSize = false;
+            button.Width = LogicalToDeviceUnits(250);
+            button.Margin = new Padding(1);
+            button.UseMnemonic = false;
+            button.AutoEllipsis = true;
+            button.TextAlign = ContentAlignment.MiddleLeft;
+            button.Enabled = action.Invoke != null;
+            tips.SetToolTip(button, action.Label);
+            button.Click += (_, _) =>
+            {
+                sideMenu.Hide();
+                tapeOptions.Focus();
+                action.Invoke?.Invoke();
+                RefreshDeck();
+            };
+            sideMenu.Controls.Add(button);
+        }
+        Size menuSize = sideMenu.GetPreferredSize(Size.Empty);
+        Point anchor = PointToClient(tapeOptions.PointToScreen(new Point(tapeOptions.Width, tapeOptions.Height)));
+        sideMenu.Location = new Point(Math.Max(0, anchor.X - menuSize.Width), anchor.Y);
+        sideMenu.Visible = actions.Length > 0;
+        sideMenu.Controls.Cast<Control>().FirstOrDefault(item => item.Enabled)?.Focus();
+    }
+
     private void RefreshDeck()
     {
         TapeDeckView? previous = view;
         view = read();
         if (!ReferenceEquals(previous?.Timeline, view?.Timeline))
         {
+            sideMenu.Hide();
             tapeName.Text = view?.Timeline.FileName ?? "No tape mounted";
             tips.SetToolTip(tapeName, view?.Timeline.FileName);
             EndBookmarkEdit();
@@ -241,6 +309,7 @@ internal sealed class TapeDeckForm : Form
 
     private void Run(int? index, TapeCue? cue = null)
     {
+        sideMenu.Hide();
         bool executed = view != null && control(view, index, cue);
         feedback = executed ? null : "Could not move to that position. Check the tape and try again.";
         feedbackUntil = Environment.TickCount64 + 3500;

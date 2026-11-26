@@ -65,16 +65,23 @@ namespace Derby
             if (action == TapeFileAction.MountStopped)
             {
                 MountStoppedTape(path);
-                tapeTransportOverlay.SetObservedState(Tape.TapeTransportState.Stopped, markerStop: false);
-                tapeTransportOverlay.Clear();
-                UpdateTapeTransportMenuItem();
-                UpdateWindowTitle();
+                RememberTapePath(path);
+                RefreshAfterStoppedTapeInsert();
                 return;
             }
 
             LoadTapeForNewGame(path);
+            RememberTapePath(path);
             SetLoadedMediaDisplayName(path);
             ShowMountedTapeTransportFeedback();
+        }
+
+        private void RefreshAfterStoppedTapeInsert()
+        {
+            tapeTransportOverlay.SetObservedState(Tape.TapeTransportState.Stopped, markerStop: false);
+            tapeTransportOverlay.Clear();
+            UpdateTapeTransportMenuItem();
+            UpdateWindowTitle();
         }
 
         private void LoadTapeForNewGame(string path)
