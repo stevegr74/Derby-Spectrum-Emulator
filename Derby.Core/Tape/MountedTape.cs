@@ -199,6 +199,8 @@ namespace Derby.Tape
 
         private void ResetAt(int blockIndex, int prePlaybackPauseTStates, bool? boundaryEarLevel = null)
         {
+            ScrubPosition = null;
+            scrubbedSignalBlock = null;
             nextBlockIndex = blockIndex;
             earPlaybackBlockIndex = blockIndex;
             earStreamByteIndex = 0;
@@ -353,6 +355,7 @@ namespace Derby.Tape
             if (!playbackPaused || playbackCompleted)
                 return false;
 
+            ScrubPosition = null;
             bool resumeAfterMarker = pausedByStopMarker;
             int resumeBlockIndex = stopMarkerResumeBlockIndex;
             playbackPaused = false;
@@ -374,6 +377,8 @@ namespace Derby.Tape
 
             if (earPlaybackStarted)
             {
+                if (currentTStates < pausedPulseElapsedTStates && earPulseLengthTStates > 0)
+                    earPulseLengthTStates -= (int)Math.Min(pausedPulseElapsedTStates, (ulong)earPulseLengthTStates - 1);
                 lastEarSampleTStates = currentTStates >= pausedPulseElapsedTStates
                     ? currentTStates - pausedPulseElapsedTStates
                     : currentTStates;

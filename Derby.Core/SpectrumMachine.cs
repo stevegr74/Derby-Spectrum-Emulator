@@ -895,6 +895,17 @@ namespace Derby
             return true;
         }
 
+        public bool TryScrubTape(TapeTimeline expected, double position)
+        {
+            if (HasPendingMountedLoadUsrContinuation || !tapeTransport.Scrub(expected, position))
+                return false;
+            ResetMountedTapeActivityTracking();
+            return true;
+        }
+
+        public short[]? RenderTapePreview(TapeTimeline expected) =>
+            HasPendingMountedLoadUsrContinuation ? null : tapeTransport.Preview(expected);
+
         public void AttachRzxPlayback(RzxPlaybackSession playback)
         {
             rzxPlayback = playback ?? throw new ArgumentNullException(nameof(playback));

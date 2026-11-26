@@ -147,3 +147,13 @@ status table in the main README remains the authoritative roadmap summary.
 - Verified the Monkey Island Disc 1 boot and live Disc 2-to-3 swap on original
   128K in Windows, and rechecked Captain Blood through the native +3 Loader.
   Later Monkey Island gameplay remains unverified.
+
+## Milestone 32 - Tape Scrubbing And Audio Preview
+
+- Added free seeking on the stopped tape's existing block-based progress bar,
+  without changing the named sections, bookmarks, or shortcuts.
+- Preview renders a short clip from a separate pulse cursor. The Windows
+  audio output does not advance the tape or drive the Spectrum's EAR input.
+- Verified on original 128K with Impossamole Side 2: preview at the Amazon
+  leader left the tape stopped; manual Play loaded Amazon and stopped at the
+  following marker before gameplay.

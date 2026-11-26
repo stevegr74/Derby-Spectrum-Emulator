@@ -1,4 +1,5 @@
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 using Derby.Tape;
 using Xunit;
 
@@ -6,6 +7,62 @@ namespace Derby.Tests;
 
 public sealed class TapeDeckFormTests
 {
+    [Fact]
+    public void TimelineDragCommitsOnReleaseAndOnlyWhenStopped()
+    {
+        Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+                machine.MountTape(new MountedTape("test.tzx", [TapeBlock.CreatePureTone(3500, 1000)]), startStopped: true);
+                int previews = 0;
+                using var form = new TapeDeckForm(machine.CaptureTapeDeck, machine.CaptureTapeCue,
+                    (deck, _, _) => machine.TryToggleTapeDeck(deck.Timeline, deck.State), new TapeBookmarkStore(), _ => { },
+                    scrubTape: machine.TryScrubTape, renderPreview: _ => { previews++; return null; });
+                form.Size = form.MinimumSize;
+                form.Show();
+                var strip = Descendants(form).OfType<TapeTimelineStrip>().Single();
+                var preview = GetButton(form, "Preview");
+                Assert.True(preview.Enabled);
+                Assert.True(strip.TabStop);
+                Assert.True(preview.Right < GetButton(form, "Choose tape...").Left +
+                    GetButton(form, "Choose tape...").Parent!.Left);
+                SendMouse(0x0201, strip.Width / 4);
+                SendMouse(0x0200, strip.Width / 2);
+                Assert.Equal(0.0, machine.CaptureTapeDeck()!.Position);
+                SendMouse(0x0202, strip.Width / 2);
+                Assert.InRange(machine.CaptureTapeDeck()!.Position, 0.48, 0.52);
+                preview.PerformClick();
+                Assert.Equal(1, previews);
+                Assert.Equal(TapeTransportState.Stopped, machine.TapeTransportState);
+                GetButton(form, "Play tape").PerformClick();
+                Assert.False(preview.Enabled);
+                Assert.False(strip.TabStop);
+                SendMouse(0x0201, strip.Width / 4);
+                SendMouse(0x0202, strip.Width / 4);
+                Assert.Equal(TapeTransportState.Playing, machine.TapeTransportState);
+                Assert.Equal(TapeTransportTransition.ManualResume, machine.LastTapeTransportTransition);
+
+                void SendMouse(uint message, int x)
+                {
+                    int y = strip.LogicalToDeviceUnits(17);
+                    SendMessage(strip.Handle, message, message == 0x0202 ? 0 : 1, (y << 16) | x);
+                }
+            }
+            catch (Exception ex) { failure = ex; }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "Tape scrubbing UI test timed out.");
+        if (failure != null)
+            throw new Xunit.Sdk.XunitException(failure.ToString());
+    }
+
+    [DllImport("user32.dll", EntryPoint = "SendMessageW")]
+    private static extern nint SendMessage(nint window, uint message, nint wParam, nint lParam);
+
     [Fact]
     public void SideOptionsLeaveTheTimelineAndBookmarkListLayoutUnchanged()
     {

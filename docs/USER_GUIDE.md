@@ -270,9 +270,9 @@ The emulator also handles supported TZX pauses, stop markers, tape end, and dete
 
 Press `Shift+F5` or choose **Tape Transport** from the right-click menu, then click **Choose tape...**. With an empty deck, this starts a new game. If there's already a tape in the deck, **Change tape** is the default and keeps the running game. The replacement stays stopped, so you can go to a section or bookmark before pressing Play. Choose **Start new game** to reset the Spectrum and load the tape from the start. Use `F7` to insert a stopped tape even when the deck is empty.
 
-![Tape Transport showing a stopped tape with a named section and a bookmark](images/tape-transport.png)
+![Tape Transport showing a stopped tape, named sections, and the Preview button](images/tape-transport.png)
 
-*Figure 6.1. Tape Transport shows the inserted filename, current position, and selectable positions.*
+*Figure 6.1. Tape Transport shows the inserted filename, current position, named sections, and Preview.*
 
 The progress bar shows named tape sections as dark ticks, your bookmarks as teal dots, and the last stop as an amber tick. When the tape is stopped, select a section or bookmark in the list or on the bar, then choose **Go to**. Only tapes with embedded names show sections. **Add bookmark...** names the current stopped position or a selected stop, and **Edit...** renames or deletes a bookmark. Rewinding and jumping leave the tape stopped and do not rewind the Spectrum.
 
@@ -284,6 +284,19 @@ Use the same machine timing mode when jumping to a saved position. A bookmark
 sets the tape position, not the game state. The transport window itself does not
 pause the Spectrum.
 
+#### Scrubbing And Audio Preview
+
+While the tape is stopped, click or drag the progress bar away from its markers
+to seek within the tape. Release to set the position. With the bar focused, use
+the arrow keys for small moves, or Home and End. The bar is spaced by tape block,
+not by elapsed time. At end of tape, use **Rewind** or **Go to** before scrubbing.
+
+Select **Preview** to hear up to a second from the current position. A gap can
+sound silent. Preview goes to the PC speakers only: it does not move the tape,
+feed the Spectrum's EAR input, or start a load. Press **Play tape** or `F5` to
+resume. For a multi-load game, start at the named section or a known bookmark
+if you are not sure where the next recording begins.
+
 #### Saved Side Pairing
 
 With one tape inserted, open the arrow next to **Choose tape...** and select
@@ -292,7 +305,7 @@ without changing the inserted tape. DERBY remembers the pair in both directions
 after a restart. Use **Remove pairing** to unlink them without deleting images
 or bookmarks.
 
-![Tape Transport with the saved side switch and remove pairing options](images/tape-side-pairing.png)
+![Tape Transport with Pair another side in the dropdown beside Choose tape](images/tape-side-pairing.png)
 
 When a game asks for the other side, stop playback if needed and select
 **Switch to [side name]** from the same dropdown. DERBY inserts the other side
@@ -645,7 +658,6 @@ Press `F5` once. If loading fails immediately, capture the exact error rather th
 - SZX support currently targets exact 48K and original 128K machine state; peripheral-bearing snapshots and other Spectrum models are not yet supported.
 - +3 emulates one read-only drive. Disk writes, formatting, and +3 Quick State are not supported.
 - +D emulates one read-only drive for double-sided 80-track `.mgt` images. Quick State is unavailable while +D is attached.
-- An on-screen 48K/128K keyboard is planned but not implemented.
 - SZX snapshots that carry mouse peripheral state are not supported. Quick State preserves emulated mouse state but does not recapture the Windows pointer.
 - Broader protected/custom TZX compatibility remains ongoing.
 - The Poke library uses one-time writes rather than frozen/conditional trainers.

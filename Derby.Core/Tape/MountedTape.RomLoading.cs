@@ -12,7 +12,9 @@ namespace Derby.Tape
                 throw new ArgumentNullException(nameof(machine));
             if (cpu == null)
                 throw new ArgumentNullException(nameof(cpu));
-            if (playbackPaused || !allowRomLoadTraps || !machine.SupportsRomTapeAcceleration)
+            // A fast trap must not deliver a complete record when playback starts inside it.
+            if (playbackPaused || scrubbedSignalBlock == earPlaybackBlockIndex ||
+                !allowRomLoadTraps || !machine.SupportsRomTapeAcceleration)
                 return false;
 
             bool isSyncLoopTrap = cpu.Regs.PC == machine.RomProfile.LoadBytesSyncLoopAddress;

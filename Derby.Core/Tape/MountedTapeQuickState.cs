@@ -34,6 +34,8 @@ namespace Derby.Tape
             [JsonInclude, JsonRequired] internal int? ExpectedDataLength;
             [JsonInclude, JsonRequired] internal string? PendingHeaderName;
             [JsonInclude, JsonRequired] internal TapHeaderInfo? PendingHeaderInfo;
+            [JsonInclude, JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] internal int? ScrubbedSignalBlock;
+            [JsonInclude, JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] internal double? ScrubPosition;
         }
 
         public QuickState CaptureQuickState()
@@ -67,13 +69,17 @@ namespace Derby.Tape
                 TapeStateValue = (int)state,
                 ExpectedDataLength = expectedDataLength,
                 PendingHeaderName = pendingHeaderName,
-                PendingHeaderInfo = pendingHeaderInfo
+                PendingHeaderInfo = pendingHeaderInfo,
+                ScrubbedSignalBlock = scrubbedSignalBlock,
+                ScrubPosition = ScrubPosition
             };
         }
 
         public void RestoreQuickState(QuickState state)
         {
             ArgumentNullException.ThrowIfNull(state);
+            ScrubPosition = state.ScrubPosition;
+            scrubbedSignalBlock = state.ScrubbedSignalBlock;
             nextBlockIndex = state.NextBlockIndex;
             earPlaybackBlockIndex = state.EarPlaybackBlockIndex;
             earStreamByteIndex = state.EarStreamByteIndex;

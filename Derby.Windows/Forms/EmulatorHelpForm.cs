@@ -31,6 +31,7 @@ namespace Derby
                 ("Load Tape", "Use F6 to start a new game from the selected tape"),
                 ("Insert / Change", "Use F7 to keep the running game. Press F5 or Play tape when ready."),
                 ("Tape Transport", "Use Shift+F5 to rewind, jump to sections, or save bookmarks across restarts"),
+                ("Scrub / Preview", "While stopped, drag to seek or select Preview to listen without loading."),
                 ("Tape at End", "The tape is still in the deck. Rewind or choose a position before playing."),
                 ("Choose tape", "Starts a new game with an empty deck; otherwise offers Change tape or Start new game"),
                 ("Tape side options", "Use the arrow by Choose tape to pair or switch sides. Swaps stay stopped."),
