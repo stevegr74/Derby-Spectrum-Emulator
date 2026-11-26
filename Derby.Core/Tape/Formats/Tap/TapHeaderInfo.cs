@@ -1,27 +1,30 @@
+using System.Text.Json.Serialization;
+
 namespace Derby.Tape
 {
     internal sealed class TapHeaderInfo
     {
+        [JsonConstructor]
         internal TapHeaderInfo(
             byte type,
             string fileName,
             ushort dataLength,
-            ushort parameter1,
-            ushort parameter2)
+            ushort autoStartLine,
+            ushort programLength)
         {
             Type = type;
             FileName = string.IsNullOrWhiteSpace(fileName) ? "unnamed" : fileName;
             DataLength = dataLength;
-            AutoStartLine = parameter1;
-            ProgramLength = parameter2;
-            StartAddress = parameter1;
+            AutoStartLine = autoStartLine;
+            ProgramLength = programLength;
+            StartAddress = autoStartLine;
         }
 
-        internal byte Type { get; }
-        internal string FileName { get; }
-        internal ushort DataLength { get; }
-        internal ushort AutoStartLine { get; }
-        internal ushort ProgramLength { get; }
+        [JsonInclude] internal byte Type { get; }
+        [JsonInclude] internal string FileName { get; }
+        [JsonInclude] internal ushort DataLength { get; }
+        [JsonInclude] internal ushort AutoStartLine { get; }
+        [JsonInclude] internal ushort ProgramLength { get; }
         internal ushort StartAddress { get; }
     }
 }

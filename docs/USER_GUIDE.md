@@ -276,7 +276,13 @@ Press `Shift+F5` or choose **Tape Transport** from the right-click menu, then cl
 
 The progress bar shows named tape sections as dark ticks, your bookmarks as teal dots, and the last stop as an amber tick. When the tape is stopped, select a section or bookmark in the list or on the bar, then choose **Go to**. Only tapes with embedded names show sections. **Add bookmark...** names the current stopped position or a selected stop, and **Edit...** renames or deletes a bookmark. Rewinding and jumping leave the tape stopped and do not rewind the Spectrum.
 
-Bookmarks reappear when you return to the same tape image during the session. The transport window itself does not pause the Spectrum.
+Bookmarks are saved as you add, rename, or delete them in
+`%LocalAppData%\Derby\tape-bookmarks`. After restarting DERBY, insert the same
+tape image to see its bookmarks again. A renamed or moved copy with identical
+contents also works; different releases and tape sides keep separate bookmarks.
+Use the same machine timing mode when jumping to a saved position. A bookmark
+sets the tape position, not the game state. The transport window itself does not
+pause the Spectrum.
 
 ### If A Multi-load Fails
 

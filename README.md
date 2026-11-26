@@ -22,7 +22,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - 48K beeper and AY-3-8912 tone, noise, envelope, and mixing through a clock-driven audio pipeline
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
 - `.tap` and `.tzx` parsing, fast bootstrap, ROM-driven loading, protected/mounted playback, VERIFY, and multi-block sequencing
-- Tape Transport with named sections, session bookmarks, rewind, 48K stop-marker support, and on-screen playback feedback
+- Tape Transport with named sections, persistent bookmarks, rewind, 48K stop-marker support, and on-screen playback feedback
 - Modeless on-screen keyboard with selectable 48K rubber-key and 128K layouts, pointer holds, and Shift chords
 - Optional Kempston or AMX Mouse with click-to-capture and Escape release
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
@@ -427,6 +427,7 @@ compatibility; completed milestones remain regression baselines.
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
 | 28 | Complete | Tape Transport v1: named sections, session bookmarks, rewind, and stopped side changes |
 | 29 | Complete | Read-only +D drive 1: G+DOS boot and live `.mgt` swaps through F8, separate from the +3 drive |
+| 30 | Complete | Persistent Tape Transport bookmarks keyed to the tape image |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
@@ -455,7 +456,7 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 ## Longer-Term Improvements
 
 - Broader +D controller and disk compatibility beyond read-only drive 1. Reference: [MGT filesystem](https://sinclair.wiki.zxnet.co.uk/wiki/MGT_filesystem).
-- Tape Transport beyond v1: persistent bookmarks, saved side pairing, and free scrubbing
+- Tape Transport refinements: saved side pairing and free scrubbing
 - Demo compatibility beyond the current validation matrix
 - Broader real-game validation
 - Selectable presentation palettes: an authentic CRT/composite-inspired default and the existing idealised `D7/FF` digital palette, without changing emulated colour attributes or saved state

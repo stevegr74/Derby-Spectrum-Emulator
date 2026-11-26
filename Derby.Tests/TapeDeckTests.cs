@@ -57,7 +57,12 @@ public sealed class TapeDeckTests
         machine.Cpu.AddTStates(235);
         machine.ToggleTapeTransport();
         TapeDeckView original = machine.CaptureTapeDeck()!;
-        TapeCue cue = Assert.IsType<TapeCue>(original.Markers.Single().Cue);
+        TapeCue captured = Assert.IsType<TapeCue>(original.Markers.Single().Cue);
+        captured.State.PendingHeaderInfo = new TapHeaderInfo(3, "PULSE", 5, 0x8123, 4);
+        TapeCue cue = Assert.IsType<TapeCue>(TapeCue.ReadBookmarkPosition(captured.SaveBookmarkPosition(), original.Timeline));
+        Assert.Equal((ushort)0x8123, cue.State.PendingHeaderInfo!.StartAddress);
+        Assert.Equal("PULSE", cue.State.PendingHeaderInfo.FileName);
+        Assert.Equal((ushort)4, cue.State.PendingHeaderInfo.ProgramLength);
         bool level = tape.ReadEarBit(machine.Cpu.TStates);
         Assert.Equal(0, cue.BlockIndex);
 
