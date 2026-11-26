@@ -157,3 +157,12 @@ status table in the main README remains the authoritative roadmap summary.
 - Verified on original 128K with Impossamole Side 2: preview at the Amazon
   leader left the tape stopped; manual Play loaded Amazon and stopped at the
   following marker before gameplay.
+
+## Milestone 33 - Display Filters
+
+- Kept Digital as the startup default and added Soft CRT, Soft CRT with Mask,
+  and PAL TV. F4 changes size; Shift+F4 changes the filter.
+- Filters run after the Spectrum frame is rendered and before host overlays are
+  drawn. The phosphor mask is applied only at 3x.
+- Compared the modes using the same Arkanoid loading frame and verified 128
+  BASIC text at 2x and 3x. Calibration against a specific CRT remains separate.

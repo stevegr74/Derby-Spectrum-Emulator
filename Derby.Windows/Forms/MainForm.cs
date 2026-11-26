@@ -59,6 +59,7 @@ namespace Derby
         private readonly ToolStripMenuItem nativeDisplayMenuItem = new ToolStripMenuItem("1x Native");
         private readonly ToolStripMenuItem enhanced2xDisplayMenuItem = new ToolStripMenuItem("2x Enhanced");
         private readonly ToolStripMenuItem enhanced3xDisplayMenuItem = new ToolStripMenuItem("3x Enhanced");
+        private readonly Dictionary<SpectrumDisplayFilter, ToolStripMenuItem> displayFilterItems = new();
         private readonly ToolStripMenuItem machineMenuItem = new ToolStripMenuItem("F3 - Machine");
         private readonly ToolStripMenuItem statusOverlayMenuItem = new ToolStripMenuItem("F2 - Status Overlay");
         private readonly ToolStripMenuItem tapeTransportMenuItem = new();
@@ -125,6 +126,7 @@ namespace Derby
         private int totalPresentedFrameCount;
         private long suppressSpectrumHostInputUntilTicks;
         private SpectrumDisplayMode displayMode = SpectrumDisplayMode.Enhanced2x;
+        private SpectrumDisplayFilter displayFilter;
         private SpectrumMachineModel selectedMachineModel = SpectrumMachineModel.Spectrum128K;
         private bool isStatusOverlayVisible;
         private readonly TapeTransportOverlay tapeTransportOverlay = new();
@@ -207,19 +209,34 @@ namespace Derby
             InitializeMachineMenu();
             displayContextMenu.Items.Add(machineMenuItem);
 
-            var displaySizeMenuItem = new ToolStripMenuItem("F4 - Display Size");
+            var displayMenuItem = new ToolStripMenuItem("F4 - Display");
             nativeDisplayMenuItem.Click += (_, _) => SelectDisplayMode(SpectrumDisplayMode.Native);
             enhanced2xDisplayMenuItem.Click += (_, _) => SelectDisplayMode(SpectrumDisplayMode.Enhanced2x);
             enhanced3xDisplayMenuItem.Click += (_, _) => SelectDisplayMode(SpectrumDisplayMode.Enhanced3x);
 
-            displaySizeMenuItem.DropDownItems.AddRange(new ToolStripItem[]
+            displayMenuItem.DropDownItems.AddRange(new ToolStripItem[]
             {
                 nativeDisplayMenuItem,
                 enhanced2xDisplayMenuItem,
                 enhanced3xDisplayMenuItem
             });
-            displayContextMenu.Items.Add(displaySizeMenuItem);
+            displayContextMenu.Items.Add(displayMenuItem);
+            displayMenuItem.DropDownItems.Add(new ToolStripSeparator());
+            var filterMenu = new ToolStripMenuItem("Display Filter");
+            AddDisplayFilter("Digital", SpectrumDisplayFilter.Digital);
+            AddDisplayFilter("Soft CRT", SpectrumDisplayFilter.SoftCrt);
+            AddDisplayFilter("Soft CRT with Mask", SpectrumDisplayFilter.SoftCrtWithMask);
+            AddDisplayFilter("PAL TV", SpectrumDisplayFilter.PalTv);
+            displayMenuItem.DropDownItems.Add(filterMenu);
             displayContextMenu.Items.Add(new ToolStripSeparator());
+
+            void AddDisplayFilter(string label, SpectrumDisplayFilter filter)
+            {
+                var item = new ToolStripMenuItem(label) { Checked = displayFilter == filter };
+                item.Click += (_, _) => SelectDisplayFilter(filter);
+                displayFilterItems.Add(filter, item);
+                filterMenu.DropDownItems.Add(item);
+            }
 
             tapeTransportMenuItem.Click += (_, _) => ToggleTapeTransport();
             displayContextMenu.Items.Add(tapeTransportMenuItem);
@@ -272,6 +289,23 @@ namespace Derby
 
             ApplyDisplayMode(mode);
             PresentCurrentMachineFrame(frameClock.ElapsedTicks + PresentationIntervalTicks);
+            screenBox.Focus();
+        }
+
+        private void CycleDisplayFilter() => SelectDisplayFilter(displayFilter switch
+        {
+            SpectrumDisplayFilter.Digital => SpectrumDisplayFilter.SoftCrt,
+            SpectrumDisplayFilter.SoftCrt => SpectrumDisplayFilter.SoftCrtWithMask,
+            SpectrumDisplayFilter.SoftCrtWithMask => SpectrumDisplayFilter.PalTv,
+            _ => SpectrumDisplayFilter.Digital
+        });
+
+        private void SelectDisplayFilter(SpectrumDisplayFilter filter)
+        {
+            displayFilter = filter;
+            foreach (var (value, item) in displayFilterItems)
+                item.Checked = value == filter;
+            PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
             screenBox.Focus();
         }
 
@@ -946,10 +980,10 @@ namespace Derby
                 presentationFrameBuffer.Render(screenBankCopy, borderFrame, flashPhase);
             SpectrumDisplayLayout layout = SpectrumDisplayModes.GetLayout(displayMode);
             Bitmap presentationBitmap = GetPresentationBitmap(displayMode);
-            if (layout.Scale == 1)
+            if (layout.Scale == 1 && displayFilter == SpectrumDisplayFilter.Digital)
                 SpectrumRenderer.RenderToBitmap(presentationBitmap, presentationFrameBuffer);
             else
-                SpectrumRenderer.RenderScaledToBitmap(presentationBitmap, presentationFrameBuffer, layout.Scale);
+                SpectrumRenderer.RenderScaledToBitmap(presentationBitmap, presentationFrameBuffer, layout.Scale, displayFilter);
             tapeTransportOverlay.Draw(presentationBitmap, layout.Scale, now);
             if (snapshot.IsDiskAccessActive)
                 DrawDiskActivity(presentationBitmap, layout.Scale);

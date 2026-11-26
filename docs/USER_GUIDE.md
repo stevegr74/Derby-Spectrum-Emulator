@@ -91,6 +91,7 @@ Press `F1` to open Help. Emulation pauses while it is open. The first page lists
 | `F2` | Show or hide the status overlay |
 | `F3` | Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles |
 | `F4` | Cycle 1x Native, 2x Enhanced, and 3x Enhanced display sizes |
+| `Shift+F4` | Cycle Digital, Soft CRT, Soft CRT with Mask, and PAL TV |
 | `F5` | Play, stop, or resume the inserted tape |
 | `Shift+F5` | Open Tape Transport |
 | `F6` | Load a `.tap` or `.tzx` tape as a new game |
@@ -119,7 +120,21 @@ The context menu keeps function keys in order and groups tape and disk, saved st
 - **2x Enhanced:** `640x480`
 - **3x Enhanced:** `960x720`
 
-The enhanced modes use pixel-art scaling rather than smoothing the image as an ordinary photograph.
+With **Digital**, the enhanced modes use pixel-art scaling rather than smoothing the image as a photograph.
+
+### Display Filter
+
+Press `Shift+F4` to cycle the filters, or choose one directly from
+**F4 - Display > Display Filter** in the right-click menu. **Digital** is the
+startup default. **Soft CRT** softens horizontal edges and gives scanlines a
+gentle brightness falloff. **Soft CRT with Mask** adds a faint phosphor pattern
+at 3x; at 1x and 2x it behaves like Soft CRT. **PAL TV** gives colour edges a
+broader spread, with softer brightness edges and a small glow around bright
+details. It does not add a phosphor mask. At 1x, there is no separate
+scanline shading. These filters affect the Spectrum picture, including its border,
+but not overlays, the machine state, or the F4 size cycle.
+
+![The same Arkanoid loading frame at 3x in Digital and PAL TV](images/display-filters.png)
 
 ### Status Overlay
 
@@ -661,7 +676,7 @@ Press `F5` once. If loading fails immediately, capture the exact error rather th
 - SZX snapshots that carry mouse peripheral state are not supported. Quick State preserves emulated mouse state but does not recapture the Windows pointer.
 - Broader protected/custom TZX compatibility remains ongoing.
 - The Poke library uses one-time writes rather than frozen/conditional trainers.
-- Palette selection and CRT/composite-inspired presentation are planned; the current display uses the idealised digital palette.
+- Soft CRT and PAL TV are visual approximations, not calibrated emulations of a specific television, composite encoder, or RF signal.
 - The current desktop frontend is Windows-only, although the emulator core remains platform-neutral.
 
 For media known to work, partially work, or fail, consult [`VERIFIED_GAMES.md`](VERIFIED_GAMES.md).

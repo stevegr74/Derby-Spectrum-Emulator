@@ -14,6 +14,7 @@ namespace Derby
                 ("F2", "Show or hide compact FPS, model, tape, and display diagnostics"),
                 ("F3", "Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles"),
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
+                ("Shift+F4", "Cycle Digital, Soft CRT, Soft CRT with Mask, and PAL TV"),
                 ("F5", "Play, stop, or resume the tape"),
                 ("Shift+F5", "Open Tape Transport, even with an empty deck"),
                 ("F6", "Reset and load a .tap or .tzx tape as a new game"),
@@ -218,9 +219,10 @@ namespace Derby
             };
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160));
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            int rowHeight = sectionList.SelectedIndex == 0 ? 25 : 27;
             for (int row = 0; row < section.Rows.Length; row++)
             {
-                table.RowStyles.Add(new RowStyle(SizeType.Absolute, 27));
+                table.RowStyles.Add(new RowStyle(SizeType.Absolute, rowHeight));
                 table.Controls.Add(new Label
                 {
                     Text = section.Rows[row].Key,

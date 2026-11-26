@@ -32,7 +32,7 @@ namespace Derby.Tests
                     Assert.Equal("Main shortcuts", details.Text);
                     var shortcutRows = Descendants(details).OfType<TableLayoutPanel>().Single();
                     Assert.Equal(
-                        ["F1", "F2", "F3", "F4", "F5", "Shift+F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Shift+F12", "Right-click"],
+                        ["F1", "F2", "F3", "F4", "Shift+F4", "F5", "Shift+F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "Shift+F12", "Right-click"],
                         Enumerable.Range(0, shortcutRows.RowCount)
                             .Select(row => shortcutRows.GetControlFromPosition(0, row)!.Text));
                     Assert.True(shortcutRows.Parent!.ClientRectangle.Contains(shortcutRows.Bounds),
