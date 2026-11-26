@@ -139,7 +139,7 @@ status table in the main README remains the authoritative roadmap summary.
 
 ## Milestone 29 - Read-Only +D Disk Support
 
-- The separate +D interface uses an external 8 KB G+DOS ROM and a polled
+- The separate +D interface uses an 8 KB G+DOS ROM and a polled
   WD1772 controller subset. It reads 80-track double-sided MGT images from
   drive 1 without exposing disk writes.
 - F8 shares one disk picker with +3. Initial +D attachment requires reset

@@ -64,8 +64,7 @@ Right-click the display and open **F3 - Machine** to choose:
 
 Pressing `F3` resets and cycles through 128K, 48K, +2 Grey, +2A, and +3 in menu
 order. The submenu selects any profile directly. Changing profile clears the
-loaded media. System ROMs are bundled; the optional +D interface requires its
-own ROM file, selected through Disk Drive.
+loaded media. System ROMs and the separate +D G+DOS ROM are bundled.
 
 ### First Use
 
@@ -305,7 +304,7 @@ the +3 reads them directly. A small on-screen `A:` badge indicates access.
 
 ### +D Disk Images
 
-1. Press `F8`, choose **Insert**, and select an `.mgt` image. The first time, select an 8 KB +D G+DOS ROM file. DERBY remembers the file's location; the ROM is not bundled.
+1. Press `F8`, choose **Insert**, and select an `.mgt` image. DERBY uses the bundled 8 KB G+DOS ROM at `ROMs\plusd.rom` beside the executable. If it is unavailable, DERBY checks any previously selected ROM, then offers **Browse...** or **Cancel**. Cancelling leaves the current machine and media unchanged.
 2. Confirm attachment and reset. Original 48K, original 128K, and grey +2 stay on their current model. A +2A or +3 switches to original 128K only if you confirm.
 3. Close Disk Drive. For a bootable G+DOS disk, choose **128 BASIC**, type `RUN`, and press Enter. On original 48K, press `R` for the BASIC `RUN` keyword, then Enter.
 
