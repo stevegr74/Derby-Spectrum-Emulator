@@ -5,7 +5,7 @@ namespace Derby;
 public partial class MainForm
 {
     private TapeDeckForm? tapeDeck;
-    private readonly TapeBookmarkSession tapeBookmarks = new();
+    private readonly TapeBookmarkStore tapeBookmarks = new();
 
     private void OpenTapeDeck()
     {

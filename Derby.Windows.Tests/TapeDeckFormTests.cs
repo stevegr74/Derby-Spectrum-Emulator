@@ -7,15 +7,16 @@ namespace Derby.Tests;
 public sealed class TapeDeckFormTests
 {
     [Fact]
-    public void TapeWindowKeepsNamedBookmarksForSameImageAcrossWindowReopen()
+    public void TapeWindowRestoresAndEditsBookmarksInFreshEmulatorSessions()
     {
+        string folder = Path.Combine(Path.GetTempPath(), "derby-bookmarks-test-" + Guid.NewGuid().ToString("N"));
         Exception? failure = null;
         var thread = new Thread(() =>
         {
             try
             {
                 var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
-                var session = new TapeBookmarkSession();
+                var store = new TapeBookmarkStore(folder);
                 using (var form = CreateForm())
                 {
                     form.Show();
@@ -47,30 +48,62 @@ public sealed class TapeDeckFormTests
                     Assert.True(GetButton(form, "Rewind").Enabled);
                 }
 
-                using var reopened = CreateForm();
-                reopened.Show();
-                ListBox markers = MarkerList(reopened);
-                Assert.Contains(markers.Items.Cast<object>(), item => item.ToString()!.Contains("Level entry"));
-                markers.SelectedIndex = markers.FindStringExact("Level entry");
-                GetButton(reopened, "Go to").PerformClick();
-                Assert.Equal(TapeTransportTransition.ManualSeek, machine.LastTapeTransportTransition);
-                Assert.Equal(TapeTransportState.Stopped, machine.TapeTransportState);
+                machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+                store = new TapeBookmarkStore(folder);
+                Mount("Renamed side.tzx");
+                using (var reopened = CreateForm())
+                {
+                    reopened.Show();
+                    ListBox markers = MarkerList(reopened);
+                    markers.SelectedIndex = markers.FindStringExact("Level entry");
+                    Assert.True(markers.SelectedIndex >= 0);
+                    GetButton(reopened, "Go to").PerformClick();
+                    Assert.Equal(2, machine.CaptureTapeDeck()!.BlockIndex);
+                    Assert.Equal(TapeTransportTransition.ManualSeek, machine.LastTapeTransportTransition);
+                    Assert.Equal(TapeTransportState.Stopped, machine.TapeTransportState);
+                    markers.SelectedIndex = markers.FindStringExact("Level entry");
+                    GetButton(reopened, "Edit...").PerformClick();
+                    Descendants(reopened).OfType<TextBox>().Single().Text = "Level 2";
+                    GetButton(reopened, "Save").PerformClick();
+                }
+                store = new TapeBookmarkStore(folder);
+                using (var reopened = CreateForm())
+                {
+                    reopened.Show();
+                    ListBox markers = MarkerList(reopened);
+                    Assert.Equal(-1, markers.FindStringExact("Level entry"));
+                    markers.SelectedIndex = markers.FindStringExact("Level 2");
+                    Assert.True(markers.SelectedIndex >= 0);
+                    GetButton(reopened, "Edit...").PerformClick();
+                    GetButton(reopened, "Delete").PerformClick();
+                }
+                Assert.Empty(new TapeBookmarkStore(folder).For(machine.CaptureTapeDeck()!.Timeline));
+
+                void Mount(string fileName)
+                {
+                    machine.MountTape(new MountedTape(fileName,
+                        [TapeBlock.CreatePureTone(100, 10), TapeBlock.CreateMetadata("Side passage"),
+                            TapeBlock.CreatePureTone(200, 10)]));
+                    machine.ToggleTapeTransport();
+                }
 
                 TapeDeckForm CreateForm() => new(machine.CaptureTapeDeck, machine.CaptureTapeCue,
                     (view, index, cue) => index is int block
                         ? machine.TrySeekTape(view.Timeline, block, cue)
-                        : machine.TryToggleTapeDeck(view.Timeline, view.State), session, owner =>
+                        : machine.TryToggleTapeDeck(view.Timeline, view.State), store, owner =>
                     {
                         Assert.IsType<TapeDeckForm>(owner);
-                        machine.MountTape(new MountedTape("Side A.tzx",
-                            [TapeBlock.CreatePureTone(100, 10), TapeBlock.CreateMetadata("Side passage"),
-                                TapeBlock.CreatePureTone(200, 10)]));
-                        machine.ToggleTapeTransport();
+                        Mount("Side A.tzx");
                     });
             }
             catch (Exception ex)
             {
                 failure = ex;
+            }
+            finally
+            {
+                if (Directory.Exists(folder))
+                    Directory.Delete(folder, recursive: true);
             }
         });
         thread.SetApartmentState(ApartmentState.STA);

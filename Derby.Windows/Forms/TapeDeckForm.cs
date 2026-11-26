@@ -7,7 +7,7 @@ internal sealed class TapeDeckForm : Form
     private readonly Func<TapeDeckView?> read;
     private readonly Func<TapeTimeline, TapeCue?> capture;
     private readonly Func<TapeDeckView, int?, TapeCue?, bool> control;
-    private readonly TapeBookmarkSession session;
+    private readonly TapeBookmarkStore store;
     private readonly ToolTip tips = new();
     private readonly System.Windows.Forms.Timer refresh = new() { Interval = 150 };
     private readonly Label tapeName = EmulatorUiStyle.CreateSubtitle("No tape mounted");
@@ -28,18 +28,18 @@ internal sealed class TapeDeckForm : Form
     private readonly FlowLayoutPanel editor;
     private TapeDeckView? view;
     private TapeCue? editingCue;
-    private TapeBookmarkSession.Bookmark? editingBookmark;
+    private TapeBookmarkStore.Bookmark? editingBookmark;
     private string? feedback;
     private long feedbackUntil;
 
     public TapeDeckForm(Func<TapeDeckView?> read, Func<TapeTimeline, TapeCue?> capture,
-        Func<TapeDeckView, int?, TapeCue?, bool> control, TapeBookmarkSession session,
+        Func<TapeDeckView, int?, TapeCue?, bool> control, TapeBookmarkStore store,
         Action<Form> chooseTape)
     {
         this.read = read;
         this.capture = capture;
         this.control = control;
-        this.session = session;
+        this.store = store;
         EmulatorUiStyle.ApplyForm(this);
         AutoScaleMode = AutoScaleMode.Dpi;
         AutoScaleDimensions = new(96F, 96F);
@@ -181,7 +181,7 @@ internal sealed class TapeDeckForm : Form
         hint.Text = feedback != null && Environment.TickCount64 < feedbackUntil ? feedback : view?.State switch
         {
             TapeTransportState.Playing => "Stop the tape before jumping to a section or bookmark.",
-            TapeTransportState.Stopped when view.CanSeek => "Bookmarks are kept until you close DERBY.",
+            TapeTransportState.Stopped when view.CanSeek => "Bookmarks are saved for this tape image.",
             TapeTransportState.Stopped => "Seeking is unavailable while the loader is handing off.",
             TapeTransportState.Ended => "Rewind or choose a position to play again.",
             _ => "Choose a tape to get started."
@@ -200,7 +200,7 @@ internal sealed class TapeDeckForm : Form
         {
             var entries = view.Timeline.Sections
                 .Select(section => new PositionEntry(section.BlockIndex, section.Name, TapeMarkKind.Section))
-                .Concat(session.For(view.Timeline).Select(bookmark =>
+                .Concat(store.For(view.Timeline).Select(bookmark =>
                     new PositionEntry(bookmark.Cue.BlockIndex, bookmark.Name, TapeMarkKind.Bookmark, bookmark.Cue, bookmark)))
                 .Concat(view.Markers.TakeLast(1).Select(marker =>
                     new PositionEntry(marker.BlockIndex, $"Last stop: {marker.Label}", TapeMarkKind.Stop, marker.Cue)))
@@ -287,12 +287,13 @@ internal sealed class TapeDeckForm : Form
     {
         if (view == null || editingCue == null || string.IsNullOrWhiteSpace(name.Text))
             return;
-        List<TapeBookmarkSession.Bookmark> own = session.For(view.Timeline);
-        var bookmark = new TapeBookmarkSession.Bookmark(name.Text.Trim(), editingCue);
-        if (editingBookmark == null)
-            own.Add(bookmark);
-        else
-            own[own.IndexOf(editingBookmark)] = bookmark;
+        var bookmark = new TapeBookmarkStore.Bookmark(editingBookmark?.Id ?? Guid.NewGuid(), name.Text.Trim(), editingCue);
+        if (!store.TryChange(view.Timeline, editingBookmark, bookmark))
+        {
+            ShowBookmarkWriteError();
+            return;
+        }
+        feedback = null;
         EndBookmarkEdit();
         FillBookmarks(new PositionEntry(bookmark.Cue.BlockIndex, bookmark.Name, TapeMarkKind.Bookmark, bookmark.Cue, bookmark));
     }
@@ -301,9 +302,21 @@ internal sealed class TapeDeckForm : Form
     {
         if (view == null || editingBookmark == null)
             return;
-        session.For(view.Timeline).Remove(editingBookmark);
+        if (!store.TryChange(view.Timeline, editingBookmark, null))
+        {
+            ShowBookmarkWriteError();
+            return;
+        }
+        feedback = null;
         EndBookmarkEdit();
         FillBookmarks();
+    }
+
+    private void ShowBookmarkWriteError()
+    {
+        feedback = "Could not update saved bookmarks.";
+        feedbackUntil = Environment.TickCount64 + 5000;
+        RefreshDeck();
     }
 
     private void EndBookmarkEdit()
@@ -359,7 +372,7 @@ internal sealed class TapeDeckForm : Form
     }
 
     private sealed record PositionEntry(int BlockIndex, string Name, TapeMarkKind Kind, TapeCue? Cue = null,
-        TapeBookmarkSession.Bookmark? Bookmark = null)
+        TapeBookmarkStore.Bookmark? Bookmark = null)
     {
         public TapeMark Mark => new(BlockIndex, Kind);
         public bool CanGoTo => Kind == TapeMarkKind.Section || Cue != null;

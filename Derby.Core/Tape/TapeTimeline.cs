@@ -1,4 +1,6 @@
 using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Derby.Tape;
 
@@ -9,8 +11,10 @@ public sealed record TapeSection(int BlockIndex, string Name)
 
 public sealed record TapeTimeline(string Identity, string FileName, int BlockCount, IReadOnlyList<TapeSection> Sections);
 
-internal sealed record TapeCueProfile(bool SkipCustomHeader, int NonRomDivisor, int RomDivisor,
-    bool InitialEarHigh, bool AllowRomTraps, int ClockHz);
+internal sealed record TapeCueProfile([property: JsonRequired] bool SkipCustomHeader,
+    [property: JsonRequired] int NonRomDivisor, [property: JsonRequired] int RomDivisor,
+    [property: JsonRequired] bool InitialEarHigh, [property: JsonRequired] bool AllowRomTraps,
+    [property: JsonRequired] int ClockHz);
 
 // A tape cursor, not a machine snapshot. Only the core can consume its exact state.
 public sealed class TapeCue
@@ -23,6 +27,37 @@ public sealed class TapeCue
     internal TapeCueProfile Profile { get; }
     internal MountedTape.QuickState State { get; }
     public int BlockIndex { get; }
+
+    public JsonElement SaveBookmarkPosition() =>
+        JsonSerializer.SerializeToElement(new SavedPosition(Sequence, Media, BlockIndex, Profile, State));
+
+    public static TapeCue? ReadBookmarkPosition(JsonElement element, TapeTimeline timeline)
+    {
+        if (element.ValueKind != JsonValueKind.Object)
+            return null;
+        try
+        {
+            SavedPosition? saved = element.Deserialize<SavedPosition>();
+            if (saved is not { Profile: { NonRomDivisor: > 0, RomDivisor: > 0, ClockHz: > 0 },
+                State: { PlaybackPaused: true, PlaybackCompleted: false } } ||
+                !IsIdentity(saved.Sequence) || (saved.Media ?? saved.Sequence) != timeline.Identity ||
+                (uint)saved.BlockIndex > (uint)timeline.BlockCount ||
+                saved.BlockIndex != saved.State.EarPlaybackBlockIndex)
+                return null;
+            return new(saved.Sequence, saved.Media, saved.BlockIndex, saved.Profile, saved.State);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static bool IsIdentity(string? value) =>
+        value is { Length: 64 } && value.All(char.IsAsciiHexDigitUpper);
+
+    private sealed record SavedPosition([property: JsonRequired] string Sequence, [property: JsonRequired] string? Media,
+        [property: JsonRequired] int BlockIndex, [property: JsonRequired] TapeCueProfile Profile,
+        [property: JsonRequired] MountedTape.QuickState State);
 }
 
 public sealed record TapeTimelineMarker(int BlockIndex, string Label, TapeCue? Cue);
@@ -62,7 +97,7 @@ public sealed partial class MountedTape
     {
         TapeCueProfile profile = cue.Profile;
         if (cue.Sequence != SequenceIdentity || profile.ClockHz != playbackClockHz ||
-            (cue.Media != null && cue.Media != mediaIdentity))
+            (cue.Media != null && cue.Media != mediaIdentity) || !CanRestoreCueState(cue.State))
             return null;
         MountedTape tape = this;
         if (profile != CueProfile)
@@ -75,6 +110,35 @@ public sealed partial class MountedTape
         }
         tape.RestoreQuickState(cue.State);
         return tape;
+    }
+
+    private bool CanRestoreCueState(QuickState state)
+    {
+        if ((uint)state.NextBlockIndex > (uint)blocks.Count ||
+            (uint)state.EarPlaybackBlockIndex > (uint)blocks.Count ||
+            (uint)state.EarNextBlockIndexAfterPause > (uint)blocks.Count ||
+            state.RomStreamTrapBlockIndex < -1 || state.RomStreamTrapBlockIndex >= blocks.Count ||
+            state.CompletedRomLoadableBlockIndex < -1 || state.CompletedRomLoadableBlockIndex >= blocks.Count ||
+            state.StopMarkerResumeBlockIndex < -1 || state.StopMarkerResumeBlockIndex > blocks.Count ||
+            state.EarPulseLengthTStates < 0 || state.EarPauseLowTailTStates < 0 ||
+            state.PendingPrePlaybackPauseTStates < 0 || state.RomStreamTrapByteIndex < 0 ||
+            state.EarStreamByteIndex < 0 || state.EarPulseSequenceIndex < 0 ||
+            state.EarBitIndex is < 0 or > 7 || state.EarPulseRepeatCount is < 0 or > 1 ||
+            !Enum.IsDefined((TapeState)state.TapeStateValue) || !Enum.IsDefined((EarPlaybackState)state.EarPlaybackStateValue))
+            return false;
+
+        var playback = (EarPlaybackState)state.EarPlaybackStateValue;
+        if (state.EarPlaybackBlockIndex == blocks.Count)
+            return playback == EarPlaybackState.Idle;
+        TapeBlock block = blocks[state.EarPlaybackBlockIndex];
+        return playback switch
+        {
+            EarPlaybackState.Data => state.EarStreamByteIndex < block.StreamByteCount &&
+                state.EarBitIndex < block.GetStreamByteBitCount(state.EarStreamByteIndex),
+            EarPlaybackState.DirectRecording => state.EarStreamByteIndex < (block.DirectRecordingSamples?.Length ?? 0),
+            EarPlaybackState.PulseSequence => state.EarPulseSequenceIndex < (block.PulseSequence?.Length ?? 0),
+            _ => true
+        };
     }
 
     internal bool SeekToBlock(int blockIndex)

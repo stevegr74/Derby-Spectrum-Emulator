@@ -1,37 +1,39 @@
+using System.Text.Json.Serialization;
+
 namespace Derby.Tape
 {
     public sealed partial class MountedTape
     {
         public sealed class QuickState
         {
-            internal int NextBlockIndex;
-            internal int EarPlaybackBlockIndex;
-            internal int EarStreamByteIndex;
-            internal int EarBitIndex;
-            internal int EarPulseRepeatCount;
-            internal int EarPilotPulsesRemaining;
-            internal int EarPulseLengthTStates;
-            internal int EarPulseSequenceIndex;
-            internal int EarNextBlockIndexAfterPause;
-            internal int EarPauseLowTailTStates;
-            internal int PendingPrePlaybackPauseTStates;
-            internal int RomStreamTrapBlockIndex;
-            internal int RomStreamTrapByteIndex;
-            internal int CompletedRomLoadableBlockIndex;
-            internal ulong LastEarSampleTStates;
-            internal bool EarLevel;
-            internal bool EarPlaybackStarted;
-            internal bool RetainedByteStreamTrapAvailable;
-            internal bool PlaybackCompleted;
-            internal bool PlaybackPaused;
-            internal bool PausedByStopMarker;
-            internal ulong PausedPulseElapsedTStates;
-            internal int StopMarkerResumeBlockIndex;
-            internal int EarPlaybackStateValue;
-            internal int TapeStateValue;
-            internal int? ExpectedDataLength;
-            internal string? PendingHeaderName;
-            internal TapHeaderInfo? PendingHeaderInfo;
+            [JsonInclude, JsonRequired] internal int NextBlockIndex;
+            [JsonInclude, JsonRequired] internal int EarPlaybackBlockIndex;
+            [JsonInclude, JsonRequired] internal int EarStreamByteIndex;
+            [JsonInclude, JsonRequired] internal int EarBitIndex;
+            [JsonInclude, JsonRequired] internal int EarPulseRepeatCount;
+            [JsonInclude, JsonRequired] internal int EarPilotPulsesRemaining;
+            [JsonInclude, JsonRequired] internal int EarPulseLengthTStates;
+            [JsonInclude, JsonRequired] internal int EarPulseSequenceIndex;
+            [JsonInclude, JsonRequired] internal int EarNextBlockIndexAfterPause;
+            [JsonInclude, JsonRequired] internal int EarPauseLowTailTStates;
+            [JsonInclude, JsonRequired] internal int PendingPrePlaybackPauseTStates;
+            [JsonInclude, JsonRequired] internal int RomStreamTrapBlockIndex;
+            [JsonInclude, JsonRequired] internal int RomStreamTrapByteIndex;
+            [JsonInclude, JsonRequired] internal int CompletedRomLoadableBlockIndex;
+            [JsonInclude, JsonRequired] internal ulong LastEarSampleTStates;
+            [JsonInclude, JsonRequired] internal bool EarLevel;
+            [JsonInclude, JsonRequired] internal bool EarPlaybackStarted;
+            [JsonInclude, JsonRequired] internal bool RetainedByteStreamTrapAvailable;
+            [JsonInclude, JsonRequired] internal bool PlaybackCompleted;
+            [JsonInclude, JsonRequired] internal bool PlaybackPaused;
+            [JsonInclude, JsonRequired] internal bool PausedByStopMarker;
+            [JsonInclude, JsonRequired] internal ulong PausedPulseElapsedTStates;
+            [JsonInclude, JsonRequired] internal int StopMarkerResumeBlockIndex;
+            [JsonInclude, JsonRequired] internal int EarPlaybackStateValue;
+            [JsonInclude, JsonRequired] internal int TapeStateValue;
+            [JsonInclude, JsonRequired] internal int? ExpectedDataLength;
+            [JsonInclude, JsonRequired] internal string? PendingHeaderName;
+            [JsonInclude, JsonRequired] internal TapHeaderInfo? PendingHeaderInfo;
         }
 
         public QuickState CaptureQuickState()
