@@ -17,6 +17,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - Z80 CPU with passing ZEXDOC and ZEXALL instruction groups
 - Explicit 48K, 128K/grey +2, +2A, and +3 profiles with standard or `1FFD` special paging, keyboard matrix, interrupts, and a model-specific timing baseline
 - Read-only +3 drive A: for standard and Extended CPC `.dsk` images, with native ROM loading
+- Read-only +D drive 1 for `.mgt` images, using a separately supplied 8 KB G+DOS ROM
 - Beam-latched Spectrum display with INK, PAPER, BRIGHT, FLASH, timestamped borders, and fixed 1x/Scale2x/Scale3x modes
 - 48K beeper and AY-3-8912 tone, noise, envelope, and mixing through a clock-driven audio pipeline
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
@@ -27,7 +28,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - Up to two simultaneous USB joysticks with independently selectable Kempston, Cursor, and game-facing Sinclair 1/2 mappings, stable per-device control profiles, automatic or explicit controller selection, live identification, and configurable raw-axis, hat, fire-button, and dead-zone mapping
 - Platform-neutral headless core with Windows presentation/audio adapters
 - Paused `F11` debugger with immutable mapped/physical-bank captures, a visual paging map, grouped CPU/stack context, execution controls, breakpoints, bank-qualified labels, control/data cross-references, hexadecimal memory inspection, persistent code/data markings, search, navigation, copy, and export
-- Paused `F10` Quick State Manager with eight persistent slots, thumbnails, metadata, and live-session restoration for supported models (not +3)
+- Paused `F10` Quick State Manager with eight persistent slots, thumbnails, metadata, and live-session restoration (unavailable on +3 or while +D is attached)
 - Paused Poke Manager with an editable validated library, checksum-aware suggestions, mapped or physical-bank one-off writes, previews, and guarded restoration
 - Headless manual diagnostics and Z80 compliance runners
 
@@ -54,7 +55,7 @@ For operation and controls, see the [User Guide](docs/USER_GUIDE.md). UI changes
 ## Current Status
 
 `master` is a stable, playable baseline for the original 48K, 128K, grey +2,
-+2A, and +3 with read-only disk support.
++2A, and +3. It supports read-only +3 and +D disks.
 It includes beam-aware video, clock-driven audio, resumable tape transport,
 snapshot and replay loading, an on-screen keyboard, joystick and mouse support, the eight-slot Quick State Manager, a bank-aware
 debugger, and a checksum-aware Poke Manager. ZEXDOC and ZEXALL pass in the
@@ -68,6 +69,8 @@ Current limitations and active work:
 
 - +3 disk support is read-only and limited to drive A:. Formatting, full
   controller timing, and +3 Quick State are not supported. +2A has no drive.
+- +D supports one read-only drive on 48K, 128K, and grey +2. It requires a
+  separately supplied G+DOS ROM, and Quick State is unavailable while attached.
 - Protected and custom tape compatibility continues to expand as new media is
   tested.
 - Broader timing-sensitive software and subjective title-by-title audio
@@ -129,7 +132,7 @@ Derby/
 |-- Derby.Core/                 net8.0 platform-neutral emulator
 |   |-- Audio/                  AY, beeper, and emulated sample timing
 |   |-- Debugging/              instruction-boundary execution control
-|   |-- Disk/                   read-only +3 drive and DSK parsing
+|   |-- Disk/                   read-only +3 and +D drives, DSK and MGT parsing
 |   |-- Input/                  Spectrum joystick interfaces and state
 |   |-- Memory/                 model-specific paging state and address-slot mapping
 |   |-- Pokes/                  poke validation, matching, apply, and restore
@@ -207,8 +210,9 @@ Expected ROMs:
 The right-click `F3 - Machine` submenu presents hardware and firmware together:
 the original 128K, original 48K, grey +2, +2A, and +3 are selectable.
 Pressing `F3` resets and cycles in that order; the submenu selects one directly.
-DERBY does not expose custom ROM loading. The +2A and +3 share four-ROM and
-special all-RAM paging, but only the +3 exposes a disk controller.
+DERBY uses bundled system ROMs. The +2A and +3 share four-ROM and special
+all-RAM paging, but only the +3 has a built-in disk controller. The separate
++D interface uses user-supplied firmware.
 
 The bundled ROM images retain their Sinclair/Amstrad copyright. Amstrad have
 kindly given permission for redistribution for emulator use but retain that
@@ -229,9 +233,9 @@ that do not consume a function key.
 | `Shift+F5` | Open Tape Transport |
 | `F6` | Load a `.tap` or `.tzx` tape as a new game |
 | `F7` | Insert or change tape without resetting; press Play or `F5` when ready |
-| `F8` | Open the read-only disk drive; inserting from another model asks before switching to +3 and resetting |
+| `F8` | Open Disk Drive for read-only +3 `.dsk` and +D `.mgt` images |
 | `F9` | Load a `.sna`, `.z80`, or `.szx` snapshot, or play an `.rzx` recording |
-| `F10` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F10` | Open the paused eight-slot Quick State Manager (unavailable on +3 or while +D is attached) |
 | `F11` | Open the debugger and disassembler, paused on an immutable machine capture |
 | `F12` | Save a machine diagnostic dump and briefly show an on-screen badge |
 | `Shift+F12` | Open Debug Dumps to open saved reports or locate them in File Explorer |
@@ -354,6 +358,18 @@ The [ULA timing validation runbook](test-assets/ula/README.md) records how the
 48K/128K Timing Test and floating-bus diagnostics are run without redistributing
 their GPL-licensed media.
 
+The headless harness also supports a read-only +D drive with an external 8 KB
++D ROM and 80-track double-sided `.mgt` images. On original 128K, choose
+`128 BASIC` and type `RUN` to start a disk with `+SYS` and `AUTO`:
+
+```text
+dotnet run --project Derby.ManualHarness -c Release -- disk.mgt model=128 plusdrom=plusd.rom quiet=1 frames=3600 "120:down:down,125:down:up,133:enter:down,138:enter:up,246:r:down,251:r:up,259:u:down,264:u:up,272:n:down,277:n:up,285:enter:down,290:enter:up"
+```
+
+This is a polled WD1772 subset for drive 1, not a full controller model.
+In Windows, use `F8` for the same images and firmware. See the
+[User Guide](docs/USER_GUIDE.md#d-disk-images) for first use and disk swaps.
+
 > Intended for debugging, not performance measurement.
 
 ---
@@ -410,6 +426,7 @@ compatibility; completed milestones remain regression baselines.
 | 26 | Complete | 48K/128K/grey +2/+2A/+3 profiles and verified read-only +3 drive A: |
 | 27 | Complete | Design-language Quick State Manager with eight persistent slots, metadata, thumbnails, and combined save/load access |
 | 28 | Complete | Tape Transport v1: named sections, session bookmarks, rewind, and stopped side changes |
+| 29 | Complete | Read-only +D drive 1: G+DOS boot and live `.mgt` swaps through F8, separate from the +3 drive |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
@@ -437,7 +454,7 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 
 ## Longer-Term Improvements
 
-- MGT +D disk interface support for compatible Spectrum models, including G+DOS and read-only `.mgt` media, separate from the +3 drive. Reference: [MGT filesystem](https://sinclair.wiki.zxnet.co.uk/wiki/MGT_filesystem).
+- Broader +D controller and disk compatibility beyond read-only drive 1. Reference: [MGT filesystem](https://sinclair.wiki.zxnet.co.uk/wiki/MGT_filesystem).
 - Tape Transport beyond v1: persistent bookmarks, saved side pairing, and free scrubbing
 - Demo compatibility beyond the current validation matrix
 - Broader real-game validation

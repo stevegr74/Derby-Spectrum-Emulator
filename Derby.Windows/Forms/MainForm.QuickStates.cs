@@ -7,9 +7,12 @@ namespace Derby
         private void OpenQuickStateManager()
         {
             using IDisposable pauseLease = AcquireEmulationPauseLease();
-            if (selectedRomSet.HasPlus3DiskDrive)
+            if (selectedRomSet.HasPlus3DiskDrive || machine.HasPlusD)
             {
-                MessageBox.Show(this, "Quick State is not yet supported for the +3. Switch to another model to use saved slots.",
+                string message = machine.HasPlusD
+                    ? "Quick State is not yet supported while +D is attached. Reset the machine from the Machine menu to detach +D."
+                    : "Quick State is not yet supported for the +3. Switch to another model to use saved slots.";
+                MessageBox.Show(this, message,
                     "Quick State Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }

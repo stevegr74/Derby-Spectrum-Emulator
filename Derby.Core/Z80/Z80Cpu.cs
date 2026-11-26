@@ -13,6 +13,7 @@ namespace Derby.Z80
 
         public Func<ushort, byte> ReadMemory { get; set; } = _ => 0xFF;
         public Func<ushort, byte>? InspectMemory { get; set; }
+        internal Action<ushort>? BeforeOpcodeFetch { get; set; }
         public Func<ushort, int, byte>? ReadMemoryTimed { get; set; }
         public Action<ushort, byte> WriteMemory { get; set; } = (_, _) => { };
         public Action<ushort, byte, int>? WriteMemoryTimed { get; set; }

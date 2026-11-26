@@ -268,6 +268,13 @@ namespace Derby
             kempstonMouse = new KempstonMouseState(IsKempstonMouseEnabled, 0, 0, SpectrumMouseButtons.None);
             amxMouse.Reset();
             diskController.Reset();
+            if (MemoryPagingModel == SpectrumMemoryPagingModel.Plus2APlus3)
+            {
+                plusD = null;
+                cpu.BeforeOpcodeFetch = null;
+            }
+            else
+                plusD?.Reset();
             MachineModel = model;
             ayHardwareEnabled = model == SpectrumMachineModel.Spectrum128K;
             PagedRamBank = 0;
@@ -1017,7 +1024,7 @@ namespace Derby
 
         private bool TryHandleMountedTapeTrap(Z80Cpu z80)
         {
-            if (!SupportsRomTapeAcceleration)
+            if (!SupportsRomTapeAcceleration || IsPlusDOverlay(z80.Regs.PC))
                 return false;
 
             MountedTape? activeTape = mountedTape;
@@ -1095,6 +1102,8 @@ namespace Derby
 
         private byte ReadMemory(ushort addr)
         {
+            if (IsPlusDOverlay(addr))
+                return plusD!.ReadMemory(addr);
             if (addr < 0x4000 && !SpecialPagingEnabled)
                 return romBanks[CurrentRomBank][addr];
 
@@ -1105,6 +1114,11 @@ namespace Derby
 
         private void WriteMemory(ushort addr, byte value)
         {
+            if (IsPlusDOverlay(addr))
+            {
+                plusD!.WriteMemory(addr, value);
+                return;
+            }
             if (addr < 0x4000 && !SpecialPagingEnabled)
                 return;
 
@@ -1154,7 +1168,9 @@ namespace Derby
                 return replayValue;
 
             byte value;
-            if ((port & 0x0001) == 0)
+            if (TryReadPlusDPort(port, cpu.TStates, out byte plusDValue))
+                value = plusDValue;
+            else if ((port & 0x0001) == 0)
                 value = ReadKeyboardEarPort(port, cpu.TStates);
             else if (TryReadDiskPort(port, cpu.TStates, out byte diskValue))
                 value = diskValue;
@@ -1186,6 +1202,9 @@ namespace Derby
 
             if (rzxPlayback != null && rzxPlayback.TryReadPortValue(out byte replayValue))
                 return replayValue;
+
+            if (TryReadPlusDPort(port, sampleTStates, out byte plusDValue))
+                return plusDValue;
 
             if ((port & 0x0001) == 0)
             {
@@ -1632,6 +1651,9 @@ namespace Derby
             if (debugEventCaptureEnabled)
                 RecordPortEvent($"T={writeTStates,10} OUT {port:X4}={value:X2} PC={cpu.Regs.PC:X4} SP={cpu.Regs.SP:X4}");
             SpeakerEdge = false;
+
+            if (plusD?.TryWritePort(port, value, writeTStates, PlusDByteTime) == true && (port & 1) != 0)
+                return;
 
             if (MouseType == SpectrumMouseType.Amx)
                 amxMouse.WriteControl(port, value);

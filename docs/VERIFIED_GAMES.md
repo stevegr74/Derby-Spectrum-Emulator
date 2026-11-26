@@ -240,7 +240,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Into the Eagle's Nest (original release) | `.dsk` | Loads through the +3 Loader from read-only drive A: and enters gameplay |
 | 🟢 | The Artist II (Softechnics, +3) | `.dsk` | Boots through the +3 Loader; AMX pointer movement and left-button drawing are verified. Answer `Y` at the AMX prompt, select **Mouse → AMX Mouse** in DERBY, then activate **Extras → AMX MOUSE** in the editor with `M`. Kempston was not tested on this disk (`The Artist 2.dsk`) |
 | 🟢 | The Ninja Warriors (Dro Soft, +3) | `.dsk` | Boots through the +3 Loader from read-only drive A: and enters first-mission gameplay with responsive keyboard controls (`The Ninja Warriors (Dro Soft).dsk`) |
-| 🔴 | The Secret of Monkey Island (discs 1–3) | `.mgt` | All three files are rejected as an unsupported format. The +3 drive accepts `.dsk` images; gameplay could not be tested |
+| 🟠 | The Secret of Monkey Island (discs 1–3) | `.mgt` | Verified in Windows on original 128K with +D. Disc 1 boots through `128 BASIC` and G+DOS `RUN` to the title and credits. Disc 2 requests Disc 3; replacing it with F8 and pressing Enter continues to the title without resetting. Disc 3 also boots independently in the headless harness. Later gameplay and disk swaps are not verified |
 
 ## Replay Images
 

@@ -4,14 +4,17 @@ namespace Derby;
 
 public partial class MainForm
 {
+    private static readonly Guid PlusDFirmwarePickerId = new("ff1ce3df-f3b4-4e45-a5c3-bacdf4592724");
+    private readonly PlusDFirmwareSettings plusDFirmwareSettings = new();
+
     private void OpenDiskDrive()
     {
         using IDisposable pauseLease = AcquireEmulationPauseLease();
         using var dialog = new Form
         {
-            Text = "+3 Disk Drive",
+            Text = "Disk Drive",
             AutoScaleMode = AutoScaleMode.Dpi,
-            ClientSize = new Size(445, 165),
+            ClientSize = new Size(445, 196),
             FormBorderStyle = FormBorderStyle.FixedDialog,
             MaximizeBox = false,
             MinimizeBox = false,
@@ -19,7 +22,7 @@ public partial class MainForm
             StartPosition = FormStartPosition.CenterParent
         };
         EmulatorUiStyle.ApplyForm(dialog);
-        var title = EmulatorUiStyle.CreateTitle("DRIVE A:");
+        var title = EmulatorUiStyle.CreateTitle("DISK DRIVE");
         title.Location = new Point(18, 14);
         var subtitle = EmulatorUiStyle.CreateSubtitle("READ-ONLY  |  EMULATION PAUSED", accent: true);
         subtitle.Location = new Point(18, 44);
@@ -29,37 +32,37 @@ public partial class MainForm
             BackColor = EmulatorUiStyle.Panel, TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(8, 0, 8, 0)
         };
-        var insert = new Button { Location = new Point(18, 118), Size = new Size(120, 30) };
-        var eject = new Button { Text = "Eject", Location = new Point(146, 118), Size = new Size(90, 30) };
-        var close = new Button { Text = "Close", DialogResult = DialogResult.Cancel, Location = new Point(337, 118), Size = new Size(90, 30) };
+        var instruction = new Label { Location = new Point(18, 112), Size = new Size(409, 35) };
+        var insert = new Button { Location = new Point(18, 150), Size = new Size(120, 30) };
+        var eject = new Button { Text = "Eject", Location = new Point(146, 150), Size = new Size(90, 30) };
+        var close = new Button { Text = "Close", DialogResult = DialogResult.Cancel, Location = new Point(337, 150), Size = new Size(90, 30) };
         EmulatorUiStyle.StyleButton(insert, primary: true);
         EmulatorUiStyle.StyleButton(eject);
         EmulatorUiStyle.StyleButton(close);
         dialog.CancelButton = close;
-        dialog.Controls.AddRange([title, subtitle, status, insert, eject, close]);
+        dialog.Controls.AddRange([title, subtitle, status, instruction, insert, eject, close]);
         insert.Click += (_, _) =>
         {
             using var picker = new OpenFileDialog
             {
-                Title = "Insert +3 Disk Image", Filter = "Disk images (*.dsk)|*.dsk", CheckFileExists = true
+                Title = "Choose Disk Image",
+                Filter = "Disk images (*.dsk; *.mgt)|*.dsk;*.mgt|+3 disks (*.dsk)|*.dsk|+D disks (*.mgt)|*.mgt",
+                CheckFileExists = true
             };
             if (picker.ShowDialog(dialog) != DialogResult.OK)
                 return;
             try
             {
-                DskImage image = DskImage.Load(picker.FileName);
-                if (!machine.HasPlus3DiskDrive)
+                switch (Path.GetExtension(picker.FileName).ToLowerInvariant())
                 {
-                    if (MessageBox.Show(dialog, "Switch to ZX Spectrum +3 and reset the current machine?",
-                        "Switch Machine", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
-                        MessageBoxDefaultButton.Button2) != DialogResult.Yes)
-                        return;
-                    ApplyRomSet(bundledPlus3RomSet);
-                }
-                lock (machineLock)
-                {
-                    machine.InsertDisk(image, Path.GetFileName(picker.FileName));
-                    presentationState.Publish(machine);
+                    case ".dsk":
+                        InsertPlus3FromDialog(dialog, picker.FileName);
+                        break;
+                    case ".mgt":
+                        InsertPlusDFromDialog(dialog, picker.FileName);
+                        break;
+                    default:
+                        throw new InvalidDataException("Select a +3 .dsk or a +D .mgt disk image.");
                 }
                 RefreshDriveStatus();
             }
@@ -72,7 +75,10 @@ public partial class MainForm
         {
             lock (machineLock)
             {
-                machine.EjectDisk();
+                if (machine.HasPlusD)
+                    machine.EjectPlusDDisk();
+                else
+                    machine.EjectDisk();
                 presentationState.Publish(machine);
             }
             RefreshDriveStatus();
@@ -84,12 +90,85 @@ public partial class MainForm
 
         void RefreshDriveStatus()
         {
-            string? name = machine.MountedDiskName;
-            status.Text = !machine.HasPlus3DiskDrive ? "A +3 is required to insert a disk." : name ?? "No disk inserted";
+            bool plusD = machine.HasPlusD;
+            bool plus3 = machine.HasPlus3DiskDrive;
+            string? name = plusD ? machine.MountedPlusDDiskName : machine.MountedDiskName;
+            title.Text = plusD ? "+D DRIVE 1" : plus3 ? "+3 DRIVE A:" : "DISK DRIVE";
+            status.Text = name ?? "No disk inserted";
+            instruction.Text = plusD
+                ? selectedRomSet.Model == SpectrumMachineModel.Spectrum48K
+                    ? "At the BASIC prompt, press R for RUN, then Enter."
+                    : "To boot a system disk, choose 128 BASIC and type RUN."
+                : plus3 ? "To boot, choose Loader in the +3 menu."
+                : "Choose a +3 disk (.dsk) or a +D disk (.mgt).";
             insert.Text = name == null ? "Insert..." : "Replace...";
             eject.Enabled = name != null;
         }
     }
+
+    private void InsertPlus3FromDialog(IWin32Window owner, string path)
+    {
+        DskImage image = DskImage.Load(path);
+        if (!machine.HasPlus3DiskDrive)
+        {
+            if (!ConfirmDiskReset(owner, "Switch to ZX Spectrum +3 and reset the current machine?"))
+                return;
+            ApplyRomSet(bundledPlus3RomSet);
+        }
+        lock (machineLock)
+        {
+            machine.InsertDisk(image, Path.GetFileName(path));
+            presentationState.Publish(machine);
+        }
+    }
+
+    private void InsertPlusDFromDialog(IWin32Window owner, string path)
+    {
+        MgtImage image = MgtImage.Load(path);
+        byte[]? firmware = null;
+        if (!machine.HasPlusD)
+        {
+            firmware = plusDFirmwareSettings.TryLoad();
+            string? newFirmwarePath = null;
+            if (firmware == null)
+            {
+                using var picker = new OpenFileDialog
+                {
+                    Title = "Select the 8 KB +D ROM",
+                    Filter = "ROM files (*.rom; *.bin)|*.rom;*.bin|All files (*.*)|*.*",
+                    ClientGuid = PlusDFirmwarePickerId,
+                    CheckFileExists = true
+                };
+                if (picker.ShowDialog(owner) != DialogResult.OK)
+                    return;
+                newFirmwarePath = picker.FileName;
+                firmware = PlusDFirmwareSettings.ReadFirmware(newFirmwarePath);
+            }
+
+            bool incompatible = selectedRomSet.PagingModel == SpectrumMemoryPagingModel.Plus2APlus3;
+            string prompt = incompatible
+                ? "Switch to ZX Spectrum 128K, attach +D, and reset the current machine?"
+                : "Attach the +D interface and reset the current machine?";
+            if (!ConfirmDiskReset(owner, prompt))
+                return;
+
+            if (newFirmwarePath != null)
+                plusDFirmwareSettings.Remember(newFirmwarePath);
+            ApplyRomSet(incompatible ? bundled128RomSet : selectedRomSet);
+        }
+
+        lock (machineLock)
+        {
+            if (firmware != null)
+                machine.AttachPlusD(firmware);
+            machine.InsertPlusDDisk(image, Path.GetFileName(path));
+            presentationState.Publish(machine);
+        }
+    }
+
+    private static bool ConfirmDiskReset(IWin32Window owner, string prompt) =>
+        MessageBox.Show(owner, prompt, "Switch Disk Interface", MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes;
 
     private static void DrawDiskActivity(Bitmap bitmap, int scale)
     {

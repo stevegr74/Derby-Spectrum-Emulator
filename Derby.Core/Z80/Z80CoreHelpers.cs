@@ -112,6 +112,7 @@ namespace Derby.Z80
         // prefix bytes, but not on ordinary operand bytes.
         private byte FetchOpcodeByte()
         {
+            BeforeOpcodeFetch?.Invoke(Regs.PC);
             byte b = ReadMemoryAtInstructionOffset(Regs.PC, instructionFetchOffsetTStates);
             Regs.PC = (ushort)(Regs.PC + 1);
             IncrementRefreshRegister();

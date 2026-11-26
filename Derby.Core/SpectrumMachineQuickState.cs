@@ -72,6 +72,8 @@ namespace Derby
         {
             if (RomSet.HasPlus3DiskDrive)
                 throw new NotSupportedException("Quick State does not capture the +3 disk controller.");
+            if (HasPlusD)
+                throw new NotSupportedException("Quick State does not capture the +D interface.");
 
             var state = new QuickState(DateTime.UtcNow, MachineModel, cpu.Regs.PC)
             {
@@ -135,6 +137,8 @@ namespace Derby
         public void RestoreQuickState(QuickState state)
         {
             ArgumentNullException.ThrowIfNull(state);
+            if (HasPlusD)
+                throw new NotSupportedException("Quick State does not capture the +D interface.");
             ValidateQuickState(state);
 
             ClearLogs();

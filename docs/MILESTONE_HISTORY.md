@@ -136,3 +136,14 @@ status table in the main README remains the authoritative roadmap summary.
   process restart.
 - Added layout, metadata, replacement, routing, archive, corruption, menu, and
   machine-profile restoration regressions.
+
+## Milestone 29 - Read-Only +D Disk Support
+
+- The separate +D interface uses an external 8 KB G+DOS ROM and a polled
+  WD1772 controller subset. It reads 80-track double-sided MGT images from
+  drive 1 without exposing disk writes.
+- F8 shares one disk picker with +3. Initial +D attachment requires reset
+  confirmation; same-drive replacement and ejection keep the running machine.
+- Verified the Monkey Island Disc 1 boot and live Disc 2-to-3 swap on original
+  128K in Windows, and rechecked Captain Blood through the native +3 Loader.
+  Later Monkey Island gameplay remains unverified.
