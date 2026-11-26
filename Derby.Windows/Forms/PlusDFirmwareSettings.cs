@@ -5,11 +5,35 @@ internal sealed class PlusDFirmwareSettings(string? settingsPath = null)
     private readonly string path = settingsPath ?? Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Derby", "plusd-rom-path.txt");
 
-    public byte[]? TryLoad()
+    public byte[]? TryLoad(string romFolder) =>
+        TryRead(() => Path.Combine(romFolder, "plusd.rom")) ??
+        TryRead(() => File.ReadAllText(path));
+
+    public byte[]? ResolveForAttachment(string romFolder, Func<string?> browse, Func<bool> confirmReset)
+    {
+        byte[]? firmware = TryLoad(romFolder);
+        string? selectedPath = null;
+        if (firmware == null)
+        {
+            selectedPath = browse();
+            if (selectedPath == null)
+                return null;
+            firmware = ReadFirmware(selectedPath);
+        }
+
+        if (!confirmReset())
+            return null;
+
+        if (selectedPath != null)
+            Remember(selectedPath);
+        return firmware;
+    }
+
+    private static byte[]? TryRead(Func<string> getPath)
     {
         try
         {
-            return ReadFirmware(File.ReadAllText(path));
+            return ReadFirmware(getPath());
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
         {

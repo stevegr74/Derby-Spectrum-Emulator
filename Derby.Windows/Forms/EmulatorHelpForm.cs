@@ -35,7 +35,8 @@ namespace Derby
                 ("Choose tape", "Starts a new game with an empty deck; otherwise offers Change tape or Start new game"),
                 ("Disk Drive", "Use F8 to insert, replace, or eject a read-only .dsk or .mgt image"),
                 ("+3 disk loading", "After inserting a .dsk image, choose Loader in the +3 ROM menu"),
-                ("+D disk loading", "Supply a +D ROM. On 128K, choose 128 BASIC and type RUN.")
+                ("+D firmware", "Uses ROMs\\plusd.rom. If it is missing, browse when asked."),
+                ("+D disk loading", "On 128K, choose 128 BASIC and type RUN.")
             ]),
             new("Debugger window",
             [

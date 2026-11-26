@@ -128,32 +128,15 @@ public partial class MainForm
         byte[]? firmware = null;
         if (!machine.HasPlusD)
         {
-            firmware = plusDFirmwareSettings.TryLoad();
-            string? newFirmwarePath = null;
-            if (firmware == null)
-            {
-                using var picker = new OpenFileDialog
-                {
-                    Title = "Select the 8 KB +D ROM",
-                    Filter = "ROM files (*.rom; *.bin)|*.rom;*.bin|All files (*.*)|*.*",
-                    ClientGuid = PlusDFirmwarePickerId,
-                    CheckFileExists = true
-                };
-                if (picker.ShowDialog(owner) != DialogResult.OK)
-                    return;
-                newFirmwarePath = picker.FileName;
-                firmware = PlusDFirmwareSettings.ReadFirmware(newFirmwarePath);
-            }
-
             bool incompatible = selectedRomSet.PagingModel == SpectrumMemoryPagingModel.Plus2APlus3;
             string prompt = incompatible
                 ? "Switch to ZX Spectrum 128K, attach +D, and reset the current machine?"
                 : "Attach the +D interface and reset the current machine?";
-            if (!ConfirmDiskReset(owner, prompt))
+            firmware = plusDFirmwareSettings.ResolveForAttachment(romFolder,
+                () => BrowseForPlusDFirmware(owner), () => ConfirmDiskReset(owner, prompt));
+            if (firmware == null)
                 return;
 
-            if (newFirmwarePath != null)
-                plusDFirmwareSettings.Remember(newFirmwarePath);
             ApplyRomSet(incompatible ? bundled128RomSet : selectedRomSet);
         }
 
@@ -164,6 +147,54 @@ public partial class MainForm
             machine.InsertPlusDDisk(image, Path.GetFileName(path));
             presentationState.Publish(machine);
         }
+    }
+
+    private static string? BrowseForPlusDFirmware(IWin32Window owner)
+    {
+        if (!ConfirmPlusDFirmwareBrowse(owner))
+            return null;
+
+        using var picker = new OpenFileDialog
+        {
+            Title = "Select the 8 KB +D ROM",
+            Filter = "ROM files (*.rom; *.bin)|*.rom;*.bin|All files (*.*)|*.*",
+            ClientGuid = PlusDFirmwarePickerId,
+            CheckFileExists = true
+        };
+        return picker.ShowDialog(owner) == DialogResult.OK ? picker.FileName : null;
+    }
+
+    private static bool ConfirmPlusDFirmwareBrowse(IWin32Window owner)
+    {
+        using var dialog = new Form
+        {
+            Text = "+D Firmware Required",
+            AutoScaleMode = AutoScaleMode.Dpi,
+            ClientSize = new Size(445, 165),
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MaximizeBox = false,
+            MinimizeBox = false,
+            ShowInTaskbar = false,
+            StartPosition = FormStartPosition.CenterParent
+        };
+        EmulatorUiStyle.ApplyForm(dialog);
+        var title = EmulatorUiStyle.CreateTitle("+D FIRMWARE REQUIRED");
+        title.Location = new Point(18, 14);
+        var instruction = new Label
+        {
+            Location = new Point(18, 48),
+            Size = new Size(409, 60),
+            Text = "An .mgt disk needs an 8 KB +D G+DOS ROM. DERBY did not find a usable ROM. " +
+                "Place plusd.rom in the ROMs folder beside DERBY, or browse to your ROM file."
+        };
+        var browse = new Button { Text = "Browse...", DialogResult = DialogResult.OK, Location = new Point(229, 117), Size = new Size(100, 30) };
+        var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Location = new Point(337, 117), Size = new Size(90, 30) };
+        EmulatorUiStyle.StyleButton(browse, primary: true);
+        EmulatorUiStyle.StyleButton(cancel);
+        dialog.Controls.AddRange([title, instruction, browse, cancel]);
+        dialog.AcceptButton = browse;
+        dialog.CancelButton = cancel;
+        return dialog.ShowDialog(owner) == DialogResult.OK;
     }
 
     private static bool ConfirmDiskReset(IWin32Window owner, string prompt) =>

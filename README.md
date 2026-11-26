@@ -17,7 +17,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - Z80 CPU with passing ZEXDOC and ZEXALL instruction groups
 - Explicit 48K, 128K/grey +2, +2A, and +3 profiles with standard or `1FFD` special paging, keyboard matrix, interrupts, and a model-specific timing baseline
 - Read-only +3 drive A: for standard and Extended CPC `.dsk` images, with native ROM loading
-- Read-only +D drive 1 for `.mgt` images, using a separately supplied 8 KB G+DOS ROM
+- Read-only +D drive 1 for `.mgt` images, using the bundled 8 KB G+DOS ROM
 - Beam-latched Spectrum display with INK, PAPER, BRIGHT, FLASH, timestamped borders, and fixed 1x/Scale2x/Scale3x modes
 - 48K beeper and AY-3-8912 tone, noise, envelope, and mixing through a clock-driven audio pipeline
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
@@ -69,8 +69,8 @@ Current limitations and active work:
 
 - +3 disk support is read-only and limited to drive A:. Formatting, full
   controller timing, and +3 Quick State are not supported. +2A has no drive.
-- +D supports one read-only drive on 48K, 128K, and grey +2. It requires a
-  separately supplied G+DOS ROM, and Quick State is unavailable while attached.
+- +D supports one read-only drive on 48K, 128K, and grey +2. Quick State is
+  unavailable while +D is attached.
 - Protected and custom tape compatibility continues to expand as new media is
   tested.
 - Broader timing-sensitive software and subjective title-by-title audio
@@ -159,7 +159,7 @@ Derby/
 |
 |-- assets/                      product branding assets
 |-- docs/                        user, design, compatibility, and engineering guides
-|-- ROMs/                        verified bundled ROM images and provenance
+|-- ROMs/                        bundled system and +D ROM images
 |-- test-assets/                 checked-in test programs and fixtures
 |-- .editorconfig                repository formatting conventions
 |-- Directory.Build.props        shared warnings-as-errors build policy
@@ -206,17 +206,17 @@ Expected ROMs:
 - `plus3-1.rom`
 - `plus3-2.rom`
 - `plus3-3.rom`
+- `plusd.rom`: 8 KB G+DOS v1a firmware for the +D disk interface
 
 The right-click `F3 - Machine` submenu presents hardware and firmware together:
 the original 128K, original 48K, grey +2, +2A, and +3 are selectable.
 Pressing `F3` resets and cycles in that order; the submenu selects one directly.
 DERBY uses bundled system ROMs. The +2A and +3 share four-ROM and special
-all-RAM paging, but only the +3 has a built-in disk controller. The separate
-+D interface uses user-supplied firmware.
+all-RAM paging, but only the +3 has a built-in disk controller.
 
-The bundled ROM images retain their Sinclair/Amstrad copyright. Amstrad have
-kindly given permission for redistribution for emulator use but retain that
-copyright; see `ROMs/README.md`.
+Amstrad has granted permission to redistribute the Sinclair/Amstrad system
+ROMs for emulator use but retains the copyright; see `ROMs/README.md`.
+Datel retains the copyright to the bundled G+DOS firmware.
 
 The emulator starts in fixed-size `2x Enhanced` mode. `F4` cycles 1x native
 (`320x240`), Scale2x (`640x480`), and Scale3x (`960x720`). Right-clicking the
@@ -358,12 +358,12 @@ The [ULA timing validation runbook](test-assets/ula/README.md) records how the
 48K/128K Timing Test and floating-bus diagnostics are run without redistributing
 their GPL-licensed media.
 
-The headless harness also supports a read-only +D drive with an external 8 KB
-+D ROM and 80-track double-sided `.mgt` images. On original 128K, choose
+The headless harness also supports a read-only +D drive with the 8 KB
+G+DOS ROM and 80-track double-sided `.mgt` images. On original 128K, choose
 `128 BASIC` and type `RUN` to start a disk with `+SYS` and `AUTO`:
 
 ```text
-dotnet run --project Derby.ManualHarness -c Release -- disk.mgt model=128 plusdrom=plusd.rom quiet=1 frames=3600 "120:down:down,125:down:up,133:enter:down,138:enter:up,246:r:down,251:r:up,259:u:down,264:u:up,272:n:down,277:n:up,285:enter:down,290:enter:up"
+dotnet run --project Derby.ManualHarness -c Release -- disk.mgt model=128 plusdrom=ROMs/plusd.rom quiet=1 frames=3600 "120:down:down,125:down:up,133:enter:down,138:enter:up,246:r:down,251:r:up,259:u:down,264:u:up,272:n:down,277:n:up,285:enter:down,290:enter:up"
 ```
 
 This is a polled WD1772 subset for drive 1, not a full controller model.
