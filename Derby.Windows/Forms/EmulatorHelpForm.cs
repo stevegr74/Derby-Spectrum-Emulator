@@ -18,9 +18,9 @@ namespace Derby
                 ("Shift+F5", "Open Tape Transport, even with an empty deck"),
                 ("F6", "Reset and load a .tap or .tzx tape as a new game"),
                 ("F7", "Insert or change a tape without resetting; the tape stays stopped"),
-                ("F8", "Open Disk Drive for read-only +3 disk images"),
+                ("F8", "Open Disk Drive for read-only +3 and +D disk images"),
                 ("F9", "Load a .sna, .z80, or .szx snapshot, or play an .rzx recording"),
-                ("F10", "Open the paused eight-slot Quick State Manager (not available on +3)"),
+                ("F10", "Open Quick State Manager (not on +3 or with +D attached)"),
                 ("F11", "Open the paused debugger and disassembler"),
                 ("F12", "Save a diagnostic dump and briefly show an on-screen badge"),
                 ("Shift+F12", "Open Debug Dumps to view saved files or locate them in Explorer"),
@@ -33,8 +33,9 @@ namespace Derby
                 ("Tape Transport", "Use Shift+F5 to rewind, jump to a named section, or save a session bookmark"),
                 ("Tape at End", "The tape is still in the deck. Rewind or choose a position before playing."),
                 ("Choose tape", "Starts a new game with an empty deck; otherwise offers Change tape or Start new game"),
-                ("Disk Drive", "Use F8 to insert, replace, or eject a read-only .dsk image in drive A:"),
-                ("Disk loading", "After inserting a disk, close the drive window and choose Loader in the +3 ROM menu")
+                ("Disk Drive", "Use F8 to insert, replace, or eject a read-only .dsk or .mgt image"),
+                ("+3 disk loading", "After inserting a .dsk image, choose Loader in the +3 ROM menu"),
+                ("+D disk loading", "Supply a +D ROM. On 128K, choose 128 BASIC and type RUN.")
             ]),
             new("Debugger window",
             [

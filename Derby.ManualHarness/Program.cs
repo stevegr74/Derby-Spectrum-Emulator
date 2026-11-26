@@ -30,6 +30,7 @@ if (args.Length > 0)
     TapeLoadStrategy? forcedTapeStrategy = null;
     SpectrumMachineModel? forcedMachineModel = null;
     SpectrumRomSet? forcedRomSet = null;
+    string? plusDRomPath = null;
     (ushort Start, ushort End)? focusedTraceRange = null;
     int focusedTraceStartFrame = 0;
     int focusedTraceFrameLimit = 0;
@@ -138,6 +139,10 @@ if (args.Length > 0)
                 _ => throw new InvalidOperationException($"Unsupported machine model '{arg}'.")
             };
             forcedMachineModel = forcedRomSet.Model;
+        }
+        else if (arg.StartsWith("plusdrom=", StringComparison.OrdinalIgnoreCase))
+        {
+            plusDRomPath = arg["plusdrom=".Length..];
         }
         else if (arg.Equals("mouse=amx", StringComparison.OrdinalIgnoreCase))
         {
@@ -276,6 +281,19 @@ if (args.Length > 0)
             machine = new SpectrumMachine(SpectrumRomSet.BundledPlus3(romFolder));
             machine.InsertDisk(Derby.Disk.DskImage.Load(snapshotPath), Path.GetFileName(snapshotPath));
             Console.WriteLine("Inserted read-only disk in +3 drive A:.");
+        }
+        else if (extension.Equals(".mgt", StringComparison.OrdinalIgnoreCase))
+        {
+            if (string.IsNullOrWhiteSpace(plusDRomPath))
+                throw new InvalidOperationException("MGT boot requires plusdrom=<path to an 8 KB +D ROM>.");
+            using var firmware = File.OpenRead(plusDRomPath);
+            if (firmware.Length != 0x2000)
+                throw new InvalidDataException("The +D ROM must be exactly 8 KB.");
+            byte[] rom = new byte[0x2000];
+            firmware.ReadExactly(rom);
+            machine.AttachPlusD(rom);
+            machine.InsertPlusDDisk(Derby.Disk.MgtImage.Load(snapshotPath), Path.GetFileName(snapshotPath));
+            Console.WriteLine("Inserted read-only MGT disk in +D drive 1.");
         }
         else if (extension.Equals(".sna", StringComparison.OrdinalIgnoreCase))
         {

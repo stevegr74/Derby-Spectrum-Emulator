@@ -27,8 +27,9 @@ This manual describes the emulator as it operates today. It begins with normal l
 
 ## Chapter 1 - Getting Started
 
-The emulator models original Spectrum 48K hardware, original 128K/grey +2
-hardware, +2A/+3 four-ROM paging, and a read-only +3 disk drive. The chosen model affects ROM behaviour,
+The emulator models the original Spectrum 48K and 128K, grey +2, +2A, and +3.
+Disk support is read-only: the +3 has a built-in drive, and the 48K, 128K, and
+grey +2 can use the separate +D interface. The model affects ROM behaviour,
 memory, timing, sound, and how some games divide their tape content. Select the
 intended model before mounting a tape.
 
@@ -63,12 +64,13 @@ Right-click the display and open **F3 - Machine** to choose:
 
 Pressing `F3` resets and cycles through 128K, 48K, +2 Grey, +2A, and +3 in menu
 order. The submenu selects any profile directly. Changing profile clears the
-loaded media. Custom ROM loading is not exposed.
+loaded media. System ROMs are bundled; the optional +D interface requires its
+own ROM file, selected through Disk Drive.
 
 ### First Use
 
 1. Press `F1` to open the built-in control reference.
-2. Press `F6` to load a tape, `F8` for +3 disk images, or `F9` for snapshots or recordings.
+2. Press `F6` to load a tape, `F8` for disk images, or `F9` for snapshots or recordings.
 3. Use the PC keyboard as the Spectrum keyboard, or configure a USB controller from the right-click menu.
 4. Right-click the display whenever you prefer menus to function keys.
 
@@ -94,9 +96,9 @@ Press `F1` to open Help. Emulation pauses while it is open. The first page lists
 | `Shift+F5` | Open Tape Transport |
 | `F6` | Load a `.tap` or `.tzx` tape as a new game |
 | `F7` | Insert or change tape without resetting; press Play or `F5` when ready |
-| `F8` | Open the read-only +3 disk drive dialog |
+| `F8` | Open Disk Drive for read-only +3 `.dsk` and +D `.mgt` images |
 | `F9` | Load a `.sna`, `.z80`, or `.szx` snapshot, or play an `.rzx` recording |
-| `F10` | Open the paused eight-slot Quick State Manager (not available on +3) |
+| `F10` | Open the paused eight-slot Quick State Manager (unavailable on +3 or while +D is attached) |
 | `F11` | Open the paused debugger and disassembler |
 | `F12` | Save a machine diagnostic dump and briefly show an on-screen badge |
 | `Shift+F12` | Open Debug Dumps to open saved reports or locate them in File Explorer |
@@ -291,9 +293,9 @@ Bookmarks reappear when you return to the same tape image during the session. Th
 2. Choose **Insert** and select a `.dsk` image. If another model is selected, DERBY asks before switching to +3 and resetting. Declining leaves the current model and session intact.
 3. Close the dialog and press Enter on **Loader** in the Spectrum +3 menu.
 
-![Read-only +3 Disk Drive dialog with drive A: empty](images/plus3-disk-drive.png)
+![Read-only Disk Drive dialog with +3 Drive A empty](images/plus3-disk-drive.png)
 
-*Figure 6.2. The drive dialog pauses emulation and shows whether a disk is inserted.*
+*Figure 6.2. Disk Drive pauses emulation and shows the active drive and inserted image.*
 
 Drive A: is read-only. **Replace** and **Eject** work without resetting the +3.
 Use **Replace** if a running game asks for a different disk. The dialog pauses
@@ -301,10 +303,26 @@ the emulator while open. Disks have no Play, Stop, Pause, or Rewind controls;
 the +3 reads them directly. A small on-screen `A:` badge indicates access.
 `F5`, `Shift+F5`, `F6`, and `F7` control tapes only.
 
+### +D Disk Images
+
+1. Press `F8`, choose **Insert**, and select an `.mgt` image. The first time, select an 8 KB +D G+DOS ROM file. DERBY remembers the file's location; the ROM is not bundled.
+2. Confirm attachment and reset. Original 48K, original 128K, and grey +2 stay on their current model. A +2A or +3 switches to original 128K only if you confirm.
+3. Close Disk Drive. For a bootable G+DOS disk, choose **128 BASIC**, type `RUN`, and press Enter. On original 48K, press `R` for the BASIC `RUN` keyword, then Enter.
+
+The dialog shows **+D DRIVE 1** and the current filename. When software asks
+for another disk, open `F8`, choose **Replace**, select the next `.mgt`, and
+close the dialog before answering the game's prompt. Replacing or ejecting a
+disk leaves the machine and +D running. To detach +D, select a machine profile
+again from **F3 - Machine**; this resets the machine.
+
++D supports read-only, 80-track double-sided `.mgt` images in drive 1.
+Disk writes and a second drive are not supported.
+
 ## Chapter 7 - Quick State
 
 Press `F10` to open the paused Quick State Manager. It provides eight persistent
-slots in a compact two-column window with no scrolling.
+slots in a compact two-column window with no scrolling. It is unavailable on +3
+or while +D is attached, even with no disk inserted.
 
 ![Fixed Quick State Manager showing all eight persistent slots](images/quick-state-manager.png)
 
@@ -604,6 +622,7 @@ Press `F5` once. If loading fails immediately, capture the exact error rather th
 
 - SZX support currently targets exact 48K and original 128K machine state; peripheral-bearing snapshots and other Spectrum models are not yet supported.
 - +3 emulates one read-only drive. Disk writes, formatting, and +3 Quick State are not supported.
+- +D emulates one read-only drive for double-sided 80-track `.mgt` images. Quick State is unavailable while +D is attached.
 - An on-screen 48K/128K keyboard is planned but not implemented.
 - SZX snapshots that carry mouse peripheral state are not supported. Quick State preserves emulated mouse state but does not recapture the Windows pointer.
 - Broader protected/custom TZX compatibility remains ongoing.
