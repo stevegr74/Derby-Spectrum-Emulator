@@ -43,6 +43,21 @@ public sealed class PalTvFilterTests
         Assert.Equal(black, output[5]);
     }
 
+    [Fact]
+    public void RomMenuCyanIsDimmerThanWhitePaperWithoutLiftingRed()
+    {
+        const int scale = 3;
+        uint[] input = Enumerable.Repeat(0xFF00FFFFu, 8).Concat(Enumerable.Repeat(0xFFFFFFFFu, 8)).ToArray();
+        uint[] output = Render(input, scale);
+        int stride = input.Length * scale;
+        double MeanChannel(int column, int shift) => Enumerable.Range(0, scale)
+            .Average(y => (int)((output[y * stride + column] >> shift) & 255));
+
+        Assert.Equal(0, MeanChannel(3 * scale, 16));
+        Assert.InRange(MeanChannel(3 * scale, 8) / MeanChannel(12 * scale, 8), 0.85, 0.89);
+        Assert.InRange(MeanChannel(3 * scale, 0) / MeanChannel(12 * scale, 0), 0.85, 0.89);
+    }
+
     private static uint[] Render(uint[] input, int scale)
     {
         var output = new uint[input.Length * scale * scale];

@@ -12,23 +12,24 @@ internal static class PalTvFilter
             int above = Math.Max(0, y - 1) * width;
             int below = Math.Min(height - 1, y + 1) * width;
             Signal l2 = Signal.From(source[offset]);
+            Signal l3 = l2;
             Signal l1 = l2;
             Signal center = l2;
             Signal r1 = Signal.From(source[offset + Math.Min(1, width - 1)]);
+            Signal r2 = Signal.From(source[offset + Math.Min(2, width - 1)]);
             for (int x = 0; x < width; x++)
             {
-                Signal r2 = Signal.From(source[offset + Math.Min(x + 2, width - 1)]);
-                // Wider colour bandwidth loss than brightness loss; a five-tap filter
-                // suppresses alternating chroma dots without discarding the luma pattern.
+                Signal r3 = Signal.From(source[offset + Math.Min(x + 3, width - 1)]);
+                // The composite reference spreads colour across the menu edge more than luma.
                 int luma = (22 * (l1.Y + r1.Y) + 212 * center.Y + 128) >> 8;
-                int u = (7 * (l2.U + 4 * l1.U + 6 * center.U + 4 * r1.U + r2.U)) / 128;
-                int v = (7 * (l2.V + 4 * l1.V + 6 * center.V + 4 * r1.V + r2.V)) / 128;
+                int u = SpreadChroma(l3.U + r3.U, l2.U + r2.U, l1.U + r1.U, center.U);
+                int v = SpreadChroma(l3.V + r3.V, l2.V + r2.V, l1.V + r1.V, center.V);
                 int neighbour = Math.Max(Math.Max(l1.Y, r1.Y),
                     Math.Max(Luma(source[above + x]), Luma(source[below + x])));
                 // Only bright neighbours spill light, and never onto a brighter pixel.
                 int halo = Math.Min(Math.Max(0, neighbour - 180), Math.Max(0, neighbour - center.Y)) / 6;
                 row[x] = new Signal(luma + halo, u, v);
-                (l2, l1, center, r1) = (l1, center, r1, r2);
+                (l3, l2, l1, center, r1, r2) = (l2, l1, center, r1, r2, r3);
             }
 
             int firstRow = y * scale * stride;
@@ -75,6 +76,9 @@ internal static class PalTvFilter
     private static int Blend(int current, int neighbour, int weight) =>
         current + ((neighbour - current) * weight >> 8);
 
+    private static int SpreadChroma(int far, int middle, int near, int center) =>
+        15 * (2 * far + 4 * middle + 6 * near + 8 * center) / 512;
+
     private static uint Pack(int r, int g, int b) => 0xFF000000u |
         ((uint)Math.Clamp(r, 0, 255) << 16) |
         ((uint)Math.Clamp(g, 0, 255) << 8) |
@@ -88,7 +92,13 @@ internal static class PalTvFilter
         public static Signal From(uint argb)
         {
             int y = Luma(argb);
-            return new(y, (int)(argb & 255) - y, (int)((argb >> 16) & 255) - y);
+            int r = (int)((argb >> 16) & 255);
+            int g = (int)((argb >> 8) & 255);
+            int b = (int)(argb & 255);
+            int spread = Math.Max(r, Math.Max(g, b)) - Math.Min(r, Math.Min(g, b));
+            // Match the cyan-to-paper contrast without tinting or dimming neutral shades.
+            int rolloff = (y * spread + 1024) >> 11;
+            return new(y - rolloff, b - y, r - y);
         }
     }
 }
