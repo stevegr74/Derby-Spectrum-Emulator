@@ -38,7 +38,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Cliff Hanger | `.tzx` | Loading reaches the control-selection menu and remains stable |
 | 🟢 | Cobra (Hit Squad and Ocean original releases) | `.tzx` | Both releases complete loading and reach the stable opening credit sequence |
 | 🟢 | Dan Dare (original and Ricochet releases) | `.tzx` | Both releases stop tape playback and enter gameplay in 48K and 128K. Ricochet uses the native ROM tape loader in 128K, so it takes longer to load |
-| 🟢 | Dan Dare II: Mekon's Revenge | `.tzx` | The generalized-pulse recording loads, stops tape playback automatically, and enters gameplay in both 48K and 128K |
+| 🟢 | Dan Dare II: Mekon's Revenge | `.tzx` | The generalized-pulse recording boots through the real ROM loader and reaches tape end in 48K and 128K. Selecting Dan from the player menu reaches the playable opening area in both modes |
 | 🟢 | Donkey Kong (Erbe) | `.tzx` | Custom loader completes without corrupting the loading screen; game runs |
 | 🟢 | Donkey Kong (Ocean original, Alkatraz protection) | `.tzx` | Protected loading reaches the stable game/control menu |
 | 🟢 | Dynamite Dan (original release) | `.tzx` | Loading reaches the stable control-selection menu |
@@ -96,7 +96,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Pac-Land | `.tzx` | In 48K mode, ROM-driven loading reaches the game/high-score screen and remains stable |
 | 🟢 | Paperboy (Elite original and Encore) | `.tzx` | Both releases reach the high-score/start screen and remain stable; Encore completes protected playback and ends the tape cleanly from both 48K and 128K startup selections |
 | 🟢 | Paperboy 2 (Mindscape) | `.tzx` | Loading reaches the character-selection menu and remains stable |
-| 🟢 | Pietro Bros. v1.91 (stop slip sliding fix) | `.tap` | In 48K and 128K modes the tape ends cleanly, accepts start input, and reaches active Phase 1 gameplay |
+| 🟢 | Pietro Bros. v1.91 (stop slip sliding fix) | `.tap` | The hybrid BASIC bootstrap and mounted remainder reach tape end in 48K and 128K. Starting a one-player game reaches active Phase 1 in both modes |
 | 🟢 | Rambo (Hit Squad) | `.tzx` | Long protected loader completes; title and game screens run |
 | 🟢 | Rambo (Ocean) | `.tzx` | Speedlock BASIC handoff uses real-ROM bootstrap; protected pulse loading completes without initial screen corruption |
 | 🟢 | Red Hawk (parts 1 and 2) | `.tap` | Both headered multi-stage CODE chains preserve their post-decompressor continuation, end the tape cleanly, and reach their distinct playable start screens |
@@ -116,7 +116,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Starglider 2 (48K original) | `.tzx` | Loading reaches the complete title screen and ends cleanly |
 | 🟢 | Starglider 2 (Rainbird original, 128K) | `.tzx` | Hybrid protected loading preserves the 128K paging mirror, reaches the complete illustrated title screen, and ends cleanly |
 | 🟢 | Starquake (Bubblebus original and Ricochet) | `.sna`, `.tzx` | The repaired standard-size 48K SNA and both TZX releases reach the control menu and remain stable |
-| 🟢 | Target Renegade | `.tzx` | Both modes reach playable Level 1. In 48K, the tape stops after Level 1; a level-advance-assisted run reaches `LOOKING FOR BLOCK 2`. Manual resume then loads playable Level 2 and stops again before consuming the Level 3 record. In 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
+| 🟢 | Target Renegade | `.tzx` | Both modes reach playable Level 1. In 48K, the tape stops once Level 1 is loaded, with later records unread. A separately verified, level-advance-assisted run reaches `LOOKING FOR BLOCK 2`; manual resume loads playable Level 2 and stops again before consuming the Level 3 record. In 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
 | 🟢 | The Goonies | `.tzx` | Loading reaches active gameplay and remains stable |
 | 🟢 | The Great Escape (Ocean original) | `.tap`, `.tzx` | Both tape formats reach the control-selection menu and remain stable |
 | 🟢 | The Growing Pains of Adrian Mole (Ricochet) | `.tzx` | Loading reaches the illustrated opening story screen and remains stable |
