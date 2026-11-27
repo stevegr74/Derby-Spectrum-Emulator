@@ -12,7 +12,7 @@ internal static class FixedDialogWorkArea
 
         Size contents = form.ClientSize;
         Size chrome = form.Size - form.ClientSize;
-        var viewport = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
+        var viewport = new Panel { Dock = DockStyle.Fill, AutoScroll = true, AutoScrollMinSize = contents };
         var surface = new Panel { Size = contents, Location = Point.Empty };
         Control[] controls = form.Controls.Cast<Control>().ToArray();
         form.SuspendLayout();

@@ -25,8 +25,9 @@ namespace Derby.Tests
                 Assert.True(form.Width <= workArea.Width && form.Height <= workArea.Height);
                 var viewport = Assert.IsType<Panel>(Assert.Single(form.Controls.Cast<Control>()));
                 Assert.True(viewport.VerticalScroll.Visible);
+                Assert.True(viewport.HorizontalScroll.Visible);
                 var last = Find<Button>(form, "QuickStateSave8");
-                viewport.ScrollControlIntoView(last);
+                viewport.AutoScrollPosition = new Point(viewport.DisplayRectangle.Width, viewport.DisplayRectangle.Height);
                 Rectangle button = viewport.RectangleToClient(last.RectangleToScreen(last.ClientRectangle));
                 Assert.True(viewport.ClientRectangle.Contains(button),
                     $"Slot 8 Save bounds {button} should fit in viewport {viewport.ClientRectangle} after scrolling.");
