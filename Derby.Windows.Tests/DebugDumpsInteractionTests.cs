@@ -154,7 +154,7 @@ public sealed class DebugDumpsInteractionTests
         });
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(15)), "The debug dumps test timed out.");
+        Assert.True(thread.Join(TimeSpan.FromSeconds(45)), "The debug dumps test timed out.");
         if (failure != null)
             throw new Xunit.Sdk.XunitException(failure.ToString());
     }

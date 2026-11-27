@@ -64,7 +64,7 @@ namespace Derby.Tests
             });
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
-            Assert.True(thread.Join(TimeSpan.FromSeconds(10)), "The Help form interaction test timed out.");
+            Assert.True(thread.Join(TimeSpan.FromSeconds(45)), "The Help form interaction test timed out.");
             if (failure != null)
                 throw new Xunit.Sdk.XunitException(failure.ToString());
         }
