@@ -1002,7 +1002,7 @@
     {
       "id": "spy-hunter", "title": "Spy Hunter", "aliases": ["SPYHUNTE"], "models": ["48K", "128K"], "sha256": [],
       "pokes": [
-        { "id": "255-lives", "name": "255 lives", "description": "Apply only to a compatible release. The TAP and TZX editions use different code at these addresses.", "writes": [
+        { "id": "255-lives", "name": "255 lives", "description": "Compatible release unverified. The patch resets the tested original, Erbe, Erbe Serie Leyenda, Kixx, and SPYHUNTE.TAP copies to BASIC.", "writes": [
           { "space": "mapped", "address": "54494", "value": "195" },
           { "space": "mapped", "address": "54495", "value": "139" },
           { "space": "mapped", "address": "54496", "value": "208" },
@@ -1014,18 +1014,18 @@
     {
       "id": "zynaps", "title": "Zynaps", "aliases": [], "models": ["48K", "128K"], "sha256": [],
       "pokes": [
-        { "id": "infinite-lives", "name": "Infinite lives", "writes": [
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Verified in 48K gameplay with ZYNAPS.TAP.", "writes": [
           { "space": "mapped", "address": "45424", "value": "0" },
           { "space": "mapped", "address": "45425", "value": "0" },
           { "space": "mapped", "address": "45426", "value": "0" }
         ] },
-        { "id": "immunity", "name": "Immunity", "writes": [{ "space": "mapped", "address": "39775", "value": "201" }] }
+        { "id": "immunity", "name": "Immunity", "description": "Verified in 48K gameplay with ZYNAPS.TAP.", "writes": [{ "space": "mapped", "address": "39775", "value": "201" }] }
       ]
     },
     {
       "id": "zzoom", "title": "Zzoom", "aliases": ["Z-Zoom"], "models": ["48K", "128K"], "sha256": [],
       "pokes": [
-        { "id": "infinite-lives", "name": "Infinite lives", "writes": [{ "space": "mapped", "address": "24743", "value": "0" }] }
+        { "id": "infinite-lives", "name": "Infinite lives", "description": "Verified in 48K gameplay with ZZOOM.TAP.", "writes": [{ "space": "mapped", "address": "24743", "value": "0" }] }
       ]
     }
   ]
