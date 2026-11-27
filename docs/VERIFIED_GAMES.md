@@ -73,6 +73,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Joe Blade 2 (48K and 128K) | `.tzx` | Both editions reach their stable title/information menus |
 | 🟢 | Joe Blade 3 (48K and 128K) | `.tzx` | Both editions reach their stable control-selection menus |
 | 🟢 | Kick Off 2 | `.tzx` | Loading reaches its complete title/menu prompt and remains stable |
+| 🟠 | Killed Until Dead (sides 1 and 2) | `.tzx` | In 48K, side 1 automatically stops at the joystick-selection screen. Side 2 mounts and reaches its first stop marker when tested separately; loading a case by switching sides in the running game is unverified |
 | 🟢 | Kung-Fu Master (Americana and US Gold/Ocean original) | `.tzx` | Both releases reach their complete illustrated title screens; the original accepts input into its start/demonstration menu after its padded two-stage BASIC prefix and protected loader complete |
 | 🟢 | Kwah! (Melbourne House original) | `.tzx` | In 48K mode, the ROM-driven continuation completes, ends the tape cleanly, accepts SPACE at the start prompt, and enters the game |
 | 🟢 | Lunar Jetman (Ultimate) | `.tap`, `.tzx` | Both tape formats reach the stable game-selection menu |
@@ -108,6 +109,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Scuba Dive (Durell) | `.tzx` | Nonstandard leading tape structure mounts and loads correctly |
 | 🟢 | Skool Daze (Microsphere original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the active demonstration screen |
 | 🟢 | Space Harrier (Elite original and Encore) | `.tzx` | Both releases reach the start/control menu and remain stable |
+| 🟢 | Spy Hunter (original, Erbe, Erbe Serie Leyenda, Kixx, and TAP) | `.tap`, `.tzx` | In 48K, all five copies end the tape cleanly and reach the title or control menu. Menu input and entry to keyboard setup were checked; gameplay was not verified for every release |
 | 🟢 | Star Trek (Mikro-Gen original) | `.tzx` | Loads through the native 48 BASIC tape path, stops tape playback automatically, and enters gameplay in both 48K and 128K |
 | 🟢 | Star Wars (Hit Squad) | `.tzx` | Loading reaches the complete X-Wing control menu and remains stable |
 | 🟢 | Star Wars (Domark original, sides 1 and 2) | `.tzx` | The explicit stop/key/resume sequence reaches the complete title screen from both sides; side 2 requires 48K mode |
@@ -134,6 +136,8 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | WEC Le Mans (Imagine original, sides A and B) | `.tzx` | Protected loading reaches active racing in both machine modes. The 128K load consumes side A completely; in 48K mode, gameplay reaches the side-B request, the first side-B record stops at its explicit marker, and the later manual resume consumes the final record before the game reaches its high-score screen |
 | 🟢 | Where Time Stood Still | `.tap` | Reaches the control menu in 128K and reports tape end. Rewinding leaves the tape stopped at the first block without resetting the running game |
 | 🟢 | Willy's New Mansion: Special Edition | `.tap`, `.tzx` | Both formats reach the difficulty-selection menu and remain stable |
+| 🟢 | Zynaps (original, Erbe, Erbe Serie Leyenda, and TAP) | `.tap`, `.tzx` | In 48K, all four copies enter gameplay. The three TZX tapes end cleanly; the TAP automatically stops at the game handoff |
+| 🟢 | Zzoom (Big Box, sides 1 and 2, and TAP) | `.tap`, `.tzx` | In 48K, all four copies complete fast loading and enter gameplay; Side 2 also loads directly without a side swap |
 
 ## Snapshots
 
@@ -230,6 +234,19 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Who Dares Wins | `.sna` | Snapshot reaches active gameplay and remains stable (`who_dare.sna`) |
 | 🟢 | Xenon | `.z80` | Snapshot reaches the control-selection screen and remains stable |
 | 🟢 | Xevious | `.sna` | Snapshot reaches the high-score/title screen and remains stable |
+
+## Demo And Music Snapshots
+
+| Status | Title / release | Format | Verified checkpoint and notes |
+| :---: | --- | --- | --- |
+| 🟢 | Iron Maiden (SSC) | `.sna` | Restores to the selector; pressing `P` opens the picture and scroller. Audio was not verified (`ironmaid (SSC).sna`) |
+| 🟢 | Judgement Day 3 (Pentagram) | `.z80` | Runs the animated intro and credits |
+| 🟢 | Just For Fun | `.sna` | Restores to the illustrated prompt and responds to Space (`justfun.sna`) |
+| 🟢 | Rent | `.sna` | Renders the street scene and title (`rent.sna`) |
+| 🟢 | Strip | `.sna` | Restores and displays the artwork (`strip_d.sna`) |
+| 🟢 | Waiter, Waiter | `.sna` | Runs the comic-panel display and scrolling text (`waiter.sna`) |
+| 🟢 | Wicked | `.sna` | Completes decrunching and runs the animated ribbon effect with audio output (`wicked.sna`) |
+| 🟢 | Yazz (Alfa Soft) | `.z80` | Runs the title display with audio output |
 
 ## Disk Images
 

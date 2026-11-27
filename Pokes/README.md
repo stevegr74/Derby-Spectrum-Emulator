@@ -42,6 +42,9 @@ and [Navy Moves](https://www.the-tipshop.co.uk/cgi-bin/info.pl?name=Navy%20Moves
 Exact-image entries use the media checksums recorded in `pokes.json`. Suggested
 entries use published fixed values and may require local release validation.
 Apply part-specific pokes only after that part has loaded.
+The Spy Hunter, Zynaps, and Zzoom entries use the supplied `.POK` files as
+filename suggestions. Apply them only to a compatible release; in particular,
+the tested Spy Hunter TAP and TZX copies differ at the supplied addresses.
 Filename-only matches remain suggestions and are never treated as trusted
 automatic matches.
 
