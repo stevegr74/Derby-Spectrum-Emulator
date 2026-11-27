@@ -1033,36 +1033,21 @@ static void ApplyKey(SpectrumMachine machine, string keyName, bool pressed)
 
 static IEnumerable<(int row, int bit)> ResolveKey(string keyName)
 {
-    switch (keyName.ToLowerInvariant())
+    string key = keyName.ToLowerInvariant();
+    if (key.Length == 1)
     {
-        case "1": yield return (3, 0); yield break;
-        case "2": yield return (3, 1); yield break;
-        case "3": yield return (3, 2); yield break;
-        case "4": yield return (3, 3); yield break;
-        case "5": yield return (3, 4); yield break;
-        case "0": yield return (4, 0); yield break;
-        case "9": yield return (4, 1); yield break;
-        case "8": yield return (4, 2); yield break;
-        case "7": yield return (4, 3); yield break;
-        case "6": yield return (4, 4); yield break;
-        case "y": yield return (5, 4); yield break;
-        case "u": yield return (5, 3); yield break;
-        case "i": yield return (5, 2); yield break;
-        case "o": yield return (5, 1); yield break;
-        case "p": yield return (5, 0); yield break;
-        case "q": yield return (2, 0); yield break;
-        case "r": yield return (2, 3); yield break;
-        case "a": yield return (1, 0); yield break;
-        case "s": yield return (1, 1); yield break;
-        case "d": yield return (1, 2); yield break;
-        case "x": yield return (0, 2); yield break;
-        case "z": yield return (0, 1); yield break;
-        case "h": yield return (6, 4); yield break;
-        case "j": yield return (6, 3); yield break;
-        case "k": yield return (6, 2); yield break;
-        case "l": yield return (6, 1); yield break;
-        case "n": yield return (7, 3); yield break;
-        case "m": yield return (7, 2); yield break;
+        // The four special keys are handled as named keys below.
+        const string matrix = " zxcvasdfgqwert1234509876poiuy lkjh  mnb";
+        int index = matrix.IndexOf(key[0]);
+        if (index >= 0 && key[0] != ' ')
+        {
+            yield return (index / 5, index % 5);
+            yield break;
+        }
+    }
+
+    switch (key)
+    {
         case "enter": yield return (6, 0); yield break;
         case "space": yield return (7, 0); yield break;
         case "shift": yield return (0, 0); yield break;

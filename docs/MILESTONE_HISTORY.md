@@ -4,6 +4,21 @@ This record preserves implementation and validation evidence for completed
 milestones that no longer need detailed treatment in the project overview. The
 status table in the main README remains the authoritative roadmap summary.
 
+## Milestone 6 - Verified Tape-Loading Baseline
+
+- Established structure-driven TAP/TZX loading with capability-gated
+  acceleration, native ROM fallback, and exact protected pulse/EAR playback.
+- Cold-loaded Pietro Bros. v1.91, Dan Dare II, and Target Renegade into
+  gameplay in both 48K and 128K. Target Renegade stopped after Level 1 in 48K
+  and reached tape end in 128K.
+- Verified Target Renegade's manual Level 2 resume in 48K; the Level 3
+  header stayed unread. On original 128K, The New Zealand Story moved from
+  1-1 to 1-2 without moving the tape, then resumed automatically at its next
+  tape request and stopped before the following record's pilot.
+- The baseline does not imply support for every release or loader. The Ninja
+  Warriors partial tape variants remain parked. Monkey Island's unresolved
+  gameplay-triggered +D disk swap is separate and also remains parked.
+
 ## Milestone 26 - Machine Profiles And Read-Only +3 Disk Support
 - Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
 - Unified hardware and firmware selection under `F3 - Machine`; plain `F3` cycles the bundled profiles in menu order while the submenu selects one directly

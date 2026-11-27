@@ -117,7 +117,8 @@ Current limitations and active work:
 
 Active work remains deliberately incremental:
 
-- Continue structure-driven tape compatibility under Milestone 6.
+- Preserve the verified tape-loading baseline and investigate new media failures
+  when they can be reproduced.
 - Keep the verified-media matrix, focused regressions, and ZEXDOC/ZEXALL as
   compatibility gates throughout structural work.
 
@@ -396,8 +397,8 @@ Notes:
 
 ## Roadmap
 
-Milestone numbers record delivery order. Milestone 6 stays open for wider tape
-compatibility; completed milestones remain regression baselines.
+Milestone numbers record delivery order. Completed milestones remain regression
+baselines, not claims of universal compatibility.
 
 | Milestone | Status | Outcome |
 | --- | --- | --- |
@@ -406,7 +407,7 @@ compatibility; completed milestones remain regression baselines.
 | 3 | Complete | 50Hz pacing, frame execution, and interrupt cadence |
 | 4 | Complete | ZEXDOC/ZEXALL CPU baseline, hardware-derived block-I/O flags, Q-latch and interrupt semantics, and general IM 0 bus-instruction execution |
 | 5 | Complete | 48K/128K `.sna` plus `.z80` v1/v2/v3 support |
-| 6 | In progress | Structure-driven TAP/TZX bootstrap, ROM, protected, mounted, VERIFY, and sequencing paths |
+| 6 | Complete | Verified TAP/TZX loading baseline: structure-driven bootstrap, native ROM fallback, protected playback, and manual and automatic multi-load handoffs |
 | 7 | Complete | Clock-driven beeper/AY synthesis, mixing, and clean turbo-to-real-time audio handoff |
 | 8 | Complete | Headless core/UI split and clock-driven audio buffering |
 | 9 | Complete | Initial ULA contention, floating-bus, and timestamped border baseline |
@@ -443,7 +444,9 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
 
 - Broader +D controller and disk compatibility beyond read-only drive 1. Reference: [MGT filesystem](https://sinclair.wiki.zxnet.co.uk/wiki/MGT_filesystem).
 - Demo compatibility beyond the current validation matrix
-- Broader real-game validation
+- Broader real-game validation. The partial Ninja Warriors tape variants and
+  Monkey Island gameplay-triggered +D disk swap remain parked; see
+  [Verified Games And Media](docs/VERIFIED_GAMES.md).
 - Extend PAL TV validation from a documented 128K composite ROM-menu photograph to a calibrated capture of the full colour range and transitions. The filters are visual approximations, not measured composite or RF signal models.
 - Optional game library window with searchable artwork tiles, recent items, and an explicit file picker; prefer a scalable grid over a carousel-only interface
 - Additional platform frontends, including a browser/WebAssembly adapter using the established headless engine boundary
