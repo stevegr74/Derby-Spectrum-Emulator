@@ -15,7 +15,7 @@ namespace Derby
                 {
                     dump = machine.BuildDebugDump("Manual F12 debug dump.");
                 });
-                WriteDebugDumpToFile(dump, automatic: false);
+                WriteDebugDumpToFile(dump);
             }
             catch (Exception ex)
             {
@@ -50,11 +50,10 @@ namespace Derby
             form.Show(this);
         }
 
-        private static void WriteDebugDumpToFile(string dump, bool automatic)
+        private static void WriteDebugDumpToFile(string dump)
         {
             Directory.CreateDirectory(DebugDumpFolder);
-            string prefix = automatic ? "machine-debug-auto" : "machine-debug";
-            string fileName = $"{prefix}-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt";
+            string fileName = $"machine-debug-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt";
             File.WriteAllText(Path.Combine(DebugDumpFolder, fileName), dump);
         }
 

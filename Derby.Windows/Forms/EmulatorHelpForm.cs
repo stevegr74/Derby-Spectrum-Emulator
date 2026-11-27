@@ -11,7 +11,7 @@ namespace Derby
             new("Main shortcuts",
             [
                 ("F1", "Show or close this help window"),
-                ("F2", "Show or hide compact FPS, model, tape, and display diagnostics"),
+                ("F2", "Show FPS, machine profile, tape state, display size, and filter"),
                 ("F3", "Reset and cycle 128K, 48K, +2 Grey, +2A, and +3 machine profiles"),
                 ("F4", "Cycle 1x Native, 2x Enhanced, and 3x Enhanced"),
                 ("Shift+F4", "Cycle Digital, Soft CRT, Soft CRT with Mask, and PAL TV"),
@@ -25,7 +25,7 @@ namespace Derby
                 ("F11", "Open the paused debugger and disassembler"),
                 ("F12", "Save a diagnostic dump and briefly show an on-screen badge"),
                 ("Shift+F12", "Open Debug Dumps to view saved files or locate them in Explorer"),
-                ("Right-click", "Open the emulator menu, including Keyboard, Joystick, Mouse, and Poke Manager")
+                ("Shift+F10", "Open the emulator menu. Right-click or press the Menu key to open it too.")
             ]),
             new("Tape and disk",
             [
@@ -112,6 +112,7 @@ namespace Derby
             StartPosition = FormStartPosition.CenterParent;
             KeyPreview = true;
             EmulatorUiStyle.ApplyForm(this);
+            FixedDialogWorkArea.Enable(this);
 
             var root = new TableLayoutPanel
             {

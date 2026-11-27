@@ -81,9 +81,9 @@ namespace Derby.Tests
         }
 
         [Theory]
-        [InlineData(SpectrumDisplayMode.Native, 214, 6, 100, 40)]
-        [InlineData(SpectrumDisplayMode.Enhanced2x, 482, 8, 150, 56)]
-        [InlineData(SpectrumDisplayMode.Enhanced3x, 775, 10, 175, 64)]
+        [InlineData(SpectrumDisplayMode.Native, 199, 6, 115, 50)]
+        [InlineData(SpectrumDisplayMode.Enhanced2x, 462, 8, 170, 70)]
+        [InlineData(SpectrumDisplayMode.Enhanced3x, 755, 10, 195, 80)]
         public void StatusOverlay_IsAnchoredToTopRight(
             SpectrumDisplayMode mode,
             int expectedX,
@@ -110,21 +110,22 @@ namespace Derby.Tests
                 scale: 1,
                 avoidFullTapeOverlay: true);
 
-            Assert.Equal(new Point(214, 46), bounds.Location);
+            Assert.Equal(new Point(199, 46), bounds.Location);
         }
 
-        [Fact]
-        public void StatusOverlay_FormatsOneValuePerLine()
+        [Theory]
+        [InlineData("+2", TapeTransportState.Stopped, false, true, SpectrumDisplayFilter.Digital, "Inserted", "Digital")]
+        [InlineData("+2A", TapeTransportState.Stopped, true, false, SpectrumDisplayFilter.SoftCrtWithMask, "Auto-stopped", "Soft CRT + Mask")]
+        [InlineData("+3", TapeTransportState.Ended, false, false, SpectrumDisplayFilter.PalTv, "Ended", "PAL TV")]
+        public void StatusOverlay_FormatsOneValuePerLine(string profile, TapeTransportState state,
+            bool marker, bool inserted, SpectrumDisplayFilter filter, string tapeLabel, string filterLabel)
         {
             var data = new SpectrumStatusOverlayData(
                 50,
-                SpectrumMachineModel.Spectrum128K,
-                TapeTransportState.Stopped,
-                TapeStoppedAtMarker: true,
-                "2x Enhanced");
+                profile, state, marker, inserted, "2x Enhanced", filter);
 
             Assert.Equal(
-                ["FPS: 50", "Model: 128K", "Tape: Auto-stopped", "Display: 2x Enhanced"],
+                ["FPS: 50", $"Model: {profile}", $"Tape: {tapeLabel}", "Display: 2x Enhanced", $"Filter: {filterLabel}"],
                 SpectrumStatusOverlay.FormatLines(data));
         }
     }

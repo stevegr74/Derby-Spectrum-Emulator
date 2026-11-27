@@ -17,7 +17,7 @@ namespace Derby
             mappingSummaryLabel.Location = new Point(0, 0);
             mappingSummaryLabel.Size = new Size(mappingPanel.Width, 17);
             mappingSummaryLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            mappingSummaryLabel.Font = new Font("Consolas", 7.8f, FontStyle.Bold);
+            mappingSummaryLabel.Font = EmulatorUiStyle.MonoFont(8.5f, FontStyle.Bold);
             mappingSummaryLabel.ForeColor = Color.FromArgb(50, 64, 68);
             mappingSummaryLabel.TextAlign = ContentAlignment.MiddleLeft;
 
@@ -39,7 +39,7 @@ namespace Derby
                 blockLabel.Dock = DockStyle.Fill;
                 blockLabel.Margin = new Padding(1, 0, 1, 0);
                 blockLabel.BorderStyle = BorderStyle.FixedSingle;
-                blockLabel.Font = new Font("Consolas", 7.2f, FontStyle.Bold);
+                blockLabel.Font = EmulatorUiStyle.MonoFont(8f, FontStyle.Bold);
                 blockLabel.TextAlign = ContentAlignment.MiddleCenter;
                 mappingBlocksPanel.Controls.Add(blockLabel, index, 0);
             }
@@ -54,7 +54,7 @@ namespace Derby
 
             compactMappingLabel.Name = "CompactMemoryMap";
             compactMappingLabel.Dock = DockStyle.Fill;
-            compactMappingLabel.Font = new Font("Consolas", 7.8f, FontStyle.Regular);
+            compactMappingLabel.Font = EmulatorUiStyle.MonoFont(8.5f);
             compactMappingLabel.ForeColor = Color.FromArgb(50, 64, 68);
             compactMappingLabel.TextAlign = ContentAlignment.TopLeft;
 

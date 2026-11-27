@@ -53,10 +53,11 @@ retain mutable tape objects for direct cross-thread control.
 9. Physical tape ownership and loader continuation are separate. Loader policy
    decides when a continuation is created or cleared; a full machine reset
    clears both.
-10. Same-session Quick State captures the deck media, exact tape cursor, public
+10. Quick State captures the deck media, exact tape cursor, public
     transport state, automatic-handoff counters, and loader continuation as one
     aggregate. Restore keeps completed media in the deck without reattaching it
-    to active playback.
+    to active playback. Persistent slots save the corresponding tape and
+    continuation state so it can be restored after restarting DERBY.
 11. Load strategy and continuation decisions are independent of media names and
     game hashes. A preloaded custom-loader handoff is accepted only when BASIC
     execution changed one unique loader wait loop in live RAM; unchanged or
@@ -71,6 +72,7 @@ retain mutable tape objects for direct cross-thread control.
 | Insert or change tape | Running machine preserved, selected image mounted at the start, `Stopped` |
 | Manual stop | Cursor preserved, automatic tracking reset, `Stopped` |
 | Manual resume | Cursor preserved and resumed, `Playing` unless already complete |
+| Rewind or seek to a section or bookmark | Cursor repositioned; tape stays stopped until Play |
 | Stop marker | Cursor held before the next block, `Stopped` |
 | Recognised loader handoff | Cursor preserved, automatic stop may enter `Stopped` |
 | Recognised ROM tape read after automatic handoff | Playback may resume automatically |
@@ -78,6 +80,9 @@ retain mutable tape objects for direct cross-thread control.
 | Playback completion | Active tape detached and retained in the deck, `Ended` |
 | Eject | Tape released, `NoTape` |
 | Quick State restore | All captured transport and continuation state restored consistently |
+
+Scrub preview is host-only audio. Previewing does not move the live cursor or
+feed EAR; committing a scrub uses the same stopped seek path as a section jump.
 
 ## Current Structure
 

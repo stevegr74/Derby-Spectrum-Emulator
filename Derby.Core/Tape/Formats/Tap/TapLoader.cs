@@ -12,7 +12,6 @@ namespace Derby.Tape
         private const int TapHeaderPayloadLength = 17;
         private const byte HeaderFlag = 0x00;
         private const byte DataFlag = 0xFF;
-        private const ushort StandardTapPauseAfterBlockMs = 1000;
 
         private const byte ProgramType = 0;
         private const byte NumberArrayType = 1;

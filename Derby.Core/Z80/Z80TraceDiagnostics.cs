@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 
 namespace Derby.Z80
 {
@@ -31,22 +30,5 @@ namespace Derby.Z80
                 recentTrace.Dequeue();
         }
 
-        private string FormatOpcodeWindow(ushort start, int length)
-        {
-            if (length <= 0)
-                return string.Empty;
-
-            var bytes = new StringBuilder(length * 3);
-            for (int i = 0; i < length; i++)
-            {
-                if (i > 0)
-                    bytes.Append(' ');
-
-                ushort addr = (ushort)(start + i);
-                bytes.Append((InspectMemory ?? ReadMemory)(addr).ToString("X2"));
-            }
-
-            return bytes.ToString();
-        }
     }
 }

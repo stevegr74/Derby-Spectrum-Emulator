@@ -38,6 +38,7 @@ namespace Derby
             ShowInTaskbar = false;
             ClientSize = new Size(940, 485);
             EmulatorUiStyle.ApplyForm(this);
+            FixedDialogWorkArea.Enable(this);
 
             var claimed = new HashSet<string>(StringComparer.Ordinal);
             HostJoystickDevice? firstDevice = HostJoystickDeviceResolver.Resolve(

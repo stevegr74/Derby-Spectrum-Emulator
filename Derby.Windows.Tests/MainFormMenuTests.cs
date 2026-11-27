@@ -449,6 +449,15 @@ namespace Derby.Tests
                     Assert.Equal("DERBY - Example Game", form.Text);
                     Assert.Equal("F5 - No Tape Inserted", f5.Text);
                     Assert.False(f5.Enabled);
+                    typeof(SpectrumMachine).GetMethod("KeepFastLoadedTapeImage", privateInstance)!
+                        .Invoke(machine, [new Tape.MountedTape("fast-loaded.tap", [Tape.TapeBlock.CreatePureTone(100, 3)])]);
+                    Assert.Equal(Tape.TapeTransportState.NoTape, machine.TapeTransportState);
+                    var status = ((Tape.TapeTransportState State, Tape.TapeTransportTransition Transition, bool MarkerStop))
+                        type.GetMethod("ReadTapePresentation", privateInstance)!.Invoke(form, null)!;
+                    Assert.Equal(Tape.TapeTransportState.Ended, status.State);
+                    updateMenu.Invoke(form, null);
+                    Assert.Equal("F5 - Tape at End", f5.Text);
+                    Assert.False(f5.Enabled);
                     machine.RestoreQuickState(saved);
                     resetScheduler.Invoke(form, null);
                     Assert.Equal(titleWithTape, form.Text);

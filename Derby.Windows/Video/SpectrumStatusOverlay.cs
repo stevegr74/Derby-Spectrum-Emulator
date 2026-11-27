@@ -4,11 +4,12 @@ namespace Derby
 {
     public readonly record struct SpectrumStatusOverlayData(
         int FramesPerSecond,
-        SpectrumMachineModel MachineModel,
+        string ModelLabel,
         TapeTransportState TapeState,
         bool TapeStoppedAtMarker,
+        bool TapeJustInserted,
         string DisplayMode,
-        string? ModelLabel = null);
+        SpectrumDisplayFilter Filter);
 
     public readonly record struct SpectrumStatusOverlayMetrics(
         int Width,
@@ -24,10 +25,19 @@ namespace Derby
         public static string[] FormatLines(SpectrumStatusOverlayData data) =>
         [
             $"FPS: {data.FramesPerSecond}",
-            $"Model: {data.ModelLabel ?? (data.MachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : "128K")}",
-            $"Tape: {FormatTapeState(data.TapeState, data.TapeStoppedAtMarker)}",
-            $"Display: {data.DisplayMode}"
+            $"Model: {data.ModelLabel}",
+            $"Tape: {FormatTapeState(data.TapeState, data.TapeStoppedAtMarker, data.TapeJustInserted)}",
+            $"Display: {data.DisplayMode}",
+            $"Filter: {FilterLabel(data.Filter)}"
         ];
+
+        private static string FilterLabel(SpectrumDisplayFilter filter) => filter switch
+        {
+            SpectrumDisplayFilter.SoftCrt => "Soft CRT",
+            SpectrumDisplayFilter.SoftCrtWithMask => "Soft CRT + Mask",
+            SpectrumDisplayFilter.PalTv => "PAL TV",
+            _ => "Digital"
+        };
 
         public static Rectangle GetBounds(int bitmapWidth, int scale, bool avoidFullTapeOverlay)
         {
@@ -44,9 +54,9 @@ namespace Derby
 
         public static SpectrumStatusOverlayMetrics GetMetrics(int scale) => scale switch
         {
-            1 => new SpectrumStatusOverlayMetrics(100, 40, 6, 8f, 10),
-            2 => new SpectrumStatusOverlayMetrics(150, 56, 8, 12f, 14),
-            3 => new SpectrumStatusOverlayMetrics(175, 64, 10, 14f, 16),
+            1 => new SpectrumStatusOverlayMetrics(115, 50, 6, 8f, 10),
+            2 => new SpectrumStatusOverlayMetrics(170, 70, 8, 12f, 14),
+            3 => new SpectrumStatusOverlayMetrics(195, 80, 10, 14f, 16),
             _ => throw new ArgumentOutOfRangeException(nameof(scale))
         };
 
@@ -89,13 +99,14 @@ namespace Derby
             }
         }
 
-        private static string FormatTapeState(TapeTransportState state, bool markerStop)
+        private static string FormatTapeState(TapeTransportState state, bool markerStop, bool justInserted)
         {
             return state switch
             {
                 TapeTransportState.Playing => "Playing",
                 TapeTransportState.Stopped when markerStop => "Auto-stopped",
-                TapeTransportState.Stopped => "Paused",
+                TapeTransportState.Stopped when justInserted => "Inserted",
+                TapeTransportState.Stopped => "Stopped",
                 TapeTransportState.Ended => "Ended",
                 _ => "None"
             };

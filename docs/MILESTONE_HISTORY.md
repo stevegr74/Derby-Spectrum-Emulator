@@ -4,6 +4,26 @@ This record preserves implementation and validation evidence for completed
 milestones that no longer need detailed treatment in the project overview. The
 status table in the main README remains the authoritative roadmap summary.
 
+## Milestone 26 - Machine Profiles And Read-Only +3 Disk Support
+- Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
+- Unified hardware and firmware selection under `F3 - Machine`; plain `F3` cycles the bundled profiles in menu order while the submenu selects one directly
+- Added original 48K, original 128K, grey +2, +2A, and +3 profiles without exposing custom-ROM loading
+- Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
+- Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
+- Added the +2A four-ROM map, normal ROM selection, every documented `1FFD` all-RAM configuration, revised `7FFD`/`1FFD` partial decoding, shared paging lock, physical-bank contention, machine-profile-aware Quick State restoration, diagnostics, and debugger capture
+- Fingerprints the complete bundled four-ROM set while deliberately keeping address-based tape traps disabled for +2A ROM internals
+- Validated the production +2A ROM through automated boot/display smoke coverage and a live startup/debugger acceptance pass
+- The distinct +3 profile provides a read-only, polled uPD765 controller subset and standard/Extended CPC DSK media. Drive A: is driven by the native +3 ROM and games, not the host tape transport.
+- Use `F8 - Disk Drive` for Insert, Replace, and Eject. Disk swaps preserve the running machine; switching to +3 from another model requires confirmation.
+- Use the ROM's **Loader** to boot after inserting a disk. A small transient `A:` badge shows disk activity without adding a title-bar status.
+- Captain Blood (Exxos), Garfield, and Into the Eagle's Nest load through the native Loader and enter gameplay. Disk writes, formatting, additional drives, full controller fidelity, and +3 Quick State are outside this read-only scope.
+
+## Milestone 28 - Tape Transport v1
+- Open the modeless Tape Transport window with `Shift+F5`. It has a single Choose tape action, playback controls, and a progress bar with sections and bookmarks.
+- Persistent bookmarks were added after v1 and are covered separately in the roadmap. Rewind, section jumps, and exact bookmark restores leave the tape stopped without rewinding the Spectrum.
+- Insert Tape and Change Tape keep the running game and leave the selected tape stopped until Play. The title adds a short tape name only if it differs from the game source or there is no named game; Tape Transport shows the full filename.
+- Verified with Impossamole (128K) for stopped side swaps, bookmark restoration, and the next tape marker; Target Renegade for the 48K level stop and 128K tape end; and Where Time Stood Still for rewinding an ended TAP without resetting the game. See [Verified Games And Media](VERIFIED_GAMES.md).
+
 ## Milestone 7 - Audio And Turbo Handoff
 
 - Unified timestamped 48K beeper and 128K AY tone, noise, and envelope events in

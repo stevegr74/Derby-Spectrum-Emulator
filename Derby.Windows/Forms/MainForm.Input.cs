@@ -4,6 +4,22 @@ namespace Derby
     {
         private OnScreenKeyboardForm? onScreenKeyboard;
 
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // Bit 30 indicates that Windows is repeating a held key.
+            if (keyData == Keys.F3 && (msg.LParam.ToInt64() & (1L << 30)) != 0)
+                return true;
+
+            if (keyData is Keys.Apps or (Keys.Shift | Keys.F10) &&
+                !mouseCaptured && !displayContextMenu.Visible)
+            {
+                displayContextMenu.Show(screenBox, new Point(0, 0));
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
         private void InitializeKeyboard()
         {
             KeyPreview = true;

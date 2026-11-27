@@ -81,7 +81,7 @@ The main window keeps permanent controls out of the Spectrum picture. Every comm
 
 Press `F1` to open Help. Emulation pauses while it is open. The first page lists every main-window shortcut; select a section on the left for tape, disk, debugger, or input guidance. Use `F1`, `Escape`, or **Close** to return.
 
-![Built-in Help window](images/help-controls.png)
+![Built-in Help window](images/help-controls.jpg)
 
 *Figure 2.1. Built-in Help opens on the complete list of main shortcuts.*
 
@@ -102,7 +102,7 @@ Press `F1` to open Help. Emulation pauses while it is open. The first page lists
 | `F11` | Open the paused debugger and disassembler |
 | `F12` | Save a machine diagnostic dump and briefly show an on-screen badge |
 | `Shift+F12` | Open Debug Dumps to open saved reports or locate them in File Explorer |
-| Right-click | Open the complete context menu |
+| Right-click, Menu key, or `Shift+F10` | Open the complete context menu |
 
 The context menu keeps function keys in order and groups tape and disk, saved states and recordings, and debugging. Keyboard, Joystick, and Mouse share an input group. Poke Manager sits below it, separated by a divider.
 
@@ -143,7 +143,9 @@ calibrated capture of every Spectrum colour. Digital does not use this tuning.
 
 ### Status Overlay
 
-Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, model, tape state, and display mode appear on separate right-aligned lines, moving below full tape feedback when necessary. The model line shows `+3` for the +3 and the 48K/128K timing family for other profiles.
+Press `F2` to show or hide compact mint diagnostics at the top-right. FPS, machine profile, tape state, display size, and active filter each have their own line. The overlay moves down if needed to clear the tape message. An inserted tape is ready to play; an ended tape stays in the deck until you rewind, seek, or change it.
+
+![F2 status overlay showing 128K, 2x Enhanced and Digital](images/status-overlay.jpg)
 
 ### Window Title
 
@@ -178,6 +180,10 @@ Shared Spectrum chords track each physical host key independently. Releasing one
 ### On-Screen Keyboard
 
 Right-click the display and choose **Keyboard**. Use **48K rubber-key** or **128K** to change the key layout without changing the running machine. When the keyboard window has focus, **Page Up** selects 48K and **Page Down** selects 128K. The 128K layout has dedicated cursor, editing, and punctuation keys.
+
+![On-screen keyboard in the 48K rubber-key layout](images/keyboard-48k.jpg)
+
+![On-screen keyboard in the 128K layout](images/keyboard-128k.jpg)
 
 - Click a key to tap it, or hold the mouse button to keep the key down. Releasing the button ends the press, even if the pointer has left the key.
 - Click **CAPS SHIFT** or **SYMBOL SHIFT** to arm it for the next key; click it again to cancel. To enter extended mode on the 48K layout, click both Shift keys in succession. The 128K layout also has a dedicated **EXTEND MODE** key.
@@ -364,6 +370,8 @@ the +3 reads them directly. A small on-screen `A:` badge indicates access.
 2. Confirm attachment and reset. Original 48K, original 128K, and grey +2 stay on their current model. A +2A or +3 switches to original 128K only if you confirm.
 3. Close Disk Drive. For a bootable G+DOS disk, choose **128 BASIC**, type `RUN`, and press Enter. On original 48K, press `R` for the BASIC `RUN` keyword, then Enter.
 
+![Disk Drive with a read-only image inserted in +D Drive 1](images/plusd-disk-drive.jpg)
+
 The dialog shows **+D DRIVE 1** and the current filename. When software asks
 for another disk, open `F8`, choose **Replace**, select the next `.mgt`, and
 close the dialog before answering the game's prompt. Replacing or ejecting a
@@ -376,7 +384,8 @@ Disk writes and a second drive are not supported.
 ## Chapter 7 - Quick State
 
 Press `F10` to open the paused Quick State Manager. It provides eight persistent
-slots in a compact two-column window with no scrolling. It is unavailable on +3
+slots in a compact two-column window. It scrolls only when the full layout
+does not fit the monitor's work area. It is unavailable on +3
 or while +D is attached, even with no disk inserted.
 
 ![Fixed Quick State Manager showing all eight persistent slots](images/quick-state-manager.png)
@@ -533,7 +542,7 @@ The initial library provides one-time writes. Continuously frozen values and con
 
 Press `F11` in the main window to open the debugger. The emulator pauses safely at an instruction boundary and presents an immutable capture. Inside the debugger, `F11` steps into an instruction and `Esc` closes the window.
 
-![Bank-aware debugger and disassembler](images/debugger-bank-aware.png)
+![Bank-aware debugger and disassembler](images/debugger-bank-aware.jpg)
 
 *Figure 10.1. The debugger combines execution controls, paging, grouped CPU state, disassembly, references, memory inspection, and breakpoints.*
 
@@ -622,7 +631,7 @@ The **References** tab lists conservative incoming and outgoing references for d
 
 Press `F12` to write a machine diagnostic dump to the `debug` folder beside the executable. **Debug Dump Saved** appears at the bottom right for about 2.5 seconds. It does not take focus and there is nothing to dismiss.
 
-Press `Shift+F12` or choose **Debug Dumps** in the right-click menu to see manual dumps, automatic dumps, and crash reports. The window opens without pausing emulation and lists the newest reports first. Select a report and choose **Open Dump** to view the text or **Show in Folder** to select the file in Explorer. Use **Refresh** to recheck the folder or press `Esc` to close the window.
+Press `Shift+F12` or choose **Debug Dumps** in the context menu to see manual dumps and crash reports. Previously saved automatic dumps are still listed. The window opens without pausing emulation and lists the newest reports first. Select a report and choose **Open Dump** to view the text or **Show in Folder** to select the file in Explorer. Use **Refresh** to recheck the folder or press `Esc` to close the window.
 
 ![Debug Dumps showing a list of reports and the Open Dump and Show in Folder buttons](images/debug-dumps.png)
 

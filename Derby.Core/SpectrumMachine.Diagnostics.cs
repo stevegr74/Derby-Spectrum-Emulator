@@ -11,10 +11,6 @@ namespace Derby
         private readonly HashSet<ushort> debugMemoryWatchAddresses = new();
         private readonly Queue<string> watchedMemoryEvents = new();
         private readonly Queue<string> focusedInstructionTrace = new();
-        private bool autoDebugDumpPending;
-        private string? autoDebugDumpReason;
-        private string? autoDebugDumpSnapshot;
-        private bool autoDebugDumpSuppressed;
         private bool debugEventCaptureEnabled;
         private bool screenWriteDiagnosticsEnabled;
         private ushort? focusedTraceStartPc;
@@ -34,10 +30,6 @@ namespace Derby
         {
             recentMemoryEvents.Clear();
             recentPortEvents.Clear();
-            autoDebugDumpPending = false;
-            autoDebugDumpReason = null;
-            autoDebugDumpSnapshot = null;
-            autoDebugDumpSuppressed = false;
             lastObservedPc = 0;
             interruptPulseEndTStates = null;
             cpu.ClearRecentTrace();
@@ -62,23 +54,6 @@ namespace Derby
             watchedMemoryEvents.Clear();
             foreach (ushort address in addresses)
                 debugMemoryWatchAddresses.Add(address);
-        }
-
-        public bool TryConsumeAutoDebugDump(out string reason, out string dump)
-        {
-            if (!autoDebugDumpPending)
-            {
-                reason = string.Empty;
-                dump = string.Empty;
-                return false;
-            }
-
-            reason = autoDebugDumpReason ?? "Auto trap";
-            dump = autoDebugDumpSnapshot ?? BuildDebugDump(reason);
-            autoDebugDumpPending = false;
-            autoDebugDumpReason = null;
-            autoDebugDumpSnapshot = null;
-            return true;
         }
 
         public string BuildDebugDump(string? reason = null)
@@ -224,17 +199,6 @@ namespace Derby
             watchedMemoryEvents.Enqueue(line);
             while (watchedMemoryEvents.Count > DebugWatchHistoryCapacity)
                 watchedMemoryEvents.Dequeue();
-        }
-
-        private void RequestAutoDebugDump(string reason)
-        {
-            if (autoDebugDumpPending || autoDebugDumpSuppressed)
-                return;
-
-            autoDebugDumpPending = true;
-            autoDebugDumpReason = reason;
-            autoDebugDumpSnapshot = BuildDebugDump(reason);
-            autoDebugDumpSuppressed = true;
         }
 
         public void ClearLogs()

@@ -28,7 +28,7 @@ nostalgia motifs.
 5. **Safe inspection.** Paused and immutable state must be explicit, especially in debugging and memory tools.
 6. **Native behaviour.** Standard Windows focus, keyboard navigation, dropdown arrows, disabled states, and scrollbars are retained.
 
-![Help window demonstrating the shared visual language](images/help-controls.png)
+![Help window demonstrating the shared visual language](images/help-controls.jpg)
 
 *Figure 1. The Help window is the reference for hierarchy, category navigation, section grouping, typography, and a single primary close action.*
 
@@ -176,6 +176,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 *Figure 5. The Quick State Manager uses repeated cards for equivalent saved objects: preview first, concise metadata second, and explicit secondary/primary actions last. Empty states remain visible but inactive.*
 
 - Use a fixed no-scroll grid when the complete bounded collection fits at the minimum supported window size.
+- If a fixed dialog does not fit the current monitor work area, keep its controls at their scaled size and allow scrolling rather than cutting off actions.
 - Keep preview proportions stable, use ellipsis for long media names, and distinguish empty slots with words as well as disabled actions.
 - Require confirmation before replacing an occupied persistent slot.
 - Show a compact neutral outlined `X` only on occupied cards, provide an explicit delete tooltip/accessibility name, and require confirmation before permanent removal.
@@ -188,7 +189,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 
 ### 5.7 Dense technical workspaces
 
-![Debugger demonstrating the dense technical layout](images/debugger-bank-aware.png)
+![Debugger demonstrating the dense technical layout](images/debugger-bank-aware.jpg)
 
 *Figure 6. The debugger preserves the same colours and type hierarchy while using a compact layout for navigation, execution, paging, CPU state, disassembly, references, and breakpoints.*
 

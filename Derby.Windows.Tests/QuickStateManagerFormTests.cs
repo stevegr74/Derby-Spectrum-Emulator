@@ -7,6 +7,33 @@ namespace Derby.Tests
 {
     public sealed class QuickStateManagerFormTests
     {
+        [Theory]
+        [InlineData(120)]
+        [InlineData(144)]
+        public void SmallWorkArea_KeepsLastSlotReachable(int dpi)
+        {
+            RunSta(() =>
+            {
+                using var form = new QuickStateManagerForm(_ => null, _ => throw new InvalidOperationException(),
+                    _ => false, _ => false);
+                float scale = dpi / 96f;
+                form.Scale(new SizeF(scale, scale));
+                Rectangle workArea = new(0, 0, 1366, 728);
+                FixedDialogWorkArea.Fit(form, workArea);
+                form.Show();
+                Application.DoEvents();
+
+                Assert.True(form.Width <= workArea.Width && form.Height <= workArea.Height);
+                var viewport = Assert.IsType<Panel>(Assert.Single(form.Controls.Cast<Control>()));
+                Assert.True(viewport.VerticalScroll.Visible);
+                var last = Find<Button>(form, "QuickStateSave8");
+                viewport.ScrollControlIntoView(last);
+                Rectangle button = viewport.RectangleToClient(last.RectangleToScreen(last.ClientRectangle));
+                Assert.True(viewport.ClientRectangle.Contains(button));
+                Assert.True(last.Enabled);
+            });
+        }
+
         [Fact]
         public void Form_PresentsEightSlotsWithoutScrollingAndUpdatesSavedSlotMetadata()
         {

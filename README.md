@@ -43,7 +43,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 
 ### Bank-Aware Debugger
 
-![Paused Z80 debugger showing the paging map, grouped CPU state, disassembly, and execution controls](docs/images/debugger-bank-aware.png)
+![Paused Z80 debugger showing the paging map, grouped CPU state, disassembly, and execution controls](docs/images/debugger-bank-aware.jpg)
 
 ### Quick State Manager
 
@@ -220,14 +220,15 @@ ROMs for emulator use but retains the copyright; see `ROMs/README.md`.
 Datel retains the copyright to the bundled G+DOS firmware.
 
 The emulator starts in fixed-size `2x Enhanced` mode. `F4` cycles 1x native
-(`320x240`), Scale2x (`640x480`), and Scale3x (`960x720`). Right-clicking the
-display exposes the same controls in function-key order, followed by actions
-that do not consume a function key.
+(`320x240`), Scale2x (`640x480`), and Scale3x (`960x720`). Right-click the
+display, press the Windows Menu key, or use `Shift+F10` to open the context
+menu. Its controls appear in function-key order, followed by actions without
+function-key assignments.
 
 | Key | Action |
 | --- | --- |
 | `F1` | Open the control reference; emulation pauses while it is open |
-| `F2` | Toggle compact mint top-right FPS, model, tape, and display diagnostics |
+| `F2` | Toggle the status overlay: FPS, machine profile, tape state, display size, and filter |
 | `F3` | Reset and cycle 128K, 48K, grey +2, +2A, and +3 machine profiles |
 | `F4` | Cycle fixed display size |
 | `Shift+F4` | Cycle display filters |
@@ -435,26 +436,6 @@ compatibility; completed milestones remain regression baselines.
 | 33 | Complete | Digital, Soft CRT, and PAL TV display filters with independent size and filter shortcuts |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
-
-### Milestone 26 - Machine Profiles And Read-Only +3 Disk Support
-- Added an explicit ROM-set boundary rather than treating ROM replacement as a machine-model change
-- Unified hardware and firmware selection under `F3 - Machine`; plain `F3` cycles the bundled profiles in menu order while the submenu selects one directly
-- Added original 48K, original 128K, grey +2, +2A, and +3 profiles without exposing custom-ROM loading
-- Keeps capability-gated tape acceleration disabled for unknown ROM internals while allowing them to run through exact ROM and EAR behavior
-- Treats the Spectrum+ as 48K hardware and the original grey +2 as 128K hardware, so compatible ROMs reuse the established timing, paging, AY, and ULA paths
-- Added the +2A four-ROM map, normal ROM selection, every documented `1FFD` all-RAM configuration, revised `7FFD`/`1FFD` partial decoding, shared paging lock, physical-bank contention, machine-profile-aware Quick State restoration, diagnostics, and debugger capture
-- Fingerprints the complete bundled four-ROM set while deliberately keeping address-based tape traps disabled for +2A ROM internals
-- Validated the production +2A ROM through automated boot/display smoke coverage and a live startup/debugger acceptance pass
-- The distinct +3 profile provides a read-only, polled uPD765 controller subset and standard/Extended CPC DSK media. Drive A: is driven by the native +3 ROM and games, not the host tape transport.
-- Use `F8 - Disk Drive` for Insert, Replace, and Eject. Disk swaps preserve the running machine; switching to +3 from another model requires confirmation.
-- Use the ROM's **Loader** to boot after inserting a disk. A small transient `A:` badge shows disk activity without adding a title-bar status.
-- Captain Blood (Exxos), Garfield, and Into the Eagle's Nest load through the native Loader and enter gameplay. Disk writes, formatting, additional drives, full controller fidelity, and +3 Quick State are outside this read-only scope.
-
-### Milestone 28 - Tape Transport v1
-- Open the modeless Tape Transport window with `Shift+F5`. It has a single Choose tape action, playback controls, and a progress bar with sections and bookmarks.
-- Named bookmarks are saved per tape image and survive restarts. Rewind, section jumps, and exact bookmark restores leave the tape stopped without rewinding the Spectrum.
-- Insert Tape and Change Tape keep the running game and leave the selected tape stopped until Play. The title adds a short tape name only if it differs from the game source or there is no named game; Tape Transport shows the full filename.
-- Verified with Impossamole (128K) for stopped side swaps, bookmark restoration, and the next tape marker; Target Renegade for the 48K level stop and 128K tape end; and Where Time Stood Still for rewinding an ended TAP without resetting the game. See [Verified Games And Media](docs/VERIFIED_GAMES.md).
 
 ---
 

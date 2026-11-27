@@ -35,6 +35,7 @@ namespace Derby
             MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             EmulatorUiStyle.ApplyForm(this);
+            FixedDialogWorkArea.Enable(this);
             KeyPreview = true;
 
             Controls.Add(CreateSlotWorkspace());

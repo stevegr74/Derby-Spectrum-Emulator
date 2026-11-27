@@ -1524,10 +1524,6 @@ namespace Derby
             floatingBusSampleAdjustTStates = 0;
             memoryPaging.Last7ffdValue = 0x10;
             memoryPaging.Last1ffdValue = 0;
-            autoDebugDumpPending = false;
-            autoDebugDumpReason = null;
-            autoDebugDumpSnapshot = null;
-            autoDebugDumpSuppressed = false;
             tStatesUntilNextInterrupt = 0;
             realignInterruptPhaseAfterNextAccept = false;
             currentFrameExecutedTStates = 0;
@@ -1553,10 +1549,6 @@ namespace Derby
             floatingBusSampleAdjustTStates = 0;
             memoryPaging.Last7ffdValue = 0x10;
             memoryPaging.Last1ffdValue = 0;
-            autoDebugDumpPending = false;
-            autoDebugDumpReason = null;
-            autoDebugDumpSnapshot = null;
-            autoDebugDumpSuppressed = false;
             tStatesUntilNextInterrupt = 0;
             realignInterruptPhaseAfterNextAccept = false;
             currentFrameExecutedTStates = 0;
@@ -1645,10 +1637,6 @@ namespace Derby
             floatingBusSampleAdjustTStates = 0;
             memoryPaging.Last7ffdValue = (byte)(last7ffdValue & 0x3F);
             memoryPaging.Last1ffdValue = 0;
-            autoDebugDumpPending = false;
-            autoDebugDumpReason = null;
-            autoDebugDumpSnapshot = null;
-            autoDebugDumpSuppressed = false;
             tStatesUntilNextInterrupt = 0;
             realignInterruptPhaseAfterNextAccept = false;
             currentFrameExecutedTStates = 0;

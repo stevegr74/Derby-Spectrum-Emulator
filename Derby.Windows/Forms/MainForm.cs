@@ -1,4 +1,3 @@
-//#define EXTENDED_DEBUG
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -14,7 +13,6 @@ namespace Derby
 {
     public partial class MainForm : Form
     {
-        private static readonly bool LogFrameDiagnostics = false;
         private static readonly bool LogUnimplementedOpcodes = false;
         private static readonly bool LogPagingWrites = false;
         private static readonly bool EnableInputDiagnostics = false;
@@ -123,7 +121,6 @@ namespace Derby
         private double performancePresentMilliseconds;
         private readonly TapeTurboPlaybackPolicy tapeTurboPlaybackPolicy = new();
         private readonly EmulationPresentationState presentationState = new();
-        private int totalPresentedFrameCount;
         private long suppressSpectrumHostInputUntilTicks;
         private SpectrumDisplayMode displayMode = SpectrumDisplayMode.Enhanced2x;
         private SpectrumDisplayFilter displayFilter;
@@ -326,11 +323,6 @@ namespace Derby
             UpdateMachineMenu();
         }
 
-        private static string FormatMachineModel(SpectrumMachineModel model)
-        {
-            return model == SpectrumMachineModel.Spectrum48K ? "48K" : "128K";
-        }
-
         private Bitmap GetPresentationBitmap(SpectrumDisplayMode mode)
         {
             return mode switch
@@ -374,25 +366,28 @@ namespace Derby
 
         private void UpdateTapeTransportMenuItem()
         {
-            TapeTransportState state;
-            TapeTransportTransition transition;
-            bool hasTape;
-            lock (machineLock)
-            {
-                state = machine.TapeTransportState;
-                transition = machine.LastTapeTransportTransition;
-                hasTape = machine.HasTapeInDeck;
-            }
-            stoppedTapeMenuItem.Text = $"F7 - {StoppedTapeActionLabel(hasTape)}...";
+            var (state, transition, _) = ReadTapePresentation();
+            stoppedTapeMenuItem.Text = $"F7 - {StoppedTapeActionLabel(state != TapeTransportState.NoTape)}...";
             tapeTransportMenuItem.Enabled = state is TapeTransportState.Playing or TapeTransportState.Stopped;
             tapeTransportMenuItem.Text = state switch
             {
                 TapeTransportState.Playing => "F5 - Stop Tape",
                 TapeTransportState.Stopped when transition == TapeTransportTransition.Mounted => "F5 - Play Tape",
                 TapeTransportState.Stopped => "F5 - Resume Tape",
-                _ when hasTape => "F5 - Tape at End",
+                TapeTransportState.Ended => "F5 - Tape at End",
                 _ => "F5 - No Tape Inserted"
             };
+        }
+
+        private (TapeTransportState State, TapeTransportTransition Transition, bool MarkerStop) ReadTapePresentation()
+        {
+            lock (machineLock)
+            {
+                var state = machine.TapeTransportState;
+                if (state == TapeTransportState.NoTape && machine.HasTapeInDeck)
+                    state = TapeTransportState.Ended;
+                return (state, machine.LastTapeTransportTransition, machine.IsTapeStoppedAtMarker);
+            }
         }
 
         private void ShowQuickStateOverlay(string text)
@@ -631,11 +626,11 @@ namespace Derby
                     analysisContext: $"{machine.MachineModel}:{loadedMediaDisplayName ?? "(no media)"}",
                     memoryPagingModel: machine.MemoryPagingModel,
                     mappedRamBanks: mappedRamBanks,
-                    machineProfileName: GetDebuggerMachineProfileName());
+                    machineProfileName: GetMachineProfileLabel());
             }
         }
 
-        private string GetDebuggerMachineProfileName()
+        private string GetMachineProfileLabel()
         {
             if (SameRomSet(selectedRomSet, bundledPlus3RomSet))
                 return "+3";
@@ -654,7 +649,6 @@ namespace Derby
             if (selectedMachineModel != configuredMachine.MachineModel)
                 configuredMachine.Reset(selectedMachineModel);
             configuredMachine.SetMouseType(selectedMouseType);
-            configuredMachine.SetScreenWriteDiagnosticsEnabled(LogFrameDiagnostics);
             if (LogUnimplementedOpcodes || LogPagingWrites)
             {
                 configuredMachine.Trace = s =>
@@ -724,8 +718,6 @@ namespace Derby
                         continue;
                     long tickStartTicks = frameClock.ElapsedTicks;
                     List<AudioFrame>? completedFramesToSubmit = null;
-                    string? autoDump = null;
-                    bool hasAutoDebugDump = false;
                     int completedFrames = 0;
                     double executeSliceMilliseconds = 0;
                     double audioSubmitMilliseconds = 0;
@@ -822,7 +814,6 @@ namespace Derby
                         }
 
                         executeSliceMilliseconds = (frameClock.ElapsedTicks - executeStartTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
-                        hasAutoDebugDump = activeMachine.TryConsumeAutoDebugDump(out _, out autoDump!);
                     }
 
                     if (completedFrames > 0 || !presentationState.HasValue)
@@ -841,17 +832,6 @@ namespace Derby
                         }
                         audioSubmitMilliseconds = (frameClock.ElapsedTicks - audioStartTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
                         RecordPerformanceSample(frameClock.ElapsedTicks, 0, false, 0, audioSubmitMilliseconds, 0, 0);
-                    }
-
-                    if (hasAutoDebugDump && !string.IsNullOrEmpty(autoDump))
-                    {
-                        try
-                        {
-                            BeginInvoke(new Action(() => WriteDebugDumpToFile(autoDump, automatic: true)));
-                        }
-                        catch
-                        {
-                        }
                     }
 
                     Thread.Sleep(1);
@@ -1001,38 +981,6 @@ namespace Derby
 
             screenBox.Image = presentationBitmap;
             framesRenderedThisSecond++;
-            totalPresentedFrameCount++;
-
-            if (LogFrameDiagnostics && totalPresentedFrameCount % 20 == 0)
-            {
-                int nonZeroPixels = 0;
-                int nonZeroAttrs = 0;
-
-                for (int i = 0; i < 0x1800; i++)
-                    if (screenBankCopy[i] != 0) nonZeroPixels++;
-
-                for (int i = 0x1800; i < 0x1B00; i++)
-                    if (screenBankCopy[i] != 0x38) nonZeroAttrs++;
-
-                int screenWrites;
-                int aboveWrites;
-                int lastAboveWriteFrame;
-                lock (machineLock)
-                {
-                    screenWrites = machine.ScreenWriteLog.Values.Sum();
-                    aboveWrites = machine.AboveScreenWriteLog.Values.Sum();
-                    lastAboveWriteFrame = machine.LastAboveWriteFrame;
-                }
-
-                string writeNote = lastAboveWriteFrame < machine.FrameCount - 20
-                    ? " [WRITES STOPPED]"
-                    : string.Empty;
-
-                Console.WriteLine(
-                    $"PresentedFrame {totalPresentedFrameCount}: Pixels={nonZeroPixels} Attrs={nonZeroAttrs} | ScreenAddr writes={screenWrites} AboveAddr writes={aboveWrites} LastWrite@MachineFrame{lastAboveWriteFrame}{writeNote}");
-
-                Console.Out.Flush();
-            }
 
             RecordPerformanceSample(
                 now,
@@ -1066,7 +1014,6 @@ namespace Derby
             lastStatsTicks = now;
             framesRenderedThisSecond = 0;
             displayedFps = 0;
-            totalPresentedFrameCount = 0;
             UpdateMachineModelMenuItems();
             UpdateWindowTitle();
             UpdateTapeTransportMenuItem();
@@ -1173,23 +1120,16 @@ namespace Derby
             if (!isStatusOverlayVisible)
                 return;
 
-            TapeTransportState tapeState;
-            bool markerStop;
-            bool plus3;
-            lock (machineLock)
-            {
-                tapeState = machine.TapeTransportState;
-                markerStop = machine.IsTapeStoppedAtMarker;
-                plus3 = machine.HasPlus3DiskDrive;
-            }
+            var (tapeState, transition, markerStop) = ReadTapePresentation();
 
             var data = new SpectrumStatusOverlayData(
                 displayedFps,
-                selectedMachineModel,
+                selectedMachineModel == SpectrumMachineModel.Spectrum48K ? "48K" : GetMachineProfileLabel(),
                 tapeState,
                 markerStop,
+                transition == TapeTransportTransition.Mounted,
                 SpectrumDisplayModes.GetLayout(displayMode).Label,
-                plus3 ? "+3" : null);
+                displayFilter);
             SpectrumStatusOverlay.Draw(
                 bitmap,
                 scale,
