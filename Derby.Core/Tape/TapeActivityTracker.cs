@@ -91,7 +91,9 @@ namespace Derby.Tape
                 ? readsThisFrame - keyboardOnlyReadsThisFrame
                 : 0;
 
-            if (tape == null || tape.IsPlaybackPaused || tape.HasCompletedPlayback)
+            // The authored marker already stops this run of silence before another
+            // record can start. A heuristic stop here would require Play twice.
+            if (tape == null || tape.IsPlaybackPaused || tape.HasCompletedPlayback || tape.IsInSilenceBeforeStopMarker)
             {
                 LoaderActivityObserved = false;
                 HandoffFrames = 0;

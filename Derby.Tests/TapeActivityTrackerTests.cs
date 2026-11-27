@@ -57,6 +57,35 @@ namespace Derby.Tests
         }
 
         [Fact]
+        public void AutomaticHandoff_LeavesSilenceBeforeExplicitStopToTheMarker()
+        {
+            var tracker = new TapeActivityTracker();
+            var tape = new MountedTape("stop-marker.tzx",
+            [
+                TapeBlock.CreatePureTone(10, 1),
+                TapeBlock.CreatePause(10),
+                TapeBlock.CreateMetadata("Next record"),
+                TapeBlock.CreateStopTape(),
+                TapeBlock.CreatePureTone(20, 1)
+            ]);
+
+            tape.ReadEarBit(0);
+            tape.ReadEarBit(10);
+            Assert.True(tape.IsInSilenceBeforeStopMarker);
+            tracker.ObserveLoaderActivity();
+            for (int frame = 0; frame < 4; frame++)
+                Assert.False(TryStop(tracker, tape));
+            Assert.False(tape.IsPlaybackPaused);
+            Assert.False(tracker.AutoPausedAtHandoff);
+
+            tape.ReadEarBit(40_000);
+            Assert.True(tape.IsPausedByStopMarker);
+            Assert.False(tracker.TryAutomaticallyResume(tape, true, 40_000, 1));
+            Assert.True(tape.ResumePlayback(40_000));
+            Assert.False(tape.IsPlaybackPaused);
+        }
+
+        [Fact]
         public void AutomaticResume_StopsAgainAfterStableRamHandoff()
         {
             var tracker = new TapeActivityTracker();

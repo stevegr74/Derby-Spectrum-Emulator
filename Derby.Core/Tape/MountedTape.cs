@@ -109,6 +109,17 @@ namespace Derby.Tape
         public string DisplayName { get; }
         public bool HasRemainingBlocks => nextBlockIndex < blocks.Count;
         public bool HasMoreBlocks => HasRemainingBlocks;
+        internal bool IsInSilenceBeforeStopMarker
+        {
+            get
+            {
+                if (earPlaybackState != EarPlaybackState.Pause || earNextBlockIndexAfterPause < 0)
+                    return false;
+
+                int next = FindNextPlaybackBlockIndex(earNextBlockIndexAfterPause);
+                return next < blocks.Count && blocks[next].Kind == TapeBlockKind.StopTape;
+            }
+        }
         internal bool IsInPrePlaybackPauseBeforeFinalRomBlock =>
             nextBlockIndex >= 0 && nextBlockIndex < blocks.Count &&
             nextBlockIndex == blocks.Count - 1 &&
