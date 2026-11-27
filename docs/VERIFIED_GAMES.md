@@ -109,7 +109,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Scuba Dive (Durell) | `.tzx` | Nonstandard leading tape structure mounts and loads correctly |
 | 🟢 | Skool Daze (Microsphere original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the active demonstration screen |
 | 🟢 | Space Harrier (Elite original and Encore) | `.tzx` | Both releases reach the start/control menu and remain stable |
-| 🟢 | Spy Hunter (original, Erbe, Erbe Serie Leyenda, Kixx, and TAP) | `.tap`, `.tzx` | In 48K, all five copies end the tape cleanly and reach the title or control menu. Menu input and entry to keyboard setup were checked; gameplay was not verified for every release |
+| 🟢 | Spy Hunter (original, Erbe, Erbe Serie Leyenda, Kixx, and TAP) | `.tap`, `.tzx` | In 48K, all five copies end the tape cleanly. The original TZX and `SPYHUNTE.TAP` accept custom keys and reach Novice road gameplay, with driving and scoring verified without pokes. The Erbe, Erbe Serie Leyenda, and Kixx copies were checked to the title or control menu only |
 | 🟢 | Star Trek (Mikro-Gen original) | `.tzx` | Loads through the native 48 BASIC tape path, stops tape playback automatically, and enters gameplay in both 48K and 128K |
 | 🟢 | Star Wars (Hit Squad) | `.tzx` | Loading reaches the complete X-Wing control menu and remains stable |
 | 🟢 | Star Wars (Domark original, sides 1 and 2) | `.tzx` | The explicit stop/key/resume sequence reaches the complete title screen from both sides; side 2 requires 48K mode |
