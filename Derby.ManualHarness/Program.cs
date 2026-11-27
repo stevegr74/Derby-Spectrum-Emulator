@@ -636,14 +636,6 @@ if (args.Length > 0)
             return;
         }
 
-        if (machine.TryConsumeAutoDebugDump(out string reason, out string dump))
-        {
-            WriteHarnessArtifacts(machine, dump, "auto");
-            Console.WriteLine(reason);
-            Console.WriteLine(dump);
-            return;
-        }
-
         if (machine.HasPendingMountedLoadUsrContinuation != lastPendingMountedLoadContinuation)
         {
             lastPendingMountedLoadContinuation = machine.HasPendingMountedLoadUsrContinuation;
