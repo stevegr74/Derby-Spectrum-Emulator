@@ -1,7 +1,7 @@
 # DERBY User Guide
 
 **Windows edition**  
-**Covers:** 48K, 128K, grey +2, +2A, and +3 operation, snapshots, tape and disk images, Quick State, controllers, pokes, and debugging
+**Covers:** 48K, 128K, grey +2, +2A, and +3 operation, Game Library, snapshots, tape and disk images, Quick State, controllers, pokes, and debugging
 
 ![DERBY at the 128K ROM menu](images/emulator-128k-basic.png)
 
@@ -13,6 +13,7 @@ This manual describes the emulator as it operates today. It begins with normal l
 
 - [Chapter 1 - Getting Started](#chapter-1---getting-started)
 - [Chapter 2 - Main Controls](#chapter-2---main-controls)
+- [Game Library](#game-library)
 - [Chapter 3 - Display And Status](#chapter-3---display-and-status)
 - [Chapter 4 - Keyboard Input](#chapter-4---keyboard-input)
 - [Chapter 5 - Snapshots And Recordings](#chapter-5---snapshots-and-recordings)
@@ -79,7 +80,7 @@ The main window keeps permanent controls out of the Spectrum picture. Every comm
 
 ### Built-in Help
 
-Press `F1` to open Help. Emulation pauses while it is open. The first page lists every main-window shortcut; select a section on the left for tape, disk, debugger, or input guidance. Use `F1`, `Escape`, or **Close** to return.
+Press `F1` to open Help. Emulation pauses while it is open. The first page lists every main-window shortcut; select a section on the left for Game Library, tape, disk, debugger, or input guidance. Use `F1`, `Escape`, or **Close** to return.
 
 ![Built-in Help window](images/help-controls.jpg)
 
@@ -108,7 +109,21 @@ The context menu keeps function keys in order and groups tape and disk, saved st
 
 ![Complete right-click context menu](images/context-menu.png)
 
-*Figure 2.2. Tape commands and Disk Drive share a group. Unavailable actions remain visible but disabled.*
+*Figure 2.2. Game Library sits above the tape and disk group. Unavailable actions remain visible but disabled.*
+
+### Game Library
+
+Right-click the emulator and choose **Game Library**, just above the tape controls. This pauses emulation. Choose your media folder with **Change folder...**; DERBY remembers it and lists supported files directly in that folder without copying or renaming them.
+
+- **All games** searches titles and filenames as you type. Different releases, formats, and sides appear on separate rows. Select a row to see its filename.
+- **Recent games** shows up to 12 successful opens, newest first, including opens from the existing file pickers. Tape-side changes and disk replacements are not added. A moved or deleted file is marked missing rather than matched to a different copy.
+- Use the action button, double-click a row, or press **Enter** while the list has focus. A tape starts a new game like `F6`; snapshots and recordings use the same loaders as `F9`. **Open Disk Drive** shows the selected disk, but does not insert it until you confirm. Use Tape Transport or `F7` for a stopped tape side change.
+
+![Game Library showing the searchable All games list, separate file formats, and the Load tape action](images/game-library.png)
+
+![Recent games showing the last-opened time for each file](images/game-library-recents.png)
+
+**Close** or **Esc** leaves the current game in place. The existing file pickers and function keys are unchanged.
 
 ## Chapter 3 - Display And Status
 

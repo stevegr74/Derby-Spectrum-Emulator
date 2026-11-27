@@ -40,10 +40,15 @@ namespace Derby
                 action = choice.Action;
             }
 
+            OpenTapePath(owner, action, dialog.FileName);
+        }
+
+        private void OpenTapePath(Form owner, TapeFileAction action, string path)
+        {
             try
             {
                 ClearHostAndSpectrumInputState();
-                ApplyTapeFileAction(action, dialog.FileName);
+                ApplyTapeFileAction(action, path);
                 SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
                 PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
                 if (owner == this)
@@ -74,6 +79,7 @@ namespace Derby
             RememberTapePath(path);
             SetLoadedMediaDisplayName(path);
             ShowMountedTapeTransportFeedback();
+            gameLibrary.Value.Remember(path);
         }
 
         private void RefreshAfterStoppedTapeInsert()
@@ -129,9 +135,14 @@ namespace Derby
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
                 return;
+            OpenSnapshotOrRecordingPath(dialog.FileName);
+        }
+
+        private void OpenSnapshotOrRecordingPath(string path)
+        {
             try
             {
-                LoadSnapshotOrRecording(dialog.FileName);
+                LoadSnapshotOrRecording(path);
                 SuppressSpectrumHostInputForMilliseconds(PostLoadInputSuppressionMilliseconds);
                 PresentCurrentMachineFrame(frameClock.ElapsedTicks, force: true);
                 screenBox.Focus();
@@ -171,6 +182,7 @@ namespace Derby
                     machine.ClearDebugHistory();
                 SetLoadedMediaDisplayName(path);
             });
+            gameLibrary.Value.Remember(path);
         }
     }
 }

@@ -27,6 +27,16 @@ namespace Derby
                 ("Shift+F12", "Open Debug Dumps to view saved files or locate them in Explorer"),
                 ("Shift+F10", "Open the emulator menu. Right-click or press the Menu key to open it too.")
             ]),
+            new("Game Library",
+            [
+                ("Game Library", "Open from the right-click menu. Emulation pauses."),
+                ("All games", "Choose a folder and search by title or filename."),
+                ("Recent games", "See up to 12 opens. Missing files are marked."),
+                ("Open a game", "Use the action button, double-click, or press Enter in the list."),
+                ("Tape", "Library tapes start a new game. Swap sides in Tape Transport."),
+                ("Disk", "Open Disk Drive to confirm insertion or replace a disk."),
+                ("File pickers", "F6, F7, F8, and F9 still work as before.")
+            ]),
             new("Tape and disk",
             [
                 ("Load Tape", "Use F6 to start a new game from the selected tape"),

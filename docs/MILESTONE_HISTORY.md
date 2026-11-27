@@ -204,3 +204,15 @@ status table in the main README remains the authoritative roadmap summary.
 - Tuned PAL TV's cyan highlight and horizontal colour spread against a
   documented original 128K composite ROM-menu photograph. Digital remained
   pixel-identical; calibration across the full colour range remains open.
+
+## Milestone 34 - Game Library
+
+- Added a searchable single-folder list and 12 persistent recent opens.
+  Releases and sides remain separate files; unavailable recent files are marked
+  missing rather than substituted.
+- Reused tape, snapshot, recording, and read-only disk actions without changing
+  the file pickers or function keys. Opening a disk from the library leaves it
+  unmounted until the user confirms insertion.
+- Checked search, missing files, restart persistence, cancellation, and disk
+  replacement. Verified real tape, snapshot, recording, and +3 disk opens
+  through the Windows menu.

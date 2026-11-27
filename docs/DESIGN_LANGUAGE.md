@@ -140,7 +140,7 @@ All styled buttons use `EmulatorUiStyle.StyleButton`. Do not locally recreate th
 
 ![Complete emulator context menu](images/context-menu.png)
 
-*Figure 3. The context menu follows function-key order, groups tape and disk together, and shows disabled commands in place.*
+*Figure 3. Game Library sits above the tape and disk group without changing function-key order. Disabled commands stay visible.*
 
 - Retain native Windows menu rendering and submenu arrows.
 - Put keyboard shortcuts at the start of the label where the current menu does so.

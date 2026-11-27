@@ -143,8 +143,9 @@ namespace Derby
         {
         }
 
-        internal MainForm(QuickStateArchiveStore quickStateArchiveStore)
+        internal MainForm(QuickStateArchiveStore quickStateArchiveStore, GameLibrary? library = null)
         {
+            gameLibrary = new(() => library ?? new GameLibrary());
             this.quickStateArchiveStore = quickStateArchiveStore ??
                 throw new ArgumentNullException(nameof(quickStateArchiveStore));
             Text = ApplicationTitle;
@@ -225,6 +226,8 @@ namespace Derby
             AddDisplayFilter("Soft CRT with Mask", SpectrumDisplayFilter.SoftCrtWithMask);
             AddDisplayFilter("PAL TV", SpectrumDisplayFilter.PalTv);
             displayMenuItem.DropDownItems.Add(filterMenu);
+            displayContextMenu.Items.Add(new ToolStripSeparator());
+            displayContextMenu.Items.Add("Game Library", null, (_, _) => OpenGameLibrary());
             displayContextMenu.Items.Add(new ToolStripSeparator());
 
             void AddDisplayFilter(string label, SpectrumDisplayFilter filter)

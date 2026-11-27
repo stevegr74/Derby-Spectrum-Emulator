@@ -24,7 +24,7 @@ namespace Derby.Tests
 
                     ListBox sections = Descendants(form).OfType<ListBox>().Single();
                     Assert.Equal(
-                        ["Main shortcuts", "Tape and disk", "Debugger window", "Spectrum keyboard",
+                        ["Main shortcuts", "Game Library", "Tape and disk", "Debugger window", "Spectrum keyboard",
                             "Joystick", "Mouse", "Poke Manager"],
                         sections.Items.Cast<object>().Select(section => section.ToString()));
                     GroupBox details = Descendants(form).OfType<GroupBox>()

@@ -22,6 +22,7 @@ This project focuses on correctness, clean architecture, and incremental develop
 - 48K beeper and AY-3-8912 tone, noise, envelope, and mixing through a clock-driven audio pipeline
 - 48K/128K `.sna`, `.z80` v1/v2/v3, baseline `.szx`, and `.rzx` loading/replay
 - `.tap` and `.tzx` parsing, fast bootstrap, ROM-driven loading, protected/mounted playback, VERIFY, and multi-block sequencing
+- Searchable Game Library and persistent recent opens, alongside the existing file pickers
 - Tape Transport with named sections, persistent bookmarks, saved side pairing, stopped scrubbing and audio preview, rewind, and 48K stop-marker support
 - Digital, Soft CRT (with an optional phosphor mask at 3x), and PAL TV presentation
 - Modeless on-screen keyboard with selectable 48K rubber-key and 128K layouts, pointer holds, and Shift chords
@@ -435,6 +436,7 @@ baselines, not claims of universal compatibility.
 | 31 | Complete | Saved tape side pairing and manual, stopped swaps without resetting the game |
 | 32 | Complete | Stopped tape scrubbing and a host-only audio preview |
 | 33 | Complete | Digital, Soft CRT, and PAL TV display filters with independent size and filter shortcuts |
+| 34 | Complete | Searchable local Game Library with persistent recents and the existing tape, snapshot, recording, and disk workflows |
 
 Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_HISTORY.md).
 
@@ -448,7 +450,7 @@ Detailed completion evidence is retained in [Milestone History](docs/MILESTONE_H
   Monkey Island gameplay-triggered +D disk swap remain parked; see
   [Verified Games And Media](docs/VERIFIED_GAMES.md).
 - Extend PAL TV validation from a documented 128K composite ROM-menu photograph to a calibrated capture of the full colour range and transitions. The filters are visual approximations, not measured composite or RF signal models.
-- Optional game library window with searchable artwork tiles, recent items, and an explicit file picker; prefer a scalable grid over a carousel-only interface
+- Optional artwork grid for the Game Library; retain the searchable file list and existing pickers
 - Additional platform frontends, including a browser/WebAssembly adapter using the established headless engine boundary
 
 ---

@@ -7,7 +7,9 @@ public partial class MainForm
     private static readonly Guid PlusDFirmwarePickerId = new("ff1ce3df-f3b4-4e45-a5c3-bacdf4592724");
     private readonly PlusDFirmwareSettings plusDFirmwareSettings = new();
 
-    private void OpenDiskDrive()
+    private void OpenDiskDrive() => ShowDiskDrive();
+
+    private void ShowDiskDrive(string? pendingDisk = null)
     {
         using IDisposable pauseLease = AcquireEmulationPauseLease();
         using var dialog = new Form
@@ -33,37 +35,57 @@ public partial class MainForm
             Padding = new Padding(8, 0, 8, 0)
         };
         var instruction = new Label { Location = new Point(18, 112), Size = new Size(409, 35) };
-        var insert = new Button { Location = new Point(18, 150), Size = new Size(120, 30) };
-        var eject = new Button { Text = "Eject", Location = new Point(146, 150), Size = new Size(90, 30) };
-        var close = new Button { Text = "Close", DialogResult = DialogResult.Cancel, Location = new Point(337, 150), Size = new Size(90, 30) };
+        int actionsY = pendingDisk == null ? 150 : 177;
+        if (pendingDisk != null)
+            dialog.ClientSize = new Size(445, 223);
+        var selected = new Label
+        {
+            Location = new Point(18, 92), Size = new Size(409, 23), AutoEllipsis = true,
+            Visible = pendingDisk != null, ForeColor = EmulatorUiStyle.Muted
+        };
+        if (pendingDisk != null)
+        {
+            instruction.Top += 27;
+            status.Height = 22;
+        }
+        var insert = new Button { Name = "DiskInsert", Location = new Point(18, actionsY), Size = new Size(120, 30) };
+        var eject = new Button { Text = "Eject", Location = new Point(146, actionsY), Size = new Size(90, 30) };
+        var close = new Button { Text = "Close", DialogResult = DialogResult.Cancel, Location = new Point(337, actionsY), Size = new Size(90, 30) };
         EmulatorUiStyle.StyleButton(insert, primary: true);
         EmulatorUiStyle.StyleButton(eject);
         EmulatorUiStyle.StyleButton(close);
         dialog.CancelButton = close;
-        dialog.Controls.AddRange([title, subtitle, status, instruction, insert, eject, close]);
+        dialog.Controls.AddRange([title, subtitle, status, selected, instruction, insert, eject, close]);
         insert.Click += (_, _) =>
         {
-            using var picker = new OpenFileDialog
+            string? path = pendingDisk;
+            if (path == null)
             {
-                Title = "Choose Disk Image",
-                Filter = "Disk images (*.dsk; *.mgt)|*.dsk;*.mgt|+3 disks (*.dsk)|*.dsk|+D disks (*.mgt)|*.mgt",
-                CheckFileExists = true
-            };
-            if (picker.ShowDialog(dialog) != DialogResult.OK)
-                return;
+                using var picker = new OpenFileDialog
+                {
+                    Title = "Choose Disk Image",
+                    Filter = "Disk images (*.dsk; *.mgt)|*.dsk;*.mgt|+3 disks (*.dsk)|*.dsk|+D disks (*.mgt)|*.mgt",
+                    CheckFileExists = true
+                };
+                if (picker.ShowDialog(dialog) != DialogResult.OK)
+                    return;
+                path = picker.FileName;
+            }
             try
             {
-                switch (Path.GetExtension(picker.FileName).ToLowerInvariant())
+                string extension = Path.GetExtension(path).ToLowerInvariant();
+                bool replacing = extension == ".mgt" ? machine.MountedPlusDDiskName != null : machine.MountedDiskName != null;
+                bool inserted = extension switch
                 {
-                    case ".dsk":
-                        InsertPlus3FromDialog(dialog, picker.FileName);
-                        break;
-                    case ".mgt":
-                        InsertPlusDFromDialog(dialog, picker.FileName);
-                        break;
-                    default:
-                        throw new InvalidDataException("Select a +3 .dsk or a +D .mgt disk image.");
-                }
+                    ".dsk" => InsertPlus3FromDialog(dialog, path),
+                    ".mgt" => InsertPlusDFromDialog(dialog, path),
+                    _ => throw new InvalidDataException("Select a +3 .dsk or a +D .mgt disk image.")
+                };
+                if (!inserted)
+                    return;
+                if (!replacing)
+                    gameLibrary.Value.Remember(path);
+                pendingDisk = null;
                 RefreshDriveStatus();
             }
             catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException)
@@ -101,18 +123,23 @@ public partial class MainForm
                     : "To boot a system disk, choose 128 BASIC and type RUN."
                 : plus3 ? "To boot, choose Loader in the +3 menu."
                 : "Choose a +3 disk (.dsk) or a +D disk (.mgt).";
-            insert.Text = name == null ? "Insert..." : "Replace...";
+            selected.Text = pendingDisk == null ? string.Empty : $"Selected: {Path.GetFileName(pendingDisk)}";
+            selected.Visible = pendingDisk != null;
+            bool hasTargetDisk = string.Equals(Path.GetExtension(pendingDisk), ".mgt", StringComparison.OrdinalIgnoreCase)
+                ? machine.MountedPlusDDiskName != null : machine.MountedDiskName != null;
+            insert.Text = pendingDisk != null ? hasTargetDisk ? "Replace selected" : "Insert selected"
+                : name == null ? "Insert..." : "Replace...";
             eject.Enabled = name != null;
         }
     }
 
-    private void InsertPlus3FromDialog(IWin32Window owner, string path)
+    private bool InsertPlus3FromDialog(IWin32Window owner, string path)
     {
         DskImage image = DskImage.Load(path);
         if (!machine.HasPlus3DiskDrive)
         {
             if (!ConfirmDiskReset(owner, "Switch to ZX Spectrum +3 and reset the current machine?"))
-                return;
+                return false;
             ApplyRomSet(bundledPlus3RomSet);
         }
         lock (machineLock)
@@ -120,9 +147,10 @@ public partial class MainForm
             machine.InsertDisk(image, Path.GetFileName(path));
             presentationState.Publish(machine);
         }
+        return true;
     }
 
-    private void InsertPlusDFromDialog(IWin32Window owner, string path)
+    private bool InsertPlusDFromDialog(IWin32Window owner, string path)
     {
         MgtImage image = MgtImage.Load(path);
         byte[]? firmware = null;
@@ -135,7 +163,7 @@ public partial class MainForm
             firmware = plusDFirmwareSettings.ResolveForAttachment(romFolder,
                 () => BrowseForPlusDFirmware(owner), () => ConfirmDiskReset(owner, prompt));
             if (firmware == null)
-                return;
+                return false;
 
             ApplyRomSet(incompatible ? bundled128RomSet : selectedRomSet);
         }
@@ -147,6 +175,7 @@ public partial class MainForm
             machine.InsertPlusDDisk(image, Path.GetFileName(path));
             presentationState.Publish(machine);
         }
+        return true;
     }
 
     private static string? BrowseForPlusDFirmware(IWin32Window owner)

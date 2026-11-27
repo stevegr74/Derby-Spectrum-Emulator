@@ -31,6 +31,8 @@ namespace Derby.Tests
                             "F3 - Machine",
                             "F4 - Display",
                             "---",
+                            "Game Library",
+                            "---",
                             "F5 - No Tape Inserted",
                             "Shift+F5 - Tape Transport",
                             "F6 - Load Tape...",
