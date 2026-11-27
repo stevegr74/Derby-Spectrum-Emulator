@@ -19,7 +19,8 @@ namespace Derby
             Func<int, bool> loadSlot,
             Func<int, bool> deleteSlot,
             Func<int, bool>? confirmReplace = null,
-            Func<int, bool>? confirmDelete = null)
+            Func<int, bool>? confirmDelete = null,
+            Func<Rectangle>? getWorkArea = null)
         {
             this.getSlot = getSlot ?? throw new ArgumentNullException(nameof(getSlot));
             this.saveSlot = saveSlot ?? throw new ArgumentNullException(nameof(saveSlot));
@@ -35,7 +36,7 @@ namespace Derby
             MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             EmulatorUiStyle.ApplyForm(this);
-            FixedDialogWorkArea.Enable(this);
+            FixedDialogWorkArea.Enable(this, getWorkArea);
             KeyPreview = true;
 
             Controls.Add(CreateSlotWorkspace());

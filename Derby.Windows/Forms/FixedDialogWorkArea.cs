@@ -2,10 +2,10 @@ namespace Derby;
 
 internal static class FixedDialogWorkArea
 {
-    public static void Enable(Form form) => form.Load += (_, _) =>
-        Fit(form, Screen.FromControl(form.Owner ?? form).WorkingArea);
+    public static void Enable(Form form, Func<Rectangle>? getWorkArea = null) => form.Load += (_, _) =>
+        Fit(form, getWorkArea?.Invoke() ?? Screen.FromControl(form.Owner ?? form).WorkingArea);
 
-    internal static void Fit(Form form, Rectangle workArea)
+    private static void Fit(Form form, Rectangle workArea)
     {
         if (form.Width <= workArea.Width && form.Height <= workArea.Height)
             return;

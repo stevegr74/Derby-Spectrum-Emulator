@@ -14,12 +14,11 @@ namespace Derby.Tests
         {
             RunSta(() =>
             {
+                Rectangle workArea = new(0, 0, 1024, 700);
                 using var form = new QuickStateManagerForm(_ => null, _ => throw new InvalidOperationException(),
-                    _ => false, _ => false);
+                    _ => false, _ => false, getWorkArea: () => workArea);
                 float scale = dpi / 96f;
                 form.Scale(new SizeF(scale, scale));
-                Rectangle workArea = new(0, 0, 1366, 728);
-                FixedDialogWorkArea.Fit(form, workArea);
                 form.Show();
                 Application.DoEvents();
 
@@ -29,7 +28,8 @@ namespace Derby.Tests
                 var last = Find<Button>(form, "QuickStateSave8");
                 viewport.ScrollControlIntoView(last);
                 Rectangle button = viewport.RectangleToClient(last.RectangleToScreen(last.ClientRectangle));
-                Assert.True(viewport.ClientRectangle.Contains(button));
+                Assert.True(viewport.ClientRectangle.Contains(button),
+                    $"Slot 8 Save bounds {button} should fit in viewport {viewport.ClientRectangle} after scrolling.");
                 Assert.True(last.Enabled);
             });
         }
