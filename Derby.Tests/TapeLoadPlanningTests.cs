@@ -89,6 +89,49 @@ namespace Derby.Tests
         }
 
         [Theory]
+        [InlineData(SpectrumMachineModel.Spectrum48K, true)]
+        [InlineData(SpectrumMachineModel.Spectrum128K, true)]
+        [InlineData(SpectrumMachineModel.Spectrum128K, false)]
+        public void ProtectedMachineCodeHandoff_UsesNativeRomForToneAndPause(SpectrumMachineModel model, bool hasPause)
+        {
+            var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+            machine.Reset(model);
+            byte[] program = BuildBasicProgram(
+                BuildBasicLine(10, Token(253), Ascii("28671"), NumberMarker(28671)),
+                BuildBasicLine(20, Token(239), Ascii("\"ENGINE\""), Token(175), Ascii("28672"), NumberMarker(28672)),
+                BuildBasicLine(30, Token(249), Token(192), Ascii("28672"), NumberMarker(28672)));
+            byte[] code = [0x3E, 0xA5, 0x32, 0x00, 0x90, 0xC9];
+            var blocks = new List<TapeBlock>(TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program),
+                BuildHeaderBlock(3, "ENGINE", (ushort)code.Length, 0x7000, 0),
+                BuildDataBlock(code))))
+            {
+                TapeBlock.CreatePureTone(2165, 500)
+            };
+            if (hasPause)
+                blocks.Add(TapeBlock.CreatePause(5));
+            blocks.Add(TapeBlock.CreateByteStreamData([0xA0, 0x01], 856, 1712, 8, 0));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            if (!hasPause)
+            {
+                Assert.Equal(TapeLoadPlanReason.ProtectedBasicRequiresRom, plan.ReasonCode);
+                return;
+            }
+
+            Assert.Equal(TapeLoadPlanReason.ProtectedMachineCodeHandoffRequiresNativeLoad, plan.ReasonCode);
+            TapeExecutionResult result = TapLoader.ExecutePlan(machine, "protected-handoff.tap", blocks, plan);
+            Assert.Equal(0, result.ConsumedBlockCount);
+            Assert.Equal((byte)0, machine.PeekMemory(0x7000));
+            for (int frame = 0; frame < 1400 && machine.PeekMemory(0x9000) != 0xA5; frame++)
+                machine.ExecuteFrame();
+
+            Assert.Equal((byte)0xA5, machine.PeekMemory(0x9000));
+            Assert.Equal(model, machine.MachineModel);
+        }
+
+        [Theory]
         [InlineData(0xFF58, TapeLoadPlanReason.CodeLoadOverlapsBootstrapStack)]
         [InlineData(0xFF50, TapeLoadPlanReason.StandardTapeRequiresMountedSemantics)]
         public void NamedCodeLoad_UsesNativeRomWhenDataOverlapsBootstrapStack(

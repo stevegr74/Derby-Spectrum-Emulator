@@ -133,6 +133,35 @@ namespace Derby.Tape
             return false;
         }
 
+        internal static bool HasToneDelimitedProtectedCodeHandoff(IReadOnlyList<TapeBlock> blocks)
+        {
+            int index = 0;
+
+            TapeBlock? NextSignal()
+            {
+                while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                    index++;
+                return index < blocks.Count ? blocks[index++] : null;
+            }
+
+            foreach (byte type in new[] { ProgramType, CodeType })
+            {
+                TapeBlock? headerBlock = NextSignal();
+                if (headerBlock is null || !IsStandardHeaderBlock(headerBlock) || !headerBlock.CanUseRomLoadTrap)
+                    return false;
+
+                TapHeaderInfo header = ParseHeaderInfo(headerBlock);
+                TapeBlock? data = NextSignal();
+                if (header.Type != type || data is not { CanUseRomLoadTrap: true, Flag: DataFlag } ||
+                    data.Payload?.Length != header.DataLength)
+                    return false;
+            }
+
+            return NextSignal() is { Kind: TapeBlockKind.PureTone } &&
+                   NextSignal() is { Kind: TapeBlockKind.Pause, PauseAfterBlockMs: > 0 } &&
+                   NextSignal() is { Kind: TapeBlockKind.Data, CanUseRomLoadTrap: false };
+        }
+
         internal static TapBootstrapResult StartNativeRomTapeLoader(
             SpectrumMachine machine,
             string displayName,

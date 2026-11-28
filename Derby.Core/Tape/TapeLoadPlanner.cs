@@ -197,6 +197,14 @@ namespace Derby.Tape
                 if (TapeExecutionEngine.ContainsElectricallyDecodedProtectedStream(blocks) &&
                     TapLoader.LeadingBasicProgramHasMachineCodeHandoff(blocks))
                 {
+                    if (canStartNativeRom && TapLoader.HasToneDelimitedProtectedCodeHandoff(blocks))
+                    {
+                        return new TapeLoadPlan(
+                            TapeLoadStrategy.RomBootstrapMounted,
+                            TapeLoadPlanReason.ProtectedMachineCodeHandoffRequiresNativeLoad,
+                            "The standard CODE loader hands off to a sync tone, silence, and custom data; preserve the transition with native ROM loading.");
+                    }
+
                     return new TapeLoadPlan(
                         TapeLoadStrategy.RomBootstrapMounted,
                         TapeLoadPlanReason.ProtectedBasicRequiresRom,

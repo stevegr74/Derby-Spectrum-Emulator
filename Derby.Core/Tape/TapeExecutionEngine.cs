@@ -61,6 +61,7 @@ namespace Derby.Tape
                             TapeLoadPlanReason.LeadingCodeRequiresNativeLoad or
                             TapeLoadPlanReason.CodeLoadOverlapsBootstrapStack or
                             TapeLoadPlanReason.CodeLoadCrossesBasicRamTop or
+                            TapeLoadPlanReason.ProtectedMachineCodeHandoffRequiresNativeLoad or
                             TapeLoadPlanReason.HeaderlessContinuationRequiresNativeLoad or
                             TapeLoadPlanReason.LineZeroContinuationRequiresNativeLoad;
                     bool requiresNative128Basic =

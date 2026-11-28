@@ -85,7 +85,8 @@ namespace Derby.Tape
         HeaderlessContinuationRequiresNativeLoad,
         NativeMenuWithoutAcceleration,
         LineZeroContinuationRequiresNativeLoad,
-        CodeLoadCrossesBasicRamTop
+        CodeLoadCrossesBasicRamTop,
+        ProtectedMachineCodeHandoffRequiresNativeLoad
     }
 
     public sealed class TapeLoadPlan
