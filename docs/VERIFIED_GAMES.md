@@ -74,6 +74,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Joe Blade 3 (48K and 128K) | `.tzx` | Both editions reach their stable control-selection menus |
 | 🟢 | Kick Off 2 | `.tzx` | Loading reaches its complete title/menu prompt and remains stable |
 | 🟢 | Killed Until Dead (sides 1 and 2) | `.tzx` | In 48K and original 128K, select the controls and press `Q` to leave joystick selection. After confirming the controls, press Play once to continue past the tape's stop marker. Keep side 1 mounted at the first mystery-tape prompt and press Play again to reach difficulty selection. After choosing **Weight Watchers**, change to side 2 without resetting and press Play. The case reaches the playable desk and Notes opens; transport stops before reading the following data record |
+| 🟢 | Knight Rider | `.tzx` | In 48K, the tape stops at its marker and reaches the mission menu. Choosing keyboard and starting reaches the in-game briefing and destination map |
 | 🟢 | Kung-Fu Master (Americana and US Gold/Ocean original) | `.tzx` | Both releases reach their complete illustrated title screens; the original accepts input into its start/demonstration menu after its padded two-stage BASIC prefix and protected loader complete |
 | 🟢 | Kwah! (Melbourne House original) | `.tzx` | In 48K mode, the ROM-driven continuation completes, ends the tape cleanly, accepts SPACE at the start prompt, and enters the game |
 | 🟢 | Lunar Jetman (Ultimate) | `.tap`, `.tzx` | Both tape formats reach the stable game-selection menu |
@@ -109,7 +110,11 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Scuba Dive (Durell) | `.tzx` | Nonstandard leading tape structure mounts and loads correctly |
 | 🟢 | Skool Daze (Microsphere original) | `.tzx` | Native ROM loading completes, ends the tape cleanly, and reaches the active demonstration screen |
 | 🟢 | Space Harrier (Elite original and Encore) | `.tzx` | Both releases reach the start/control menu and remain stable |
-| 🟢 | Spy Hunter (original, Erbe, Erbe Serie Leyenda, Kixx, and TAP) | `.tap`, `.tzx` | In 48K, all five copies end the tape cleanly. The original TZX and `SPYHUNTE.TAP` accept custom keys and reach Novice road gameplay, with driving and scoring verified without pokes. The Erbe, Erbe Serie Leyenda, and Kixx copies were checked to the title or control menu only |
+| 🟢 | Spy Hunter (original, Erbe, Erbe Serie Leyenda, Kixx, and TAP) | `.tap`, `.tzx` | In 48K, all five copies end the tape cleanly. The original `Spy Hunter.tzx` and `SPYHUNTE.TAP` accept custom keys and reach Novice road gameplay, with driving and scoring verified without pokes. The Erbe, Erbe Serie Leyenda, and Kixx copies were checked to the title or control menu only |
+| 🟢 | Spy vs. Spy (Beyond original and Hi-Tec) | `.tzx` | Both tapes end in 48K and reach the animated split-screen demonstration |
+| 🟢 | Spy vs. Spy II: The Island Caper (Databyte original and Hi-Tec, both sides) | `.tzx` | All four images load independently in 48K and reach the split-screen demonstration. The Hi-Tec side 2 copy also accepts player selection and reaches the Player 1 controls menu |
+| 🟢 | Star Farce (Mastertronic original) | `.tzx` | In 48K, loading ends cleanly and reaches the credits and press-any-key prompt |
+| 🟢 | Star Paws (Software Projects original and Alternative) | `.tzx` | Both reach the animated title in 48K. The original automatically pauses at the handoff; the Alternative tape reaches end |
 | 🟢 | Star Trek (Mikro-Gen original) | `.tzx` | Loads through the native 48 BASIC tape path, stops tape playback automatically, and enters gameplay in both 48K and 128K |
 | 🟢 | Star Wars (Hit Squad) | `.tzx` | Loading reaches the complete X-Wing control menu and remains stable |
 | 🟢 | Star Wars (Domark original, sides 1 and 2) | `.tzx` | The explicit stop/key/resume sequence reaches the complete title screen from both sides; side 2 requires 48K mode |
@@ -118,6 +123,18 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Starglider 2 (48K original) | `.tzx` | Loading reaches the complete title screen and ends cleanly |
 | 🟢 | Starglider 2 (Rainbird original, 128K) | `.tzx` | Hybrid protected loading preserves the 128K paging mirror, reaches the complete illustrated title screen, and ends cleanly |
 | 🟢 | Starquake (Bubblebus original and Ricochet) | `.sna`, `.tzx` | The repaired standard-size 48K SNA and both TZX releases reach the control menu and remain stable |
+| 🟠 | Starstrike II (Realtime original) | `.tzx` | Original 128K ends the tape cleanly and reaches the animated cockpit attract sequence. The 48K loader instead raises a tape data block length mismatch |
+| 🟢 | Steve Davis Snooker (CDS original and Blue Ribbon) | `.tzx` | Both reach the control menu and end the tape in 48K. Blue Ribbon also reaches the same menu in original 128K |
+| 🔴 | Stop the Express (Sinclair original) | `.tzx` | Normal Load Tape reports a complete accelerated load in 48K and 128K, but stays on a blank display instead of entering the game. Forcing native ROM playback in 48K reaches the loading message and returns to BASIC without starting |
+| 🟢 | Stormlord (Hewson original) | `.tzx` | In 48K, the tape ends cleanly at the illustrated controls and start screen |
+| 🟢 | Stormlord II: Deliverance (Hewson original) | `.tzx` | In 48K, select Part I at the initial stop and resume the tape. It loads to the next marker; starting from the game menu reaches Part I gameplay. Parts II and III were not tested |
+| 🟢 | Strange Loop (Virgin original, Bug-Byte, and TAP) | `.tap`, `.tzx` | Both TZXs end cleanly in 48K at the start and control options. `STRANGEL.TAP` automatically pauses at the illustrated title; Space then `0` reaches the first room |
+| 🟢 | Street Hawk (Crash Subscribers Edition) | `.tzx` | In 48K, loading ends at the high-score and control-selection screen |
+| 🔴 | Stunt Bike Simulator (Silverbird original) | `.tzx` | The tape reaches end but returns to the Spectrum BASIC prompt without starting in both 48K and original 128K |
+| 🟢 | Stunt Car Racer (Kixx and Micro Style, 48K and 128K) | `.tzx` | The four tapes end cleanly and reach the title in their named modes. Space opens key selection on both Micro Style editions |
+| 🟢 | Super Cars (GBH, side 1 and side 2) | `.tzx` | The sides boot independently: side 1 is the 128K edition and reaches the sales office after Fire. Side 2 is the 48K edition; acknowledge the stop prompt and manually resume at `LOADING TRACK 1` to reach the first race. Later track loads were not checked |
+| 🔴 | Superman: The Game (Firebird original) | `.tzx` | Normal Load Tape raises an unexpected BASIC bootstrap token (`E3`) in 48K and 128K. A separate native ROM diagnostic run reaches the loading artwork but reports `R Tape loading error, 1:7` before the game starts |
+| 🟠 | Superman: The Man of Steel (Tynesoft original) | `.tzx` | The control and start menu appears in 48K and original 128K. In the 48K run the tape reached end with the menu still displayed; first-stage gameplay was not confirmed |
 | 🟢 | Target Renegade | `.tzx` | Both modes reach playable Level 1. In 48K, the tape stops once Level 1 is loaded. A gameplay-only level advance reaches `LOOKING FOR BLOCK 2` without moving the tape. One manual resume loads playable Level 2 and stops in the gap before the Level 3 header. In 128K, the complete game loads and transport reports tape end. Both modes remain responsive with good audio |
 | 🟢 | The Goonies | `.tzx` | Loading reaches active gameplay and remains stable |
 | 🟢 | The Great Escape (Ocean original) | `.tap`, `.tzx` | Both tape formats reach the control-selection menu and remain stable |
@@ -195,6 +212,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Jet Set Willy | `.z80`, `.sna` | All three variants reach active title/game screens and remain stable (`JETSETW1.Z80`, `jsw013 (2016 edition, bugfixed).sna`, `jswx.sna`) |
 | 🟢 | Jet Set Willy April | `.z80` | Snapshot loads and executes (`JSWAPRIL.Z80`) |
 | 🟢 | Jet Set Willy II | `.sna` | Snapshot restores to BASIC with `RANDOMIZE USR 25762`; submitting the restored line and running it reaches the Jet Set Willy II title screen (`jsw2.sna`) |
+| 🟢 | Knight Rider | `.sna` | Restores to the mission and control menu (`knightri.sna`) |
 | 🟢 | Joe Blade 3 | `.sna` | The standard snapshot reaches its control menu and the hacked snapshot reaches its cheat prompt; both remain stable for 2,000 frames (`joeblade3.sna`, `joblade3 (hacked).sna`) |
 | 🟢 | Kokotoni Wilf | `.sna` | Snapshot reaches the complete Elite/Kokotoni Wilf title screen and remains stable for 2,000 frames (`kokotoni_wilf.sna`) |
 | 🟢 | Lunar Jetman | `.z80` | Snapshot reaches the game-selection menu and remains stable for 2,000 frames (`Lunar Jetman (1983)(Ultimate).z80`) |
@@ -220,8 +238,19 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Sex Simulator 1 | `.sna` | Snapshot reaches its menu and remains stable |
 | 🟢 | Skool Daze | `.sna`, `.z80` | Both snapshots reach the active demonstration screen and remain stable for 2,000 frames |
 | 🟢 | Space Harrier | `.sna`, `.z80` | Both snapshots reach the title screen and remain stable |
+| 🟢 | Spy Hunter | `.sna` | Both snapshots reach the start and control menu (`spyhunt.sna`, `spyhuntr.sna`) |
+| 🟢 | Spy vs. Spy | `.sna` | Both snapshots run the animated split-screen demonstration (`Spy vs Spy.sna`, `spyvspy.sna`) |
+| 🟢 | Spy vs. Spy II: The Island Caper | `.z80` | Restores to the animated split-screen options screen (`spyvspy2.z80`) |
 | 🟢 | Starglider | `.sna` | Snapshot reaches the control menu and remains stable |
 | 🟢 | Star Wars | `.sna` | Snapshot reaches the complete title screen and remains stable |
+| 🟢 | Starstrike II | `.sna` | Runs the animated cockpit attract sequence (`Starstrike II.sna`) |
+| 🟢 | Stop the Express | `.sna` | Both snapshots run the animated train and control prompt (`express.sna`, `stop_the.sna`) |
+| 🟢 | Stormlord | `.sna` | Restores to the illustrated title sequence (`stormlor.sna`) |
+| 🟢 | Stormlord II: Deliverance | `.sna` | Both snapshots reach the full title and control prompt after declining or dismissing their trainer prompts with `N` (`storml2.sna`, `storl2-2.sna`) |
+| 🟢 | Strange Loop | `.z80` | Restores to the illustrated title screen (`Strangeloop.z80`) |
+| 🟢 | Strip Poker | `.sna` | Restores to the card table and betting prompt (`Strip Poker.sna`) |
+| 🟢 | Stunt Car Racer | `.z80` | Restores to the 128K title and Space prompt (`Stunt Car Racer.z80`) |
+| 🟢 | Super Star Trek | `.sna` | Restores to the German title; `J` advances to the opening briefing and instructions prompt |
 | 🟢 | The Great Escape | `.sna`, `.z80` | Both snapshots reach the control-selection screen and remain stable |
 | 🟢 | The Thompson Twins | `.sna` | Snapshot reaches active gameplay and remains stable (`ttwins.sna`) |
 | 🟢 | The Way of the Exploding Fist | `.sna` | Snapshot reaches active gameplay and remains stable (`fist.sna`) |
