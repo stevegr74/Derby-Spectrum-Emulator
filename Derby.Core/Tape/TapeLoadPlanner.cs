@@ -52,6 +52,14 @@ namespace Derby.Tape
 
             if (TapLoader.CanLoadAllStandardTapeBlocks(blocks))
             {
+                if (canStartNativeRom && TapLoader.LeadingBasicLoadsCodeAcrossRamTop(blocks))
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.CodeLoadCrossesBasicRamTop,
+                        "BASIC moves RAMTOP into the subsequent CODE load; native ROM playback preserves the live stack.");
+                }
+
                 if (TapLoader.LeadingBasicLoadsCodeIntoRomWorkspace(blocks))
                 {
                     return new TapeLoadPlan(

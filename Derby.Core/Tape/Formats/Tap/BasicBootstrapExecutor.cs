@@ -1362,6 +1362,39 @@ namespace Derby.Tape
 
             private static bool IsAsciiLetterOrDigit(char c) => IsAsciiLetter(c) || IsAsciiDigit(c);
 
+            internal static bool TryGetRamTopBeforeHeaderAddressCodeLoad(
+                byte[] program, ushort programLength, ushort autoStartLine, out int ramTop)
+            {
+                ramTop = 0;
+                foreach (BasicLine line in ParseLinesFromData(program, programLength))
+                {
+                    if (line.Number < autoStartLine)
+                        continue;
+
+                    foreach (List<string> statement in line.Statements)
+                    {
+                        if (statement.Count == 0)
+                            continue;
+                        if (statement[0] == "REM")
+                            break;
+                        if (statement[0] == "CLEAR")
+                        {
+                            ramTop = statement is ["CLEAR", var value] &&
+                                int.TryParse(value, out int address) && address is >= 0x5D00 and <= 0xFFFE
+                                ? address : 0;
+                            continue;
+                        }
+                        if (statement[0] == "LOAD")
+                            return ramTop != 0 && statement is ["LOAD", "", "CODE"];
+                        if (statement[0] is "IF" or "RUN" or "RETURN" or "FOR" or "NEXT" ||
+                            statement.Contains("USR"))
+                            return false;
+                    }
+                }
+
+                return false;
+            }
+
             public static bool HasExplicitCodeLoadIntoRomWorkspace(byte[] program, ushort programLength, ushort autoStartLine)
             {
                 List<BasicLine> lines = ParseLinesFromData(program, programLength);

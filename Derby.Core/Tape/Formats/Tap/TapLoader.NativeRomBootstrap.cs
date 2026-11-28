@@ -66,6 +66,33 @@ namespace Derby.Tape
             return new TapBootstrapResult(blocks.Count, 0, displayName, fileName);
         }
 
+        internal static bool LeadingBasicLoadsCodeAcrossRamTop(IReadOnlyList<TapeBlock> blocks)
+        {
+            int index = 0;
+            while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                index++;
+            if (index + 1 >= blocks.Count || !IsStandardHeaderBlock(blocks[index]) ||
+                blocks[index + 1].Payload is not byte[] program)
+                return false;
+
+            TapHeaderInfo basic = ParseHeaderInfo(blocks[index]);
+            if (basic.Type != ProgramType || basic.AutoStartLine >= 32768 ||
+                !BasicBootstrapExecutor.TryGetRamTopBeforeHeaderAddressCodeLoad(
+                    program, basic.ProgramLength, basic.AutoStartLine, out int ramTop))
+                return false;
+
+            for (index += 2; index + 1 < blocks.Count; index++)
+            {
+                if (!IsStandardHeaderBlock(blocks[index]))
+                    continue;
+                TapHeaderInfo header = ParseHeaderInfo(blocks[index]);
+                if (header.Type == CodeType)
+                    return header.StartAddress <= ramTop && header.StartAddress + header.DataLength > ramTop;
+            }
+
+            return false;
+        }
+
         internal static bool HasCodeOverlappingBootstrapStack(IReadOnlyList<TapeBlock> blocks)
         {
             foreach (TapeBlock block in blocks)

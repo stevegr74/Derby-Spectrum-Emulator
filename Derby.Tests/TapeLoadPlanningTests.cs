@@ -107,6 +107,41 @@ namespace Derby.Tests
         }
 
         [Theory]
+        [InlineData(SpectrumMachineModel.Spectrum48K, 0x6FFD, true)]
+        [InlineData(SpectrumMachineModel.Spectrum128K, 0x6FFD, true)]
+        [InlineData(SpectrumMachineModel.Spectrum48K, 0x7000, false)]
+        [InlineData(SpectrumMachineModel.Spectrum48K, 0x6FFC, false)]
+        public void ImplicitCodeLoad_CrossingLiteralRamTopUsesLiveRomStack(
+            SpectrumMachineModel model, int codeStart, bool crossesRamTop)
+        {
+            var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+            machine.Reset(model);
+            byte[] program = BuildBasicProgram(
+                BuildBasicLine(10, Token(253), Ascii("28671"), NumberMarker(28671)),
+                BuildBasicLine(20, Token(220), Ascii("1"), NumberMarker(1)),
+                BuildBasicLine(30, Token(239), QuoteQuote(), Token(175)));
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program),
+                BuildHeaderBlock(3, "PAYLOAD", 3, (ushort)codeStart, 0),
+                BuildDataBlock(new byte[] { 1, 2, 3 })));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            if (!crossesRamTop)
+            {
+                Assert.NotEqual(TapeLoadPlanReason.CodeLoadCrossesBasicRamTop, plan.ReasonCode);
+                return;
+            }
+
+            Assert.Equal(TapeLoadPlanReason.CodeLoadCrossesBasicRamTop, plan.ReasonCode);
+            Assert.Equal(TapeLoadStrategy.RomBootstrapMounted, plan.Strategy);
+            TapeExecutionResult result = TapLoader.ExecutePlan(machine, "live-stack.tap", blocks, plan);
+            Assert.Equal(0, result.ConsumedBlockCount);
+            Assert.Equal(model, machine.MachineModel);
+            Assert.Equal(TapeTransportState.Playing, machine.TapeTransportState);
+        }
+
+        [Theory]
         [InlineData(0xFF, true)]
         [InlineData(0x42, false)]
         public void HeaderlessContinuation_DistinguishesStandardDataFromCustomFlags(int flag, bool expected)
