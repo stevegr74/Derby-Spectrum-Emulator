@@ -133,9 +133,9 @@ namespace Derby.Tape
 
                     if (expectedDataLength.HasValue && block.Payload!.Length != expectedDataLength.Value)
                     {
-                        string displayName = pendingHeaderName ?? "unnamed";
-                        throw new InvalidOperationException(
-                            $"Tape data block length mismatch for '{displayName}'. Expected {expectedDataLength.Value} bytes, got {block.Payload.Length}.");
+                        // A short or oversized record can still write bytes before the ROM
+                        // returns an error. Leave the record in place and let EAR playback run.
+                        return false;
                     }
 
                     // Protected chained BASIC programs depend on ROM-maintained

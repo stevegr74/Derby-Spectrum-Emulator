@@ -123,7 +123,7 @@ that every level, control path, or hardware edge case has been tested.
 | 🟢 | Starglider 2 (48K original) | `.tzx` | Loading reaches the complete title screen and ends cleanly |
 | 🟢 | Starglider 2 (Rainbird original, 128K) | `.tzx` | Hybrid protected loading preserves the 128K paging mirror, reaches the complete illustrated title screen, and ends cleanly |
 | 🟢 | Starquake (Bubblebus original and Ricochet) | `.sna`, `.tzx` | The repaired standard-size 48K SNA and both TZX releases reach the control menu and remain stable |
-| 🟠 | Starstrike II (Realtime original) | `.tzx` | Original 128K ends the tape cleanly and reaches the animated cockpit attract sequence. The 48K loader instead raises a tape data block length mismatch |
+| 🟢 | Starstrike II (Realtime original) | `.tzx` | The tape ends cleanly in 48K and original 128K. Verified a new game through star-system and target selection into combat, with responsive steering and laser fire in both modes |
 | 🟢 | Steve Davis Snooker (CDS original and Blue Ribbon) | `.tzx` | Both reach the control menu and end the tape in 48K. Blue Ribbon also reaches the same menu in original 128K |
 | 🟢 | Stop the Express (Sinclair original) | `.tzx` | Normal Load Tape uses native ROM playback because the BASIC loader's CODE block crosses its relocated stack. The tape ends cleanly in 48K and original 128K at the same train demo and control prompt as the snapshots. Press `K` to start Stage 1 with keyboard controls; movement was verified in both modes |
 | 🟢 | Stormlord (Hewson original) | `.tzx` | In 48K, the tape ends cleanly at the illustrated controls and start screen |

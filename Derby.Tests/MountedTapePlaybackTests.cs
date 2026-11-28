@@ -1807,8 +1807,10 @@ namespace Derby.Tests
             }
         }
 
-        [Fact]
-        public void MountedTap_Header_With_Mismatched_Data_Length_Throws()
+        [Theory]
+        [InlineData(3)]
+        [InlineData(5)]
+        public void MountedTap_Header_With_Mismatched_Data_Length_Leaves_Record_For_Rom(int declaredLength)
         {
             string tempFolder = CreateTempRoms();
             string tapePath = Path.Combine(tempFolder, "badsequence.tap");
@@ -1816,7 +1818,7 @@ namespace Derby.Tests
             try
             {
                 byte[] tap = BuildTap(
-                    BuildHeaderBlock(type: 3, fileName: "BAD", dataLength: 5, parameter1: 0x8000, parameter2: 0),
+                    BuildHeaderBlock(type: 3, fileName: "DATA", dataLength: (ushort)declaredLength, parameter1: 0x8100, parameter2: 0),
                     BuildDataBlock(new byte[] { 1, 2, 3, 4 }));
 
                 File.WriteAllBytes(tapePath, tap);
@@ -1838,11 +1840,23 @@ namespace Derby.Tests
                 machine.Cpu.Regs.PC = 0x056B;
                 machine.Cpu.Regs.SP = 0x9000;
                 machine.Cpu.Regs.IX = 0x8100;
-                machine.Cpu.Regs.DE = 4;
+                machine.Cpu.Regs.DE = (ushort)declaredLength;
                 machine.Cpu.Regs.A = 0xFF;
                 machine.Cpu.Regs.F = 0x01;
 
-                Assert.Throws<InvalidOperationException>(() => machine.TryServiceTapeTrap());
+                MountedTape tape = Assert.IsType<MountedTape>(machine.MountedTape);
+                MountedTape.QuickState before = tape.CaptureQuickState();
+                Assert.False(machine.TryServiceTapeTrap());
+                MountedTape.QuickState after = tape.CaptureQuickState();
+
+                Assert.Equal(1, after.NextBlockIndex);
+                Assert.Equal(before.EarPlaybackBlockIndex, after.EarPlaybackBlockIndex);
+                Assert.Equal(before.EarStreamByteIndex, after.EarStreamByteIndex);
+                Assert.Equal((ushort)0x056B, machine.Cpu.Regs.PC);
+                Assert.Equal((ushort)0x9000, machine.Cpu.Regs.SP);
+                Assert.Equal((ushort)0x8100, machine.Cpu.Regs.IX);
+                Assert.Equal((ushort)declaredLength, machine.Cpu.Regs.DE);
+                Assert.Equal((byte)0, machine.PeekMemory(0x8100));
             }
             finally
             {
