@@ -1010,7 +1010,7 @@ namespace Derby.Tape
                     "POKE" or "LOAD" or "DATA" or "READ" or "FOR" or "NEXT" or
                     "RANDOMIZE" or "PAUSE" or "RUN" or "RETURN" or "RESTORE" or "USR" or
                     "LET" or "THEN" or
-                    "CODE" or "PEEK" or "TO" or "PRINT";
+                    "CODE" or "SCREEN$" or "PEEK" or "TO" or "PRINT";
             }
 
             private static bool CanExecuteProgram(List<BasicLine> parsedLines, ushort autoStartLine)
@@ -1288,6 +1288,15 @@ namespace Derby.Tape
                         while (i + 1 < lineBytes.Length && IsAsciiDigit((char)lineBytes[i + 1]))
                             i++;
 
+                        int exponentEnd = FindScientificExponentEnd(lineBytes, i + 1);
+                        if (exponentEnd > i &&
+                            TryDecodeSpectrumNumberMarker(lineBytes, exponentEnd + 1, out int scientificValue))
+                        {
+                            tokens.Add(new TokenSpan(scientificValue.ToString(), start));
+                            i = exponentEnd + SpectrumNumberMarkerLength + 1;
+                            continue;
+                        }
+
                         string numericToken = System.Text.Encoding.ASCII.GetString(lineBytes, start, i - start + 1);
                         if (TryDecodeSpectrumNumberMarker(lineBytes, i + 1, out int encodedValue))
                         {
@@ -1326,6 +1335,22 @@ namespace Derby.Tape
 
             private const int SpectrumNumberMarkerLength = 5;
 
+            private static int FindScientificExponentEnd(byte[] lineBytes, int index)
+            {
+                if (index >= lineBytes.Length || lineBytes[index] is not ((byte)'e' or (byte)'E'))
+                    return -1;
+
+                index++;
+                if (index < lineBytes.Length && lineBytes[index] is (byte)'+' or (byte)'-')
+                    index++;
+
+                int firstDigit = index;
+                while (index < lineBytes.Length && IsAsciiDigit((char)lineBytes[index]))
+                    index++;
+
+                return index > firstDigit ? index - 1 : -1;
+            }
+
             private static bool TryDecodeSpectrumNumberMarker(byte[] lineBytes, int markerOffset, out int value)
             {
                 value = 0;
@@ -1361,6 +1386,30 @@ namespace Derby.Tape
                 (c >= 'a' && c <= 'z');
 
             private static bool IsAsciiLetterOrDigit(char c) => IsAsciiLetter(c) || IsAsciiDigit(c);
+
+            internal static bool FirstLoadUsesScreenDestination(byte[] program, ushort programLength, ushort autoStartLine)
+            {
+                foreach (BasicLine line in ParseLinesFromData(program, programLength))
+                {
+                    if (line.Number < autoStartLine)
+                        continue;
+
+                    foreach (List<string> statement in line.Statements)
+                    {
+                        if (statement.Count == 0)
+                            continue;
+                        if (statement[0] == "REM")
+                            break;
+                        if (statement[0] == "LOAD")
+                            return statement is ["LOAD", "", "SCREEN$"];
+                        if (statement[0] is "IF" or "RUN" or "RETURN" or "FOR" or "NEXT" ||
+                            statement.Contains("USR"))
+                            return false;
+                    }
+                }
+
+                return false;
+            }
 
             internal static bool TryGetRamTopBeforeHeaderAddressCodeLoad(
                 byte[] program, ushort programLength, ushort autoStartLine, out int ramTop)
@@ -1453,7 +1502,7 @@ namespace Derby.Tape
 
                         if (keyword == "LOAD")
                         {
-                            if (sawPreparatorySideEffects || !IsSimpleAnonymousCodeLoad(statement))
+                            if (sawPreparatorySideEffects || !IsSimpleAnonymousLoad(statement))
                                 return true;
                             continue;
                         }
@@ -1957,7 +2006,7 @@ namespace Derby.Tape
                 return true;
             }
 
-            private static bool IsSimpleAnonymousCodeLoad(List<string> statement)
+            private static bool IsSimpleAnonymousLoad(List<string> statement)
             {
                 if (statement.Count <= 1)
                     return true;
@@ -1965,7 +2014,7 @@ namespace Derby.Tape
                 for (int i = 1; i < statement.Count; i++)
                 {
                     string token = statement[i];
-                    if (string.IsNullOrEmpty(token) || token == "CODE")
+                    if (string.IsNullOrEmpty(token) || token is "CODE" or "SCREEN$")
                         continue;
                     return false;
                 }
@@ -2019,6 +2068,7 @@ namespace Derby.Tape
             {
                 keyword = value switch
                 {
+                    170 => "SCREEN$",
                     186 => "INT",
                     190 => "PEEK",
                     192 => "USR",

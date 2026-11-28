@@ -132,6 +132,71 @@ namespace Derby.Tests
         }
 
         [Theory]
+        [InlineData(SpectrumMachineModel.Spectrum48K, 0xC000, true)]
+        [InlineData(SpectrumMachineModel.Spectrum128K, 0xC000, true)]
+        [InlineData(SpectrumMachineModel.Spectrum48K, 0x4000, false)]
+        public void ScreenLoad_UsesNativeRomWhenBasicOverridesHeaderDestination(
+            SpectrumMachineModel model, int screenHeaderAddress, bool overridesHeader)
+        {
+            var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"));
+            machine.Reset(model);
+            byte[] program = BuildBasicProgram(
+                BuildBasicLine(10, Token(253), Ascii("24575"), NumberMarker(24575)),
+                BuildBasicLine(20, Token(239), QuoteQuote(), Token(170)),
+                BuildBasicLine(30, Token(239), QuoteQuote(), Token(175)),
+                BuildBasicLine(40, Token(249), Token(192), Ascii("3e4"), NumberMarker(30000)));
+            byte[] picture = new byte[6912];
+            picture[0] = 0x81;
+            byte[] code = [0x3E, 0xA5, 0x32, 0x00, 0x90, 0xC9];
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program),
+                BuildHeaderBlock(3, "ART", (ushort)picture.Length, (ushort)screenHeaderAddress, 0),
+                BuildDataBlock(picture),
+                BuildHeaderBlock(3, "ENGINE", (ushort)code.Length, 30000, 0),
+                BuildDataBlock(code)));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            if (!overridesHeader)
+            {
+                Assert.Equal(TapeLoadStrategy.FullFakeLoad, plan.Strategy);
+                return;
+            }
+
+            Assert.Equal(TapeLoadPlanReason.ScreenLoadOverridesHeaderAddress, plan.ReasonCode);
+            Assert.Equal(0, TapLoader.ExecutePlan(machine, "screen-destination.tap", blocks, plan).ConsumedBlockCount);
+            for (int frame = 0; frame < 4000 && machine.PeekMemory(0x9000) != 0xA5; frame++)
+                machine.ExecuteFrame();
+
+            Assert.Equal((byte)0xA5, machine.PeekMemory(0x9000));
+            Assert.Equal((byte)0x81, machine.PeekMemory(0x4000));
+            Assert.Equal((byte)0, machine.PeekMemory(0xC000));
+            Assert.Equal(model, machine.MachineModel);
+        }
+
+        [Theory]
+        [InlineData("33e3")]
+        [InlineData("33E+3")]
+        [InlineData("330000e-1")]
+        public void AcceleratedBasic_ReadsIntegerMarkerAfterScientificNotation(string addressLiteral)
+        {
+            var machine = new SpectrumMachine(Path.Combine(AppContext.BaseDirectory, "ROMs"), SpectrumRomProfile.SyntheticTest);
+            byte[] program = BuildBasicProgram(
+                BuildBasicLine(10, Token(239), QuoteQuote(), Token(175)),
+                BuildBasicLine(20, Token(249), Token(192), Ascii(addressLiteral), NumberMarker(33000)));
+            IReadOnlyList<TapeBlock> blocks = TapLoader.ParseBlocks(BuildTap(
+                BuildHeaderBlock(0, "BOOT", (ushort)program.Length, 10, (ushort)program.Length),
+                BuildDataBlock(program),
+                BuildHeaderBlock(3, "ENGINE", 1, 33000, 0),
+                BuildDataBlock(new byte[] { 0xC9 })));
+
+            TapeLoadPlan plan = TapeLoadPlanner.Create(machine, blocks);
+            Assert.Equal(TapeLoadStrategy.FullFakeLoad, plan.Strategy);
+            TapLoader.ExecutePlan(machine, "integer-exponent.tap", blocks, plan);
+            Assert.Equal((ushort)33000, machine.Cpu.Regs.PC);
+        }
+
+        [Theory]
         [InlineData(0xFF58, TapeLoadPlanReason.CodeLoadOverlapsBootstrapStack)]
         [InlineData(0xFF50, TapeLoadPlanReason.StandardTapeRequiresMountedSemantics)]
         public void NamedCodeLoad_UsesNativeRomWhenDataOverlapsBootstrapStack(

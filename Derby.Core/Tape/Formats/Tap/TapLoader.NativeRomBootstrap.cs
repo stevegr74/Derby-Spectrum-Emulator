@@ -110,6 +110,30 @@ namespace Derby.Tape
             return false;
         }
 
+        internal static bool LeadingBasicOverridesScreenHeaderAddress(IReadOnlyList<TapeBlock> blocks)
+        {
+            int index = 0;
+            while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                index++;
+            if (index + 1 >= blocks.Count || !IsStandardHeaderBlock(blocks[index]) ||
+                blocks[index + 1].Payload is not byte[] program)
+                return false;
+
+            TapHeaderInfo basic = ParseHeaderInfo(blocks[index]);
+            if (basic.Type != ProgramType || basic.AutoStartLine >= 32768)
+                return false;
+
+            index += 2;
+            while (index < blocks.Count && blocks[index].Kind == TapeBlockKind.Metadata)
+                index++;
+            if (index >= blocks.Count || !IsStandardHeaderBlock(blocks[index]))
+                return false;
+
+            TapHeaderInfo screen = ParseHeaderInfo(blocks[index]);
+            return screen.Type == CodeType && screen.StartAddress != 0x4000 &&
+                   BasicBootstrapExecutor.FirstLoadUsesScreenDestination(program, basic.ProgramLength, basic.AutoStartLine);
+        }
+
         internal static bool HasHeaderlessStandardDataAfterHeaderedPrefix(IReadOnlyList<TapeBlock> blocks)
         {
             int pairs = 0;

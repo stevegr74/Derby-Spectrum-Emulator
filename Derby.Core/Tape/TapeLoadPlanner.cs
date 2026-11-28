@@ -52,6 +52,14 @@ namespace Derby.Tape
 
             if (TapLoader.CanLoadAllStandardTapeBlocks(blocks))
             {
+                if (canStartNativeRom && TapLoader.LeadingBasicOverridesScreenHeaderAddress(blocks))
+                {
+                    return new TapeLoadPlan(
+                        TapeLoadStrategy.RomBootstrapMounted,
+                        TapeLoadPlanReason.ScreenLoadOverridesHeaderAddress,
+                        "BASIC LOAD SCREEN$ replaces the header's destination; let the native ROM perform the load.");
+                }
+
                 if (canStartNativeRom && TapLoader.LeadingBasicLoadsCodeAcrossRamTop(blocks))
                 {
                     return new TapeLoadPlan(
